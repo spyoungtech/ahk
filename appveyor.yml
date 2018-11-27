@@ -1,7 +1,8 @@
 version: '1.0.{build}'
 
 environment:
-  AHK_PATH: "C:\ahk"
+  AHK_PATH: "C:\ahk\AutoHotkey.exe"
+  AHK_DEBUG: "true"
 
 install:
   - appveyor DownloadFile https://github.com/AutoHotkey/AutoHotkey/releases/download/v1.0.48.05/AutoHotkey104805_Install.exe -FileName ahk_install.exe
