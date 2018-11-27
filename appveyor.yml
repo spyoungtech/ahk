@@ -6,7 +6,7 @@ environment:
 
 install:
   - choco install autohotkey
-  - .\ci\install.ps1
+  - powershell .\ci\install.ps1
 
 build_script:
   - py -3.7 setup.py sdist bdist_wheel
@@ -16,7 +16,7 @@ artifacts:
     path: dist\*
 
 test_script:
-  - .\ci\runtests.ps1
+  - powershell .\ci\runtests.ps1
 
 after_test:
   - coveralls
