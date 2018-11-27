@@ -10,4 +10,4 @@ install:
 build: off
 
 test_script:
-  - python -c "from ahk import AHK;ahk=AHK();ahk.mouse_move(100,100);"
+  - C:\python37\python.exe -c "from ahk import AHK;ahk=AHK();ahk.mouse_move(100,100);"
