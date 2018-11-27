@@ -1,6 +1,7 @@
 from ahk.script import ScriptEngine
 from ahk.utils import make_script
 import ast
+from .utils import logger
 
 
 class WindowNotFoundError(ValueError):
@@ -17,6 +18,12 @@ class Window(object):
         self._exclude_title = exclude_title
         self._exclude_text = exclude_text
         self.match_mode = match_mode
+
+
+
+    @classmethod
+    def from_ahk_id(cls, engine, ahk_id):
+        raise NotImplemented
 
     def _win_set(self, subcommand, value):
         script = make_script(f'''\
@@ -139,9 +146,36 @@ class WindowMixin(ScriptEngine):
         win.win_set(subcommand, value)
         return win
 
+    def _win_title_from_ahk_id(self, ahk_id):
+        pass
+
+    def _all_window_titles(self):
+        script = make_script('''\
+        WinGet windows, List
+        Loop %windows%
+        {
+        	id := windows%A_Index%
+        	WinGetTitle wt, ahk_id %id%
+        	r .= wt . "`n"
+        }
+        FileAppend, %r%, *
+        ''')
+
+        resp = self.run_script(script, decode=False)
+        titles = []
+        for title_bytes in resp.split(bytes('\n', 'ascii')):
+            if not title_bytes.strip():
+                continue
+            try:
+                titles.append(title_bytes.decode())
+            except UnicodeDecodeError as e:
+                logger.exception('Could not decode title; %s', str(e))
+
+        return titles
+
     def windows(self):
         """
         Return a list of all windows
         :return:
         """
-        raise NotImplemented
+        return [self.win_get(title=title) for title in self._all_window_titles()]
