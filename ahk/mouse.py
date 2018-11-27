@@ -18,11 +18,14 @@ class MouseMixin(ScriptEngine):
         else:
             return self._mouse_speed
 
-    @staticmethod
-    def _mouse_position():
-        return make_script('''
+
+    def _mouse_position(self, mode=None):
+        if mode is None:
+            mode = self.mode
+        return make_script(f'''
+        CoordMode, Mouse, {mode}
         MouseGetPos, xpos, ypos
-        s .= Format("({}, {})", xpos, ypos)
+        s .= Format("({{}}, {{}})", xpos, ypos)
         FileAppend, %s%, *
         ''')
 
