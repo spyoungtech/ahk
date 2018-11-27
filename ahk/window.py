@@ -97,12 +97,14 @@ class Window(object):
 
     @always_on_top.setter
     def always_on_top(self, value):
-        if value in ('On', True, 1):
+        if value in ('on', 'On', True, 1):
             self.win_set('AlwaysOnTop', 'On')
-        elif value in ('Off', False, 0):
+        elif value in ('off', 'Off', False, 0):
             self.win_set('AlwaysOnTop', 'Off')
-        elif value == 'Toggle':
+        elif value in ('toggle', 'Toggle', -1):
             self.win_set('AlwaysOnTop', 'Toggle')
+        else:
+            raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
     def _close(self, seconds_to_wait=''):
         return make_script(f'''\
