@@ -1,0 +1,14 @@
+version: '1.0.{build}'
+
+environment:
+  AHK_PATH: "C:\ahk"
+
+install:
+  - appveyor DownloadFile https://github.com/AutoHotkey/AutoHotkey/releases/download/v1.0.48.05/AutoHotkey104805_Install.exe -FileName=ahk_install.exe
+  - .\autohotkey_install.exe /S /D=C:\ahk
+  - C:\python37\python.exe -m pip install .
+
+build: off
+
+test_script:
+  - echo "Hello"
