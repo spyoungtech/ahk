@@ -1,7 +1,17 @@
+import os
 from textwrap import dedent
 import logging
 
 logger = logging.getLogger('ahk')
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+if os.environ.get('AHK_DEBUG'):
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.ERROR)
 
 
 def make_script(body, directives=None, persistent=True):

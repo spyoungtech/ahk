@@ -4,7 +4,10 @@ import ast
 
 
 class MouseMixin(ScriptEngine):
-    def __init__(self, mouse_speed=2, **kwargs):
+    def __init__(self, mouse_speed=2, mode=None, **kwargs):
+        if mode is None:
+            mode = 'Screen'
+        self.mode = mode
         self._mouse_speed = mouse_speed
         super().__init__(**kwargs)
 
@@ -33,11 +36,13 @@ class MouseMixin(ScriptEngine):
         x, y = position
         self.mouse_move(x=x, y=y, speed=0, relative=False)
 
-    def _mouse_move(self, x=None, y=None, speed=None, relative=False):
+    def _mouse_move(self, x=None, y=None, speed=None, relative=False, mode=None):
         if x is None and y is None:
             raise ValueError('Position argument(s) missing. Must provide x and/or y coordinates')
         if speed is None:
             speed = self.mouse_speed
+        if mode is None:
+            mode = self.mode
         if relative and (x is None or y is None):
             x = x or 0
             y = y or 0
@@ -50,7 +55,8 @@ class MouseMixin(ScriptEngine):
             relative = ', R'
         else:
             relative = ''
-        script = make_script(f'''\
+        script = make_script(f'''
+            CoordMode Mouse, {mode}
             MouseMove, {x}, {y} , {speed}{relative}
         ''')
         return script
