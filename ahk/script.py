@@ -22,10 +22,14 @@ class ScriptEngine(object):
 
     def _run_script(self, script_path, **kwargs):
         runargs = [self.executable_path, script_path]
+        decode = kwargs.pop('decode', False)
         result = subprocess.run(runargs, stdin=None, stderr=None, stdout=subprocess.PIPE, **kwargs)
-        return result.stdout.decode()
+        if decode:
+            return result.stdout.decode()
+        else:
+            return result.stdout
 
-    def run_script(self, script_text: str, delete=None, **runkwargs):
+    def run_script(self, script_text: str, delete=None, decode=True, **runkwargs):
         if delete is None:
             delete = not self.keep_scripts
         with NamedTemporaryFile(mode='w', delete=False, newline='\r\n') as temp_script:
@@ -33,7 +37,7 @@ class ScriptEngine(object):
             logger.debug('Script location: %s', temp_script.name)
             logger.debug('Script text: \n%s', script_text)
         try:
-            result = self._run_script(temp_script.name, **runkwargs)
+            result = self._run_script(temp_script.name, decode=decode, **runkwargs)
         except Exception as e:
             logger.fatal('Error running temp script: %s', e)
             raise
