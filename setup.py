@@ -1,12 +1,17 @@
 from setuptools import setup
 
+test_requirements = ['pyautogui', 'behave', 'behave-classy', 'coverage']
+extras = {'test': test_requirements}
+
 
 setup(
     name='ahk',
-    version='0.0.1',
+    version='0.1.1',
     url='https://github.com/spyoungtech/ahk',
-    description='A (POC) Python wrapper for AHK',
+    description='A Python wrapper for AHK',
     author_email='spencer.young@spyoung.com',
     author='Spencer Young',
-    packages=['ahk']
+    packages=['ahk'],
+    install_requires=[],
+    tests_require=test_requirements,
 )
