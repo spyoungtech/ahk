@@ -1,14 +1,20 @@
-version: '1.0.{build}'
+version: '0.1.{build}'
 
 environment:
-  AHK_PATH: "C:\ahk"
+  AHK_PATH: C:\ahk\AutoHotkey.exe
+  AHK_DEBUG: true
 
 install:
-  - appveyor DownloadFile https://github.com/AutoHotkey/AutoHotkey/releases/download/v1.0.48.05/AutoHotkey104805_Install.exe -FileName ahk_install.exe
-  - .\autohotkey_install.exe /S /D=C:\ahk
-  - C:\python37\python.exe -m pip install .
+  - appveyor DownloadFile https://github.com/Lexikos/AutoHotkey_L/releases/download/v1.1.30.01/AutoHotkey_1.1.30.01_setup.exe -FileName ahk_install.exe
+  - ahk_install.exe /S /D=C:\ahk
+  - powershell .\ci\install.ps1
 
-build: off
+build_script:
+  - powershell .\ci\build.ps1
+
+artifacts:
+  - name: dist
+    path: dist\*
 
 test_script:
-  - echo "Hello"
+  - powershell .\ci\runtests.ps1
