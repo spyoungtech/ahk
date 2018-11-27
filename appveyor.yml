@@ -1,10 +1,12 @@
 version: '0.1.{build}'
 
 environment:
+  AHK_PATH: C:\ahk\AutoHotkey.exe
   AHK_DEBUG: true
 
 install:
-  - choco install autohotkey
+  - appveyor DownloadFile https://github.com/Lexikos/AutoHotkey_L/releases/download/v1.1.30.01/AutoHotkey_1.1.30.01_setup.exe -FileName ahk_install.exe
+  - ahk_install.exe /S /D=C:\ahk
   - powershell .\ci\install.ps1
 
 build_script:
