@@ -9,7 +9,7 @@ install:
   - powershell .\ci\install.ps1
 
 build_script:
-  - py -3.7 setup.py sdist bdist_wheel
+  - powershell .\ci\build.ps1
 
 artifacts:
   - name: dist
