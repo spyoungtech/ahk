@@ -1,0 +1,20 @@
+version: '0.1.{build}'
+
+environment:
+  AHK_PATH: C:\ahk\AutoHotkey.exe
+  AHK_DEBUG: true
+
+install:
+  - appveyor DownloadFile https://github.com/Lexikos/AutoHotkey_L/releases/download/v1.1.30.01/AutoHotkey_1.1.30.01_setup.exe -FileName ahk_install.exe
+  - ahk_install.exe /S /D=C:\ahk
+  - powershell .\ci\install.ps1
+
+build_script:
+  - powershell .\ci\build.ps1
+
+artifacts:
+  - name: dist
+    path: dist\*
+
+test_script:
+  - powershell .\ci\runtests.ps1

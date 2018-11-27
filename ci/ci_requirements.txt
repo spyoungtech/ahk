@@ -1,0 +1,5 @@
+pyautogui
+behave
+behave-classy
+coveralls
+wheel

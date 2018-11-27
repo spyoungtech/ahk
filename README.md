@@ -1,13 +1,13 @@
 # ahk
 
-A (proof-of-concept) Python wrapper around AHK.
+A Python wrapper around AHK.
 
 # Usage
 
 ```python
 from ahk import AHK
 ahk = AHK()
-ahk.move_mouse(x=100, y=100, speed=10)  # blocks until mouse finishes moving
+ahk.mouse_move(x=100, y=100, speed=10)  # blocks until mouse finishes moving
 print(ahk.mouse_position)  #  (100, 100)
 ```
 
@@ -32,6 +32,8 @@ ahk = AHK(executable_path=r'C:\ProgramFiles\AutoHotkey\AutoHotkey.exe')
 
 # Development
 
-Right now this is just an idea. It may not even be a particularly good one.
+Right now this is just an exploration of an idea. It may not even be a particularly good idea.
 
-Not much is implemented right now, but the vision is to provide additional interfaces that mirror the core functionality from the AHK API in a Pythonic way.
+There's still a bit to be done in the way of implementation.
+
+The vision is to provide additional interfaces that implement the most important parts of the AHK API in a Pythonic way.
