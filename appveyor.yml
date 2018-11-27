@@ -18,6 +18,3 @@ artifacts:
 
 test_script:
   - powershell .\ci\runtests.ps1
-
-after_test:
-  - coveralls
