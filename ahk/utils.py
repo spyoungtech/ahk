@@ -14,7 +14,7 @@ else:
     logger.setLevel(logging.ERROR)
 
 
-def make_script(body, directives=None, persistent=True):
+def make_script(body, directives=None, persistent=True, blocking=True):
     """
     Convenience function to dedent script body as well as add #Persistent directive and Exit/ExitApp
     :param body: body of the script
@@ -39,4 +39,6 @@ def make_script(body, directives=None, persistent=True):
         {body}
         {exit_}
         ''')
+    if not blocking:
+        script = 'FileAppend, "`r`n", *\n' + script
     return script
