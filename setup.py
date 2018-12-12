@@ -6,7 +6,7 @@ extras = {'test': test_requirements}
 
 setup(
     name='ahk',
-    version='0.1.1',
+    version='0.2.0',
     url='https://github.com/spyoungtech/ahk',
     description='A Python wrapper for AHK',
     author_email='spencer.young@spyoung.com',
