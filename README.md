@@ -2,6 +2,13 @@
 
 A Python wrapper around AHK.
 
+# Installation
+
+```
+pip install ahk
+```
+
+
 # Usage
 
 ```python
@@ -44,11 +51,6 @@ You should see an output something like
 0.873 (100, 100)
 ```
 
-# Installation
-
-```
-pip install ahk
-```
 
 ## Dependencies
 

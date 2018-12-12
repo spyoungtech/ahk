@@ -4,7 +4,7 @@ import subprocess
 from contextlib import suppress
 from shutil import which
 from ahk.utils import logger
-
+import time
 
 class ScriptEngine(object):
     def __init__(self, executable_path: str='', keep_scripts: bool=False, **kwargs):
@@ -21,13 +21,19 @@ class ScriptEngine(object):
         self.executable_path = executable_path
 
     def _run_script(self, script_path, **kwargs):
+        blocking = kwargs.pop('blocking', True)
         runargs = [self.executable_path, script_path]
         decode = kwargs.pop('decode', False)
-        result = subprocess.run(runargs, stdin=None, stderr=None, stdout=subprocess.PIPE, **kwargs)
-        if decode:
-            return result.stdout.decode()
+        if blocking:
+            result = subprocess.run(runargs, stdin=None, stderr=None, stdout=subprocess.PIPE, **kwargs)
+            if decode:
+                return result.stdout.decode()
+            else:
+                return result.stdout
         else:
-            return result.stdout
+            p = subprocess.Popen(runargs, stdout=subprocess.PIPE, **kwargs)
+            p.stdout.readline()  # give script a chance to read the script or else we'll delete it too quick
+            return p
 
     def run_script(self, script_text: str, delete=None, decode=True, **runkwargs):
         if delete is None:

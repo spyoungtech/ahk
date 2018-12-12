@@ -39,7 +39,7 @@ class MouseMixin(ScriptEngine):
         x, y = position
         self.mouse_move(x=x, y=y, speed=0, relative=False)
 
-    def _mouse_move(self, x=None, y=None, speed=None, relative=False, mode=None):
+    def _mouse_move(self, x=None, y=None, speed=None, relative=False, mode=None, persistent=True, blocking=True):
         if x is None and y is None:
             raise ValueError('Position argument(s) missing. Must provide x and/or y coordinates')
         if speed is None:
@@ -61,9 +61,10 @@ class MouseMixin(ScriptEngine):
         script = make_script(f'''
             CoordMode Mouse, {mode}
             MouseMove, {x}, {y} , {speed}{relative}
-        ''')
+        ''', persistent=persistent, blocking=blocking)
         return script
 
     def mouse_move(self, *args, **kwargs):
+        blocking = kwargs.get('blocking')
         script = self._mouse_move(*args, **kwargs)
-        self.run_script(script_text=script)
+        self.run_script(script, blocking=blocking)
