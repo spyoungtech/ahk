@@ -1,10 +1,11 @@
 import os
 import subprocess
 from shutil import which
-from ahk.utils import logger
+from ahk.utils import make_logger
 from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
 
+logger = make_logger(__name__)
 
 class ScriptEngine(object):
     def __init__(self, executable_path: str='', **kwargs):

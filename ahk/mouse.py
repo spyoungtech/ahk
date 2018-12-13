@@ -1,4 +1,3 @@
-from ahk.utils import make_script
 from ahk.script import ScriptEngine
 import ast
 

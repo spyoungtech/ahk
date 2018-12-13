@@ -1,7 +1,8 @@
 from ahk.script import ScriptEngine
-from ahk.utils import make_script
 import ast
-from .utils import logger
+from .utils import make_logger
+
+logger = make_logger(__name__)
 
 
 class WindowNotFoundError(ValueError):
@@ -9,7 +10,7 @@ class WindowNotFoundError(ValueError):
 
 
 class Window(object):
-    def __init__(self, engine, title='', text='', exclude_title='', exclude_text='', match_mode=None):
+    def __init__(self, engine: ScriptEngine, title='', text='', exclude_title='', exclude_text='', match_mode=None):
         self.engine = engine
         if title is None and text is None:
             raise ValueError
@@ -19,16 +20,12 @@ class Window(object):
         self._exclude_text = exclude_text
         self.match_mode = match_mode
 
-
-
     @classmethod
     def from_ahk_id(cls, engine, ahk_id):
         raise NotImplemented
 
     def _win_set(self, subcommand, value):
-        script = make_script(f'''\
-        WinSet, {subcommand}, {value}, {self.title}, {self.text, self._exclude_title, self._exclude_text}
-        ''')
+        script = self.engine.render_template(win=self, subcommand=subcommand, value=value)
         return script
 
     def win_set(self, *args, **kwargs):
@@ -36,11 +33,7 @@ class Window(object):
         self.engine.run_script(script)
 
     def _position(self):
-        return make_script(f'''
-        WinGetPos, x, y, width, height, {self.title}, {self.text}, {self._exclude_title}, {self._exclude_text}
-        s .= Format("({{}}, {{}}, {{}}, {{}})", x, y, width, height)
-        FileAppend, %s%, *
-        ''')
+        return self.engine.render_template('window/position.ahk', win=self)
 
     def _get_pos(self):
         resp = self.engine.run_script(self._position())
@@ -89,13 +82,7 @@ class Window(object):
         raise NotImplemented
 
     def _always_on_top(self):
-        return make_script(f'''
-        WinGet, ExStyle, ExStyle, {self._title}, {self._text}, {self._exclude_title}, {self._exclude_text}
-        if (ExStyle & 0x8)  ; 0x8 is WS_EX_TOPMOST.
-            FileAppend, 1, *
-        else
-            FileAppend, 0, *
-        ''')
+        return self.engine.render_template('window/is_always_on_top.ahk', win=self)
 
     @property
     def always_on_top(self):
@@ -114,10 +101,7 @@ class Window(object):
             raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
     def _close(self, seconds_to_wait=''):
-        return make_script(f'''\
-        WinClose, {self.title}, {self.text}, {seconds_to_wait}, {self._exclude_title}, {self._exclude_text}
-
-        ''')
+        return self.engine.render_template('window/close.ahk', win=self, seconds_to_wait=seconds_to_wait)
 
     def close(self, seconds_to_wait=''):
         self.engine.run_script(self._close(seconds_to_wait=seconds_to_wait))
