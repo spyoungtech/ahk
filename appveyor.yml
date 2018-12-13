@@ -35,10 +35,13 @@ cache:
 
 deploy_script:
   - ps: |
-      IF (!$env:APPVEYOR_REPO_TAG) {return}
-      py -3.7 -m venv deploy_venv
-      .\deploy_venv\Scripts\activate.ps1
-      python -m pip install --upgrade pip
-      pip install --upgrade wheel
-      pip install --upgrade twine
-      twine upload dist\*
+      if ($env:APPVEYOR_REPO_TAG) {
+        py -3.7 -m venv deploy_venv
+        .\deploy_venv\Scripts\activate.ps1
+        python -m pip install --upgrade pip
+        pip install --upgrade wheel
+        pip install --upgrade twine
+        twine upload dist\*
+      } else {
+        echo "Skipping Deploy Because this is not a tagged commit"
+      }
