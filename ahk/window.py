@@ -150,21 +150,11 @@ class WindowMixin(ScriptEngine):
         pass
 
     def _all_window_titles(self):
-        script = make_script('''\
-        WinGet windows, List
-        Loop %windows%
-        {
-            id := windows%A_Index%
-            WinGetTitle wt, ahk_id %id%
-            r .= wt . "`n"
-        }
-        FileAppend, %r%, *
-        ''')
-
+        script = self.render_template('window/title_list.ahk')
         result = self.run_script(script, decode=False)
         resp = result.stdout
         titles = []
-        for title_bytes in resp.split(bytes('\n', 'ascii')):
+        for title_bytes in resp.split(bytes('\n', 'ascii')):  # FIXME
             if not title_bytes.strip():
                 continue
             try:
