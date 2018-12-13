@@ -2,6 +2,8 @@ import os
 import subprocess
 from shutil import which
 from ahk.utils import logger
+from ahk.directives import Persistent
+from jinja2 import Environment, FileSystemLoader
 
 
 class ScriptEngine(object):
@@ -16,6 +18,26 @@ class ScriptEngine(object):
         if not executable_path:
             executable_path = os.environ.get('AHK_PATH') or which('AutoHotkey.exe') or which('AutoHotkeyA32.exe')
         self.executable_path = executable_path
+        templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
+        self.env = Environment(
+            loader=FileSystemLoader(templates_path),
+            autoescape=False,
+            trim_blocks=True
+        )
+
+    def render_template(self, template_name, directives=None, blocking=True, **kwargs):
+        if directives is None:
+            directives = set()
+        else:
+            directives = set(directives)
+        if blocking:
+            directives.add(Persistent)
+        elif Persistent in directives:
+            directives.remove(Persistent)
+
+        kwargs['directives'] = directives
+        template = self.env.get_template(template_name)
+        return template.render(**kwargs)
 
     def _run_script(self, script_text, **kwargs):
         blocking = kwargs.pop('blocking', True)
@@ -23,7 +45,7 @@ class ScriptEngine(object):
         decode = kwargs.pop('decode', False)
         script_bytes = bytes(script_text, 'utf-8')
         if blocking:
-            result = subprocess.run(runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
+            result = subprocess.run(runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs, check=True)
             if decode:
                 return result.stdout.decode()
             else:
