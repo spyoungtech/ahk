@@ -7,14 +7,38 @@ environment:
 install:
   - appveyor DownloadFile https://github.com/Lexikos/AutoHotkey_L/releases/download/v1.1.30.01/AutoHotkey_1.1.30.01_setup.exe -FileName ahk_install.exe
   - ahk_install.exe /S /D=C:\ahk
-  - powershell .\ci\install.ps1
+  - cmd: .\ci\install.bat
 
 build_script:
-  - powershell .\ci\build.ps1
+  - cmd: .\ci\build.bat
 
 artifacts:
   - name: dist
     path: dist\*
 
 test_script:
-  - powershell .\ci\runtests.ps1
+  - cmd: .\ci\runtests.bat
+  - ps: |
+       $wc = New-Object 'System.Net.WebClient';
+       Get-ChildItem .\reports |
+       Foreach-Object {
+           $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $_.FullName))
+       }
+
+
+on_success:
+  - coveralls
+
+cache:
+  - venv -> ci\ci_requirements.txt
+  - deploy_venv
+
+deploy_script:
+  - ps: |
+      IF (!$env:APPVEYOR_REPO_TAG) {return}
+      py -3.7 -m venv deploy_venv
+      .\deploy_venv\Scripts\activate.ps1
+      python -m pip install --upgrade pip
+      pip install --upgrade wheel
+      pip install --upgrade twine
+      twine upload dist\*
