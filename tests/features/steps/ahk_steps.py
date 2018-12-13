@@ -1,4 +1,3 @@
-import pyautogui
 from behave.matchers import RegexMatcher
 from ahk import AHK
 from behave_classy import step_impl_base

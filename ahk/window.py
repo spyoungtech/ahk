@@ -161,7 +161,8 @@ class WindowMixin(ScriptEngine):
         FileAppend, %r%, *
         ''')
 
-        resp = self.run_script(script, decode=False)
+        result = self.run_script(script, decode=False)
+        resp = result.stdout
         titles = []
         for title_bytes in resp.split(bytes('\n', 'ascii')):
             if not title_bytes.strip():
