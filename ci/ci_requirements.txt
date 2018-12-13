@@ -1,4 +1,4 @@
-pyautogui
+pytest
 behave
 behave-classy
 coveralls
