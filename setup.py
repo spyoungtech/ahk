@@ -12,6 +12,7 @@ setup(
     url='https://github.com/spyoungtech/ahk',
     description='A Python wrapper for AHK',
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author_email='spencer.young@spyoung.com',
     author='Spencer Young',
     packages=['ahk'],
@@ -27,4 +28,6 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     tests_require=test_requirements,
+    include_package_data=True,
+    zip_safe=False
 )
