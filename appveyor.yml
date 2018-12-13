@@ -27,7 +27,10 @@ test_script:
 
 
 on_success:
-  - coveralls
+  - cmd: |
+      venv\Scripts\activate.bat
+      python -m coveralls
+
 
 cache:
   - venv -> ci\ci_requirements.txt
@@ -35,7 +38,7 @@ cache:
 
 deploy_script:
   - ps: |
-      if ($env:APPVEYOR_REPO_TAG) {
+      if ($env:APPVEYOR_REPO_TAG -eq "true") {
         py -3.7 -m venv deploy_venv
         .\deploy_venv\Scripts\activate.ps1
         python -m pip install --upgrade pip
