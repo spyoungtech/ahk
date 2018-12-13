@@ -29,8 +29,11 @@ def make_script(body, directives=None, persistent=True, blocking=True):
     else:
         directives = set(directives)
 
-    if persistent:
+    if persistent or blocking:
         directives.add('#Persistent')
+
+    if not blocking:
+        directives.remove('#Persistent')
 
     dirs = '\n'.join(str(directive) for directive in directives)
 
@@ -39,6 +42,4 @@ def make_script(body, directives=None, persistent=True, blocking=True):
         {body}
         {exit_}
         ''')
-    if not blocking:
-        script = 'FileAppend, "`r`n", *\n' + script
     return script

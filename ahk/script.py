@@ -1,13 +1,11 @@
-from tempfile import NamedTemporaryFile
 import os
 import subprocess
-from contextlib import suppress
 from shutil import which
 from ahk.utils import logger
-import time
+
 
 class ScriptEngine(object):
-    def __init__(self, executable_path: str='', keep_scripts: bool=False, **kwargs):
+    def __init__(self, executable_path: str='', **kwargs):
         """
         :param executable_path: the path to the AHK executable.
         Defaults to environ['AHK_PATH'] if not explicitly provided
@@ -15,41 +13,33 @@ class ScriptEngine(object):
         :param keep_scripts:
         :raises RuntimeError: if AHK executable is not provided and cannot be found in environment variables or PATH
         """
-        self.keep_scripts = bool(keep_scripts)
         if not executable_path:
             executable_path = os.environ.get('AHK_PATH') or which('AutoHotkey.exe') or which('AutoHotkeyA32.exe')
         self.executable_path = executable_path
 
-    def _run_script(self, script_path, **kwargs):
+    def _run_script(self, script_text, **kwargs):
         blocking = kwargs.pop('blocking', True)
-        runargs = [self.executable_path, script_path]
+        runargs = [self.executable_path, '/ErrorStdOut', '*']
         decode = kwargs.pop('decode', False)
+        script_bytes = bytes(script_text, 'utf-8')
         if blocking:
-            result = subprocess.run(runargs, stdin=None, stderr=None, stdout=subprocess.PIPE, **kwargs)
+            result = subprocess.run(runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
             if decode:
                 return result.stdout.decode()
             else:
-                return result.stdout
+                return result
         else:
-            p = subprocess.Popen(runargs, stdout=subprocess.PIPE, **kwargs)
-            p.stdout.readline()  # give script a chance to read the script or else we'll delete it too quick
-            return p
+            proc = subprocess.Popen(runargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+            try:
+                proc.communicate(script_bytes, timeout=0)
+            except subprocess.TimeoutExpired:
+                pass  # for now, this seems needed to avoid blocking and use stdin
+            return proc
 
-    def run_script(self, script_text: str, delete=None, decode=True, **runkwargs):
-        if delete is None:
-            delete = not self.keep_scripts
-        with NamedTemporaryFile(mode='w', delete=False, newline='\r\n') as temp_script:
-            temp_script.write(script_text)
-            logger.debug('Script location: %s', temp_script.name)
-            logger.debug('Script text: \n%s', script_text)
+    def run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
         try:
-            result = self._run_script(temp_script.name, decode=decode, **runkwargs)
+            result = self._run_script(script_text, decode=decode, blocking=blocking, **runkwargs)
         except Exception as e:
             logger.fatal('Error running temp script: %s', e)
             raise
-        finally:
-            if delete:
-                logger.debug('cleaning up temp script')
-                with suppress(OSError):
-                    os.remove(temp_script.name)
         return result
