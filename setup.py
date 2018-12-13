@@ -22,6 +22,7 @@ setup(
         'Topic :: Desktop Environment',
         'Programming Language :: Python',
         'Environment :: Win32 (MS Windows)',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
