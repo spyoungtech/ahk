@@ -58,7 +58,7 @@ You should see an output something like
 ```
 
 
-## Dependencies
+## Non-Python Dependencies
 
 Just the AHK executable. It's expected to be on PATH by default. 
 
@@ -68,8 +68,9 @@ Or, provide it inline
 
 ```python
 from ahk import AHK
-ahk = AHK(executable_path=r'C:\ProgramFiles\AutoHotkey\AutoHotkey.exe')
+ahk = AHK(executable_path='C:\\ProgramFiles\\AutoHotkey\\AutoHotkey.exe')
 ```
+
 
 # Development
 

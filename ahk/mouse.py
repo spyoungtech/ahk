@@ -1,4 +1,3 @@
-from ahk.utils import make_script
 from ahk.script import ScriptEngine
 import ast
 
@@ -18,20 +17,19 @@ class MouseMixin(ScriptEngine):
         else:
             return self._mouse_speed
 
+    @mouse_speed.setter
+    def mouse_speed(self, value):
+        self._mouse_speed = value
 
     def _mouse_position(self, mode=None):
         if mode is None:
             mode = self.mode
-        return make_script(f'''
-        CoordMode, Mouse, {mode}
-        MouseGetPos, xpos, ypos
-        s .= Format("({{}}, {{}})", xpos, ypos)
-        FileAppend, %s%, *
-        ''')
+        return self.render_template('mouse_position.ahk', mode=mode)
 
     @property
     def mouse_position(self):
-        response = self.run_script(self._mouse_position())
+        script = self._mouse_position()
+        response = self.run_script(script)
         return ast.literal_eval(response)
 
     @mouse_position.setter
@@ -39,7 +37,7 @@ class MouseMixin(ScriptEngine):
         x, y = position
         self.mouse_move(x=x, y=y, speed=0, relative=False)
 
-    def _mouse_move(self, x=None, y=None, speed=None, relative=False, mode=None, persistent=True, blocking=True):
+    def _mouse_move(self, x=None, y=None, speed=None, relative=False, mode=None, blocking=True):
         if x is None and y is None:
             raise ValueError('Position argument(s) missing. Must provide x and/or y coordinates')
         if speed is None:
@@ -54,17 +52,10 @@ class MouseMixin(ScriptEngine):
             x = x or posx
             y = y or posy
 
-        if relative:
-            relative = ', R'
-        else:
-            relative = ''
-        script = make_script(f'''
-            CoordMode Mouse, {mode}
-            MouseMove, {x}, {y} , {speed}{relative}
-        ''', persistent=persistent, blocking=blocking)
-        return script
+        return self.render_template('mouse_move.ahk', x=x, y=y, speed=speed, relative=relative, mode=mode, blocking=blocking)
 
     def mouse_move(self, *args, **kwargs):
         blocking = kwargs.get('blocking', True)
         script = self._mouse_move(*args, **kwargs)
+        print(script)
         self.run_script(script, blocking=blocking)
