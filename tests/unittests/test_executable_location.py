@@ -22,7 +22,7 @@ def check_pwd():
 
 def test_no_executable_raises_error():
     check_pwd()
-    with mock.patch.dict(os.environ, {'PATH': ''}):
+    with mock.patch.dict(os.environ, {'PATH': ''}, clear=True):
         with pytest.raises(ExecutableNotFoundError):
             AHK()
 
@@ -47,6 +47,6 @@ def test_executable_from_path():
     check_pwd()
     actual_path = AHK().executable_path
     ahk_location = os.path.abspath(os.path.dirname(actual_path))
-    with mock.patch.dict(os.environ, {'PATH': ahk_location}):
+    with mock.patch.dict(os.environ, {'PATH': ahk_location}, clear=True):
         ahk = AHK()
         assert ahk.executable_path == actual_path

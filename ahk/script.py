@@ -7,8 +7,10 @@ from jinja2 import Environment, FileSystemLoader
 
 logger = make_logger(__name__)
 
+
 class ExecutableNotFoundError(EnvironmentError):
     pass
+
 
 class ScriptEngine(object):
     def __init__(self, executable_path: str='', **kwargs):
@@ -17,7 +19,7 @@ class ScriptEngine(object):
         Defaults to environ['AHK_PATH'] if not explicitly provided
         If environment variable not present, tries to look for 'AutoHotkey.exe' or 'AutoHotkeyA32.exe' with shutil.which
         :param keep_scripts:
-        :raises RuntimeError: if AHK executable is not provided and cannot be found in environment variables or PATH
+        :raises ExecutableNotFound: if AHK executable is not provided and cannot be found in environment variables or PATH
         """
         if not executable_path:
             executable_path = os.environ.get('AHK_PATH') or which('AutoHotkey.exe') or which('AutoHotkeyA32.exe')
