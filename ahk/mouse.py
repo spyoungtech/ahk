@@ -5,7 +5,6 @@ import ast
 
 logger = make_logger(__name__)
 
-Position = namedtuple('Position', field_names=['x', 'y'])
 
 _BUTTONS = {
     1: 'L',
@@ -49,7 +48,7 @@ class MouseMixin(ScriptEngine):
     def mouse_position(self):
         script = self._mouse_position()
         response = self.run_script(script)
-        return Position(ast.literal_eval(response))
+        return ast.literal_eval(response)
 
     @mouse_position.setter
     def mouse_position(self, position):
@@ -82,8 +81,6 @@ class MouseMixin(ScriptEngine):
     def _click(self, *args, mode=None, blocking=True):
         if mode is None:
             mode = self.mode
-        args = ', '.join(args)
-        logger.debug('click args: %s', args)
         return self.render_template('mouse/click.ahk', args=args, mode=mode, blocking=blocking)
 
     def click(self, x=None, y=None, *, button=None, n=None, direction=None, relative=None, blocking=True, mode=None):

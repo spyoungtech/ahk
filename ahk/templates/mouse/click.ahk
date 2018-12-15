@@ -1,5 +1,5 @@
 {% extends "base.ahk" %}
 {% block body %}
 CoordMode Mouse, {{mode}}
-Click{% if args %}, {{ args }}{% endif %}
+Click{% for arg in args %}, {{ arg }}{% endfor %}
 {% endblock %}
