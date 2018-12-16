@@ -27,7 +27,7 @@ def resolve_button(button):
         button = _BUTTONS.get(button)
     elif isinstance(button, int) and button > 3:
         #  for addtional mouse buttons
-        button = f'X{button}'
+        button = f'X{button-3}'
     return button
 
 
