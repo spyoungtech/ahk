@@ -25,7 +25,7 @@ class Window(object):
         raise NotImplemented
 
     def _win_set(self, subcommand, value):
-        script = self.engine.render_template(win=self, subcommand=subcommand, value=value)
+        script = self.engine.render_template('window/win_set.ahk', win=self, subcommand=subcommand, value=value)
         return script
 
     def win_set(self, *args, **kwargs):
@@ -33,7 +33,7 @@ class Window(object):
         self.engine.run_script(script)
 
     def _position(self):
-        return self.engine.render_template('window/position.ahk', win=self)
+        return self.engine.render_template('window/win_position.ahk', win=self)
 
     def _get_pos(self):
         resp = self.engine.run_script(self._position())
