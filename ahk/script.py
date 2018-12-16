@@ -57,6 +57,8 @@ class ScriptEngine(object):
         if blocking:
             result = subprocess.run(runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs, check=True)
             if decode:
+                logger.debug('Stdout: %s', repr(result.stdout))
+                logger.debug('Stderr: %s', repr(result.stderr))
                 return result.stdout.decode()
             else:
                 return result
@@ -69,6 +71,7 @@ class ScriptEngine(object):
             return proc
 
     def run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
+        logger.debug('Running script text: %s', script_text)
         try:
             result = self._run_script(script_text, decode=decode, blocking=blocking, **runkwargs)
         except Exception as e:
