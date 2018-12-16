@@ -5,7 +5,13 @@ environment:
   AHK_DEBUG: true
 
 install:
-  - appveyor DownloadFile https://github.com/Lexikos/AutoHotkey_L/releases/download/v1.1.30.01/AutoHotkey_1.1.30.01_setup.exe -FileName ahk_install.exe
+  - ps: |
+      if (!(Test-Path ahk_install.exe) {
+          echo "Downloading AHK installer"
+          appveyor DownloadFile https://github.com/Lexikos/AutoHotkey_L/releases/download/v1.1.30.01/AutoHotkey_1.1.30.01_setup.exe -FileName ahk_install.exe
+      } else {
+          echo "Using cached installer"
+      }
   - ahk_install.exe /S /D=C:\ahk
   - cmd: .\ci\install.bat
 
@@ -17,20 +23,15 @@ artifacts:
     path: dist\*
 
 test_script:
-  - cmd: .\ci\runtests.bat
-  - ps: |
-       $wc = New-Object 'System.Net.WebClient';
-       Get-ChildItem .\reports |
-       Foreach-Object {
-           $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $_.FullName))
-       }
+  - powershell .\ci\runtests.ps1
 
-
-on_success:
+on_finish:
   - cmd: |
       venv\Scripts\activate.bat
       python -m coveralls
 
+cache:
+  - ahk_install.exe -> appveyor.yml
 
 deploy_script:
   - ps: |
