@@ -19,6 +19,17 @@ _BUTTONS = {
     'wheelright': 'WR',
 }
 
+def resolve_button(button):
+    if isinstance(button, str):
+        button = button.lower()
+
+    if button in _BUTTONS:
+        button = _BUTTONS.get(button)
+    elif isinstance(button, int) and button > 3:
+        #  for addtional mouse buttons
+        button = f'X{button}'
+    return button
+
 
 class MouseMixin(ScriptEngine):
     def __init__(self, mouse_speed=2, mode=None, **kwargs):
@@ -89,14 +100,9 @@ class MouseMixin(ScriptEngine):
                 #  alow position to be specified by a two-sequence
                 x, y = x
             assert x is not None and y is not None, 'If provided, position must be specified by x AND y'
-        if isinstance(button, str):
-            button = button.lower()
 
-        if button in _BUTTONS:
-            button = _BUTTONS.get(button)
-        elif isinstance(button, int) and button > 3:
-            #  for addtional mouse buttons
-            button = f'X{button}'
+        button = resolve_button(button)
+
         if relative:
             relative = 'Rel'
         args = [arg for arg in (x, y, button, n, direction, relative) if arg is not None]
@@ -122,3 +128,32 @@ class MouseMixin(ScriptEngine):
 
     def wheel_down(self, *args, **kwargs):
         self.mouse_wheel('down', *args, **kwargs)
+
+    def mouse_drag(self, x, y=None, *, from_position=None, speed=None, button=1, relative=None, blocking=True):
+        if from_position is None:
+            x1, y1 = self.mouse_position
+        else:
+            x1, y1 = from_position
+
+        if y is None:
+            x2, y2 = x
+        else:
+            x2 = x
+            y2 = y
+
+        button = resolve_button(button)
+
+        if speed is None:
+            speed = self.mouse_speed
+
+        script = self.render_template('mouse/mouse_drag.ahk',
+                                      button=button,
+                                      x1=x1,
+                                      y1=y1,
+                                      x2=x2,
+                                      y2=y2,
+                                      speed=speed,
+                                      relative=relative,
+                                      blocking=blocking)
+
+        self.run_script(script, blocking=blocking)
