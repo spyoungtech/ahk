@@ -129,7 +129,7 @@ class MouseMixin(ScriptEngine):
     def wheel_down(self, *args, **kwargs):
         self.mouse_wheel('down', *args, **kwargs)
 
-    def mouse_drag(self, x, y=None, *, from_position=None, speed=None, button=1, relative=None, blocking=True):
+    def mouse_drag(self, x, y=None, *, from_position=None, speed=None, button=1, relative=None, blocking=True, mode=None):
         if from_position is None:
             x1, y1 = self.mouse_position
         else:
@@ -146,6 +146,9 @@ class MouseMixin(ScriptEngine):
         if speed is None:
             speed = self.mouse_speed
 
+        if mode is None:
+            mode = self.mode
+
         script = self.render_template('mouse/mouse_drag.ahk',
                                       button=button,
                                       x1=x1,
@@ -154,6 +157,7 @@ class MouseMixin(ScriptEngine):
                                       y2=y2,
                                       speed=speed,
                                       relative=relative,
-                                      blocking=blocking)
+                                      blocking=blocking,
+                                      mode=mode)
 
         self.run_script(script, blocking=blocking)
