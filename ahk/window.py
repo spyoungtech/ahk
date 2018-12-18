@@ -150,21 +150,39 @@ class Window(object):
     def rect(self):
         return self._get_pos()
 
+    @rect.setter
+    def rect(self, new_position):
+        x, y, width, height = new_position
+        self.move(x=x, y=y, width=width, height=height)
+
     @property
     def position(self):
         x, y, _, _ = self._get_pos()
 
         return x, y
 
+    @position.setter
+    def position(self, new_position):
+        x, y = new_position
+        self.move(x, y)
+
     @property
     def width(self):
         _, _, width, _ = self._get_pos()
         return width
 
+    @width.setter
+    def width(self, new_width):
+        self.move(width=new_width)
+
     @property
     def height(self):
         _, _, _, height = self._get_pos()
         return height
+
+    @height.setter
+    def height(self, new_height):
+        self.move(height=new_height)
 
     def disable(self):
         self.win_set('Disable', '')
@@ -228,6 +246,10 @@ class Window(object):
 
     def activate(self):
         script = self._render_template('window/win_activate.ahk')
+        self.engine.run_script(script)
+
+    def move(self, x='', y='', width=None, height=None):
+        script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
 
 
