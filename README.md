@@ -83,7 +83,10 @@ Working with windows
 win.activate()  # give the window focus
 win.disable()  # make the window non-interactable
 win.enable()  # enable it again
+win.to_top()  # moves window on top of other windows
+win.to_bottom()
 win.always_on_top = True  # make the windows always on top
+win.close()
 
 for window in ahk.windows():
     print(window.title)
@@ -93,7 +96,6 @@ print(window.rect)  # (x, y, width, height)
 print(window.id)  # ahk_id
 print(window.pid)
 print(window.process)
-win.close()
 ```
 
 
