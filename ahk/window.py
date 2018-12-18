@@ -8,6 +8,77 @@ logger = make_logger(__name__)
 class WindowNotFoundError(ValueError):
     pass
 
+class Control:
+    def __init__(self):
+        raise NotImplementedError
+
+    def click(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlClick.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    def focus(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlFocus.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    def get(self, key):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlGet.htm
+        :param key:
+        :return:
+        """
+        raise NotImplementedError
+
+    def has_focus(self):
+        raise NotImplementedError
+
+    @property
+    def position(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlGetPos.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    @property
+    def text(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlGetText.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    @text.setter
+    def text(self, new_text):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlSetText.htm
+        :param new_text:
+        :return:
+        """
+        raise NotImplementedError
+
+    def move(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlMove.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    def send(self, raw=False):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlSend.htm
+        :param raw:
+        :return:
+        """
+        raise NotImplementedError
+
+
+
 
 class Window(object):
     _subcommands = {
@@ -137,11 +208,9 @@ class Window(object):
         else:
             raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
-    def _close(self, seconds_to_wait=''):
-        return self._render_template('window/win_close.ahk', seconds_to_wait=seconds_to_wait)
-
     def close(self, seconds_to_wait=''):
-        self.engine.run_script(self._close(seconds_to_wait=seconds_to_wait))
+        script = self._render_template('window/win_close.ahk', seconds_to_wait=seconds_to_wait)
+        self.engine.run_script(script)
 
     def to_bottom(self):
         """
