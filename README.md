@@ -99,7 +99,15 @@ print(window.pid)
 print(window.process)
 ```
 
+## Debugging
 
+You can enable debug logging, which will output script text before execution, and some other potentially useful 
+debugging information.
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
 
 ## Non-Python Dependencies
 
