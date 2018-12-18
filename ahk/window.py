@@ -102,7 +102,7 @@ class Window(object):
         self.win_set('Enable', '')
 
     def redraw(self):
-        raise NotImplemented
+        self.win_set('Redraw', '')
 
     @property
     def title(self):
@@ -192,7 +192,7 @@ class WindowMixin(ScriptEngine):
         Generator of windows
         :return:
         """
-        for ahk_id in filter(lambda x: bool(x), self._all_window_ids()):
+        for ahk_id in self._all_window_ids():
             yield Window(engine=self, ahk_id=ahk_id, encoding=self.window_encoding)
 
     def find_windows(self, func=None, **kwargs):
