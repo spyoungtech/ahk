@@ -1,4 +1,5 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinSet, {{subcommand}}, {{value}}, ahk_id {{ win.id }}
+WinGetText, text, ahk_id {{ win.id }}
+FileAppend, %text%, *
 {% endblock body %}

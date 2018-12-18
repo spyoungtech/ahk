@@ -57,6 +57,57 @@ You should see an output something like
 0.873 (100, 100)
 ```
 
+## Windows
+
+You can do stuff with windows, too.
+
+
+Getting windows
+
+```python
+from ahk import AHK
+from ahk.window import Window
+ahk = AHK()
+win = ahk.active_window  # get the active window
+win = ahk.win_get(title='Untitled - Notepad')  # by title
+win = list(ahk.windows())  # list of all windows
+win = Window(ahk, ahk_id='0xabc123')  # by ahk_id
+win = Window.from_mouse_position(ahk)  # a window under the mouse cursor
+win = Window.from_pid('20366')  # by process ID
+
+
+```
+
+Working with windows
+```python
+win.move(x=200, y=300, width=500, height=800)
+win.activate()  # give the window focus
+win.disable()  # make the window non-interactable
+win.enable()  # enable it again
+win.to_top()  # moves window on top of other windows
+win.to_bottom()
+win.always_on_top = True  # make the windows always on top
+win.close()
+
+for window in ahk.windows():
+    print(window.title)
+#  some more attributes
+print(window.text)
+print(window.rect)  # (x, y, width, height)
+print(window.id)  # ahk_id
+print(window.pid)
+print(window.process)
+```
+
+## Debugging
+
+You can enable debug logging, which will output script text before execution, and some other potentially useful 
+debugging information.
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
 
 ## Non-Python Dependencies
 

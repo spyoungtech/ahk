@@ -1,4 +1,5 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinSet, {{subcommand}}, {{value}}, ahk_id {{ win.id }}
+MouseGetPos,,, MouseWin
+FileAppend, %MouseWin%, *
 {% endblock body %}

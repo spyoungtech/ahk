@@ -55,7 +55,7 @@ class ScriptEngine(object):
         decode = kwargs.pop('decode', False)
         script_bytes = bytes(script_text, 'utf-8')
         if blocking:
-            result = subprocess.run(runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs, check=True)
+            result = subprocess.run(runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
             if decode:
                 logger.debug('Stdout: %s', repr(result.stdout))
                 logger.debug('Stderr: %s', repr(result.stderr))

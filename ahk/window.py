@@ -8,35 +8,138 @@ logger = make_logger(__name__)
 class WindowNotFoundError(ValueError):
     pass
 
+class Control:
+    def __init__(self):
+        raise NotImplementedError
+
+    def click(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlClick.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    def focus(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlFocus.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    def get(self, key):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlGet.htm
+        :param key:
+        :return:
+        """
+        raise NotImplementedError
+
+    def has_focus(self):
+        raise NotImplementedError
+
+    @property
+    def position(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlGetPos.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    @property
+    def text(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlGetText.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    @text.setter
+    def text(self, new_text):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlSetText.htm
+        :param new_text:
+        :return:
+        """
+        raise NotImplementedError
+
+    def move(self):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlMove.htm
+        :return:
+        """
+        raise NotImplementedError
+
+    def send(self, raw=False):
+        """
+        REF: https://www.autohotkey.com/docs/commands/ControlSend.htm
+        :param raw:
+        :return:
+        """
+        raise NotImplementedError
+
+
+
 
 class Window(object):
-    def __init__(self, engine: ScriptEngine, title='', text='', exclude_title='', exclude_text='', match_mode=None):
-        self.engine = engine
-        if title is None and text is None:
-            raise ValueError
-        self._title = title
-        self._text = text
-        self._exclude_title = exclude_title
-        self._exclude_text = exclude_text
-        self.match_mode = match_mode
+    _subcommands = {
+        'id': 'ID',
+        'process_name': 'ProcessName',
+        'pid': 'PID',
+        'process_path': 'ProcessPath',
+        'process': 'ProcessPath',
+        'controls': 'ControlList',
+        'controls_hwnd': 'ControlListHwnd',
+        'transparency': 'Transparent',
+        'trans_color': 'TransColor',
+        'style': 'Style',   # This will probably get a property later
+        'ex_style': 'ExStyle',  # This will probably get a property later
+    }
+    _subcommands.update({value: value for value in _subcommands.values()})
+
+    def __init__(self, engine: ScriptEngine, ahk_id: str, encoding=None):
+        self.engine = engine  # should this be a weakref instead?
+        self.id = ahk_id
+        self.encoding = encoding
 
     @classmethod
-    def from_ahk_id(cls, engine, ahk_id):
-        raise NotImplemented
+    def from_mouse_position(cls, engine: ScriptEngine, **kwargs):
+        script = engine.render_template('window/from_mouse.ahk')
+        ahk_id = engine.run_script(script)
+        return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
-    def _win_set(self, subcommand, value):
-        script = self.engine.render_template('window/win_set.ahk', win=self, subcommand=subcommand, value=value)
-        return script
+    @classmethod
+    def from_pid(cls, engine: ScriptEngine, pid, **kwargs):
+        script = engine.render_template('window/get.ahk',
+                                        subcommand="ID",
+                                        title=f'ahk_pid {pid}')
+        ahk_id = engine.run_script(script)
+        return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
-    def win_set(self, *args, **kwargs):
-        script = self._win_set(*args, **kwargs)
+    def __getattr__(self, attr):
+        if attr.lower() in self._subcommands:
+            return self.get(attr)
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attr}'")
+
+    def get(self, subcommand):
+        sub = self._subcommands.get(subcommand)
+        if not sub:
+            raise ValueError(f'No such subcommand {subcommand}')
+        script = self._render_template('window/get.ahk',
+                                       subcommand=sub,
+                                       title=f'ahk_id {self.id}')
+
+        return self.engine.run_script(script)
+
+    def __repr__(self):
+        return f'<ahk.window.Window ahk_id={self.id}>'
+
+    def win_set(self, subcommand, value):
+        script = self._render_template('window/win_set.ahk', subcommand=subcommand, value=value)
         self.engine.run_script(script)
 
-    def _position(self):
-        return self.engine.render_template('window/win_position.ahk', win=self)
-
     def _get_pos(self):
-        resp = self.engine.run_script(self._position())
+        script = self._render_template('window/win_position.ahk')
+        resp = self.engine.run_script(script)
         try:
             value = ast.literal_eval(resp)
             return value
@@ -44,19 +147,42 @@ class Window(object):
             raise WindowNotFoundError('No window found')
 
     @property
+    def rect(self):
+        return self._get_pos()
+
+    @rect.setter
+    def rect(self, new_position):
+        x, y, width, height = new_position
+        self.move(x=x, y=y, width=width, height=height)
+
+    @property
     def position(self):
         x, y, _, _ = self._get_pos()
+
         return x, y
+
+    @position.setter
+    def position(self, new_position):
+        x, y = new_position
+        self.move(x, y)
 
     @property
     def width(self):
         _, _, width, _ = self._get_pos()
         return width
 
+    @width.setter
+    def width(self, new_width):
+        self.move(width=new_width)
+
     @property
     def height(self):
         _, _, _, height = self._get_pos()
         return height
+
+    @height.setter
+    def height(self, new_height):
+        self.move(height=new_height)
 
     def disable(self):
         self.win_set('Disable', '')
@@ -65,28 +191,28 @@ class Window(object):
         self.win_set('Enable', '')
 
     def redraw(self):
-        raise NotImplemented
+        self.win_set('Redraw', '')
 
     @property
     def title(self):
-        return self._title
+        script = self._render_template('window/win_get_title.ahk')
+        result = self.engine.run_script(script, decode=False)
+        if self.encoding:
+            return result.stdout.decode(encoding=self.encoding)
+        return result.stdout
 
     @property
     def text(self):
-        return ''
-
-    def style(self):
-        raise NotImplemented
-
-    def ex_style(self):
-        raise NotImplemented
-
-    def _always_on_top(self):
-        return self.engine.render_template('window/is_always_on_top.ahk', win=self)
+        script = self._render_template('window/win_get_text.ahk')
+        result = self.engine.run_script(script, decode=False)
+        if self.encoding:
+            return result.stdout.decode(encoding=self.encoding)
+        return result.stdout
 
     @property
     def always_on_top(self):
-        resp = self.engine.run_script(self._always_on_top())
+        script = self.render_template('window/win_is_always_on_top.ahk')
+        resp = self.engine.run_script(script)
         return bool(ast.literal_eval(resp))
 
     @always_on_top.setter
@@ -100,15 +226,13 @@ class Window(object):
         else:
             raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
-    def _close(self, seconds_to_wait=''):
-        return self.engine.render_template('window/close.ahk', win=self, seconds_to_wait=seconds_to_wait)
-
     def close(self, seconds_to_wait=''):
-        self.engine.run_script(self._close(seconds_to_wait=seconds_to_wait))
+        script = self._render_template('window/win_close.ahk', seconds_to_wait=seconds_to_wait)
+        self.engine.run_script(script)
 
     def to_bottom(self):
         """
-        Sent
+        Send window to bottom (behind other windows)
         :return:
         """
         self.win_set('Bottom', '')
@@ -116,41 +240,80 @@ class Window(object):
     def to_top(self):
         self.win_set('Top', '')
 
+    def _render_template(self, *args, **kwargs):
+        kwargs['win'] = self
+        return self.engine.render_template(*args, **kwargs)
+
+    def activate(self):
+        script = self._render_template('window/win_activate.ahk')
+        self.engine.run_script(script)
+
+    def move(self, x='', y='', width=None, height=None):
+        script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
+        self.engine.run_script(script)
+
 
 class WindowMixin(ScriptEngine):
-    def win_get(self, *args, **kwargs):
-        return Window(engine=self, *args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        self.window_encoding = kwargs.pop('window_encoding', None)
+        super().__init__(*args, **kwargs)
+
+    def win_get(self, title='', text='', exclude_title='', exclude_text='', encoding=None):
+        encoding = encoding or self.window_encoding
+        script = self.render_template('window/get.ahk',
+                                      subcommand='ID',
+                                      title=title,
+                                      text=text,
+                                      exclude_text=exclude_text,
+                                      exclude_title=exclude_title)
+        ahk_id = self.run_script(script)
+        return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     @property
     def active_window(self):
-        return Window(engine=self, title='A')
+        return self.win_get(title='A')
 
-    def win_set(self, subcommand, value, **windowkwargs):
-        win = Window(engine=self, **windowkwargs)
-        win.win_set(subcommand, value)
-        return win
-
-    def _win_title_from_ahk_id(self, ahk_id):
-        pass
-
-    def _all_window_titles(self):
-        script = self.render_template('window/title_list.ahk')
-        result = self.run_script(script, decode=False)
-        resp = result.stdout
-        titles = []
-        for title_bytes in resp.split(bytes('\n', 'ascii')):  # FIXME
-            if not title_bytes.strip():
-                continue
-            try:
-                titles.append(title_bytes.decode())
-            except UnicodeDecodeError as e:
-                logger.exception('Could not decode title; %s', str(e))
-
-        return titles
+    def _all_window_ids(self):
+        script = self.render_template('window/id_list.ahk')
+        result = self.run_script(script)
+        return result.split('\n')[:-1]  # last one is always an empty string
 
     def windows(self):
         """
-        Return a list of all windows
+        Generator of windows
         :return:
         """
-        return [self.win_get(title=title) for title in self._all_window_titles()]
+        for ahk_id in self._all_window_ids():
+            yield Window(engine=self, ahk_id=ahk_id, encoding=self.window_encoding)
+
+    def find_windows(self, func=None, **kwargs):
+        if func is None:
+            exact = kwargs.pop('exact', False)
+            def func(win):
+                for attr, expected in kwargs.items():
+                    if exact:
+                        result = getattr(win, attr) == expected
+                    else:
+                        result = expected in getattr(win, attr)
+                    if result is False:
+                        return False
+                return True
+        for window in filter(func, self.windows()):
+            yield window
+
+    def find_window(self, func=None, **kwargs):
+        return next(self.find_windows(func=func, **kwargs))
+
+    def find_windows_by_title(self, title, exact=False):
+        for window in self.find_windows(title=title, exact=exact):
+            yield window
+
+    def find_window_by_title(self, *args, **kwargs):
+        return next(self.find_windows_by_title(*args, **kwargs))
+
+    def find_windows_by_text(self, text, exact=False):
+        for window in self.find_windows(text=text, exact=exact):
+            yield window
+
+    def find_window_by_text(self, *args, **kwargs):
+        return next(self.find_windows_by_text(*args, **kwargs))

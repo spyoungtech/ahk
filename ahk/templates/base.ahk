@@ -1,4 +1,5 @@
 {% block directives %}
+#NoEnv
 {% for directive in directives %}
 {{ directive }}
 {% endfor %}
