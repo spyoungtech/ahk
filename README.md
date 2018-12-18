@@ -80,6 +80,7 @@ win = Window.from_pid('20366')  # by process ID
 
 Working with windows
 ```python
+win.move(x=200, y=300, width=500, height=800)
 win.activate()  # give the window focus
 win.disable()  # make the window non-interactable
 win.enable()  # enable it again
