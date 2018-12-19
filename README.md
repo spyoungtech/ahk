@@ -118,7 +118,7 @@ Github issues are provided for convenience to collect feedback on these features
 
 ### Hotkeys
 
-GH-9
+[GH-9]
 
 Hotkeys now have a primitive implementation. You give it a hotkey (a string the same as in an ahk script, without the `::`) 
 and the body of an AHK script to execute as a response to the hotkey.
@@ -147,7 +147,7 @@ hotkey.stop()
 
 ### ActionChain
 
-GH-25
+[GH-25]
 
 `ActionChain`s let you define a set of actions to be performed in order at a later time.
 
@@ -170,7 +170,7 @@ generally recommended.
 
 ### find_window/find_windows methods
 
-GH-26
+[GH-26]
 
 Right now, these are implemented by iterating over all window handles and filtering with Python.
 
@@ -212,3 +212,6 @@ The vision is to provide additional interfaces that implement the most important
 
 
 [winlogo]: http://i.stack.imgur.com/Rfuw7.png
+[GH-9]: https://github.com/spyoungtech/ahk/issues/9
+[GH-25]: https://github.com/spyoungtech/ahk/issues/25
+[GH-26]: https://github.com/spyoungtech/ahk/issues/26
