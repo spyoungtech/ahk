@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block body %}
+{{ body }}
 {% endblock body %}
 
 {% block exit %}

@@ -1,2 +1,2 @@
-from ahk.autohotkey import AHK
+from ahk.autohotkey import AHK, ActionChain, Hotkey
 __all__ = ['AHK']

@@ -74,8 +74,6 @@ win = list(ahk.windows())  # list of all windows
 win = Window(ahk, ahk_id='0xabc123')  # by ahk_id
 win = Window.from_mouse_position(ahk)  # a window under the mouse cursor
 win = Window.from_pid('20366')  # by process ID
-
-
 ```
 
 Working with windows
@@ -91,6 +89,7 @@ win.close()
 
 for window in ahk.windows():
     print(window.title)
+    
 #  some more attributes
 print(window.text)
 print(window.rect)  # (x, y, width, height)
@@ -109,6 +108,83 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
 
+## Experimental features
+
+Experimental features are things that are minimally functional, (even more) likely to have breaking changes, even 
+for minor releases. 
+
+Github issues are provided for convenience to collect feedback on these features.
+
+
+### Hotkeys
+
+GH-9
+
+Hotkeys now have a primitive implementation. You give it a hotkey (a string the same as in an ahk script, without the `::`) 
+and the body of an AHK script to execute as a response to the hotkey.
+
+
+
+```python
+from ahk import AHK, Hotkey
+ahk = AHK()
+key_combo = '#n'
+script = 'Run Notepad'
+hotkey = Hotkey(ahk, key_combo, script)
+hotkey.start()  #  listener process activated
+```
+At this point, the hotkey is active. 
+If you press <kbd>![Windows Key][winlogo]</kbd> + <kbd>n</kbd>, the script `Run Notepad` will execute.
+
+There is no need to add `return` to the provided script, as it is provided by the template.
+
+To stop the hotkey call the `stop()` method.
+
+```python
+hotkey.stop()
+```
+
+
+### ActionChain
+
+GH-25
+
+`ActionChain`s let you define a set of actions to be performed in order at a later time.
+
+They work just like the `AHK` class, except the actions are deferred until the `perform` method is called.
+
+An additional method `sleep` is provided to allow for waiting between actions.
+
+```python
+from ahk import ActionChain
+ac = ActionChain()
+ac.mouse_move(100, 100, speed=10)  # nothing yet
+ac.sleep(1)  # still nothing happening
+ac.mouse_move(500, 500, speed=10)  # not yet
+ac.perform()  # *now* each of the actions run in order
+```
+
+Just like anywhere else, scripts running simultaneously may conflict with one another, so using blocking interfaces is 
+generally recommended.
+
+
+### find_window/find_windows methods
+
+GH-26
+
+Right now, these are implemented by iterating over all window handles and filtering with Python.
+
+`AHK.find_windows` returns a generator filtering results based on attributes provided as keyword arguments.  
+`AHK.find_window` is similar, but returns the first matching window instead of all matching windows.
+
+There are couple convenience functions, but not sure if these will stay around or maybe we'll add more, depending on feedback.
+
+* find_windows_by_title
+* find_window_by_title
+* find_windows_by_text
+* find_window_by_text
+
+
 ## Non-Python Dependencies
 
 Just the AHK executable. It's expected to be on PATH by default. 
@@ -119,14 +195,20 @@ Or, provide it inline
 
 ```python
 from ahk import AHK
-ahk = AHK(executable_path='C:\\ProgramFiles\\AutoHotkey\\AutoHotkey.exe')
+ahk = AHK(executable_path='C:\\path\\to\\AutoHotkey.exe')
 ```
 
 
-# Development
+# Contributing
 
-Right now this is just an exploration of an idea. It may not even be a particularly good idea.
+All contributions are welcomed and appreciated.
 
-There's still a bit to be done in the way of implementation.
+Please feel free to open a GitHub issue or PR for feedback, ideas, feature requests or questions.
+
+There's still some work to be done in the way of implementation. 
+
 
 The vision is to provide additional interfaces that implement the most important parts of the AHK API in a Pythonic way.
+
+
+[winlogo]: http://i.stack.imgur.com/Rfuw7.png

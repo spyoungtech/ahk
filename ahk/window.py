@@ -269,6 +269,10 @@ class WindowMixin(ScriptEngine):
         ahk_id = self.run_script(script)
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
+    def win_set(self, subcommand, *args, blocking=True):
+        script = self.render_template('window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
+        self.run_script(script, blocking=blocking)
+
     @property
     def active_window(self):
         return self.win_get(title='A')
