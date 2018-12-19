@@ -86,7 +86,6 @@ class MouseMixin(ScriptEngine):
     def mouse_move(self, *args, **kwargs):
         blocking = kwargs.get('blocking', True)
         script = self._mouse_move(*args, **kwargs)
-        print(script)
         self.run_script(script, blocking=blocking)
 
     def _click(self, *args, mode=None, blocking=True):
