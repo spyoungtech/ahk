@@ -140,6 +140,9 @@ class MouseMixin(ScriptEngine):
             x2 = x
             y2 = y
 
+        if relative:
+            x1, y1 = (0, 0)
+
         button = resolve_button(button)
 
         if speed is None:
