@@ -2,8 +2,9 @@ from collections import deque
 from ahk.mouse import MouseMixin
 from ahk.window import Window, WindowMixin
 from ahk.script import ScriptEngine
+from ahk.screen import ScreenMixin
 
-class AHK(WindowMixin, MouseMixin):
+class AHK(WindowMixin, MouseMixin, ScreenMixin):
     pass
 
 
