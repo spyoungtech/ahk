@@ -98,15 +98,14 @@ print(window.pid)
 print(window.process)
 ```
 
-## Debugging
-
-You can enable debug logging, which will output script text before execution, and some other potentially useful 
-debugging information.
+## Run arbitrary AutoHotkey scripts
 
 ```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
+ahk_script = 'Run Notepad'
+ahk.run_script(ahk_script, blocking=False)
 ```
+
+In order for scripts to block properly, the `#Persistent` directive and
 
 ## Experimental features
 
@@ -165,7 +164,7 @@ ac.perform()  # *now* each of the actions run in order
 ```
 
 Just like anywhere else, scripts running simultaneously may conflict with one another, so using blocking interfaces is 
-generally recommended.
+generally recommended. Currently, there is limited support for interacting with windows in actionchains, you may want to use `win_set`)
 
 
 ### find_window/find_windows methods
@@ -184,14 +183,24 @@ There are couple convenience functions, but not sure if these will stay around o
 * find_windows_by_text
 * find_window_by_text
 
+## Debugging
 
-## Non-Python Dependencies
+You can enable debug logging, which will output script text before execution, and some other potentially useful 
+debugging information.
 
-Just the AHK executable. It's expected to be on PATH by default. 
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+```
 
-Alternatively you can set an `AHK_PATH` environment variable. 
 
-Or, provide it inline
+## Non-Python dependencies
+
+To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). 
+
+It's expected to be on PATH by default. You can also use the `AHK_PATH` environment variable to specify the executable location.
+
+Alternatively, you may provide the path in code
 
 ```python
 from ahk import AHK
@@ -205,13 +214,25 @@ All contributions are welcomed and appreciated.
 
 Please feel free to open a GitHub issue or PR for feedback, ideas, feature requests or questions.
 
-There's still some work to be done in the way of implementation. 
+There's still some work to be done in the way of implementation. The ideal interfaces are still yet to be determined and 
+*your* help would be invaluable.
 
 
-The vision is to provide additional interfaces that implement the most important parts of the AHK API in a Pythonic way.
+The vision is to provide access to the most useful features of the AutoHotkey API in a Pythonic way.
 
 
 [winlogo]: http://i.stack.imgur.com/Rfuw7.png
 [GH-9]: https://github.com/spyoungtech/ahk/issues/9
 [GH-25]: https://github.com/spyoungtech/ahk/issues/25
 [GH-26]: https://github.com/spyoungtech/ahk/issues/26
+
+# Similar projects
+
+These are some similar projects that are commonly used for automation with Python.
+
+* [Pyautogui](https://pyautogui.readthedocs.io) - Al Sweigart's creation for cross-platform automation
+* [Pywinauto](https://pywinauto.readthedocs.io) - Automation on Windows platforms with Python.
+* [keyboard](https://github.com/boppreh/keyboard) - Pure Python cross-platform keyboard hooks/control and hotkeys!
+* [mouse](https://github.com/boppreh/mouse) - From the creators of `keyboard`, Pure Python *mouse* control!
+* [pynput](https://github.com/moses-palmer/pynput) - Keyboard and mouse control
+
