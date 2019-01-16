@@ -105,7 +105,32 @@ ahk_script = 'Run Notepad'
 ahk.run_script(ahk_script, blocking=False)
 ```
 
-In order for scripts to block properly, the `#Persistent` directive and
+
+### Communicating data from ahk to Python
+
+If you're writing your own ahk scripts to use with this library, you can use `FileAppend` with the `*` parameter to get data from your ahk script into Python.
+
+Suppose you have a script like so
+
+```autohotkey
+#Persistent
+data := "Hello Data!"
+FileAppend, %data%, * ; send data var to stdout
+ExitApp
+```
+
+```py
+result = ahk.run_script(my_script)
+print(result)  # Hello Data!
+```
+
+If your autohotkey returns something that can't be decoded, add the keyword argument `decode=False` in which case you'll get back a `CompletedProcess` object where stdout (and stderr) will be bytes and you can handle it however you choose.
+
+```py
+result = ahk.run_script(my_script, decode=False)
+print(result.stdout)  # b'Hello Data!'
+```
+
 
 ## Experimental features
 
