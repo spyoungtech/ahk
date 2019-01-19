@@ -94,6 +94,7 @@ class Window(object):
         'style': 'Style',   # This will probably get a property later
         'ex_style': 'ExStyle',  # This will probably get a property later
     }
+    #  add reverse lookups
     _subcommands.update({value: value for value in _subcommands.values()})
 
     def __init__(self, engine: ScriptEngine, ahk_id: str, encoding=None):
@@ -252,6 +253,13 @@ class Window(object):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
 
+    def __eq__(self, other):
+        if not isinstance(other, Window):
+            return False
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(repr(self))
 
 class WindowMixin(ScriptEngine):
     def __init__(self, *args, **kwargs):
@@ -284,11 +292,14 @@ class WindowMixin(ScriptEngine):
 
     def windows(self):
         """
-        Generator of windows
+        Returns a list of windows
         :return:
         """
+        windowze = []
         for ahk_id in self._all_window_ids():
-            yield Window(engine=self, ahk_id=ahk_id, encoding=self.window_encoding)
+            win = Window(engine=self, ahk_id=ahk_id, encoding=self.window_encoding)
+            windowze.append(win)
+        return windowze
 
     def find_windows(self, func=None, **kwargs):
         if func is None:
