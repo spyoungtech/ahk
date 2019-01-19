@@ -1,7 +1,5 @@
 import sys
 import os
-from unittest import mock
-import pytest
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk import AHK
@@ -10,8 +8,6 @@ from PIL import Image
 from itertools import product
 import time
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
 class TestScreen(TestCase):
     def setUp(self):
@@ -42,3 +38,9 @@ class TestScreen(TestCase):
         self.im.save('testimage.png')
         position = self.ahk.image_search('testimage.png')
         self.assertIsNotNone(position)
+
+    def test_pixel_get_color(self):
+        x, y = self.ahk.pixel_search(0xFF0000)
+        result = self.ahk.pixel_get_color(x, y)
+        self.assertIsNotNone(result)
+        self.assertEqual(int(result, 16), 0xFF0000)
