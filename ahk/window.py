@@ -253,6 +253,11 @@ class Window(object):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
 
+    def send(self, keys, delay=None, blocking=False):
+        script = self._render_template('window/win_send.ahk', keys=keys, blocking=blocking)
+        return self.engine.run_script(script, blocking=blocking)
+
+
     def __eq__(self, other):
         if not isinstance(other, Window):
             return False
