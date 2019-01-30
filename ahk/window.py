@@ -212,7 +212,7 @@ class Window(object):
 
     @property
     def always_on_top(self):
-        script = self.render_template('window/win_is_always_on_top.ahk')
+        script = self._render_template('window/win_is_always_on_top.ahk')
         resp = self.engine.run_script(script)
         return bool(ast.literal_eval(resp))
 
@@ -254,7 +254,7 @@ class Window(object):
         self.engine.run_script(script)
 
     def send(self, keys, delay=None, raw=False, blocking=False):
-        script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, blocking=blocking)
+        script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, delay=delay, blocking=blocking)
         return self.engine.run_script(script, blocking=blocking)
 
     def __eq__(self, other):
