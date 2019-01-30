@@ -3,10 +3,11 @@ from ahk.mouse import MouseMixin
 from ahk.window import Window, WindowMixin
 from ahk.script import ScriptEngine
 from ahk.screen import ScreenMixin
+from ahk.keyboard import KeyboardMixin
 
-class AHK(WindowMixin, MouseMixin, ScreenMixin):
+
+class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin):
     pass
-
 
 
 class ActionChain(AHK):

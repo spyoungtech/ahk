@@ -215,8 +215,9 @@ class KeyboardMixin(ScriptEngine):
         script = self.render_template('keyboard/key_wait.ahk', key, timeout, options)
         return self.run_script(script)
 
-    def send(self, s):
-        raise NotImplementedError
+    def send(self, s, delay=None):
+        script = self.render_template('keyboard/send.ahk', s=s, delay=delay)
+        return self.run_script(script)
 
     def send_raw(self, s):
         raise NotImplementedError
@@ -231,6 +232,13 @@ class KeyboardMixin(ScriptEngine):
         raise NotImplementedError
 
     def key_press(self, key, release=True):
+        """
+        Press and (optionally) release a key
+
+        :param key:
+        :param release:
+        :return:
+        """
         raise NotImplementedError
 
     def key_release(self, key):
