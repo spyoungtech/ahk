@@ -253,10 +253,9 @@ class Window(object):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
 
-    def send(self, keys, delay=None, blocking=False):
-        script = self._render_template('window/win_send.ahk', keys=keys, blocking=blocking)
+    def send(self, keys, delay=None, raw=False, blocking=False):
+        script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, blocking=blocking)
         return self.engine.run_script(script, blocking=blocking)
-
 
     def __eq__(self, other):
         if not isinstance(other, Window):
@@ -265,6 +264,7 @@ class Window(object):
 
     def __hash__(self):
         return hash(repr(self))
+
 
 class WindowMixin(ScriptEngine):
     def __init__(self, *args, **kwargs):
