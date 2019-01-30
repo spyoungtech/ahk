@@ -1,7 +1,7 @@
 from ahk.script import ScriptEngine
 import ast
 from .utils import make_logger
-
+from contextlib import suppress
 logger = make_logger(__name__)
 
 
@@ -322,18 +322,21 @@ class WindowMixin(ScriptEngine):
             yield window
 
     def find_window(self, func=None, **kwargs):
-        return next(self.find_windows(func=func, **kwargs))
+        with suppress(StopIteration):
+            return next(self.find_windows(func=func, **kwargs))
 
     def find_windows_by_title(self, title, exact=False):
         for window in self.find_windows(title=title, exact=exact):
             yield window
 
     def find_window_by_title(self, *args, **kwargs):
-        return next(self.find_windows_by_title(*args, **kwargs))
+        with suppress(StopIteration):
+            return next(self.find_windows_by_title(*args, **kwargs))
 
     def find_windows_by_text(self, text, exact=False):
         for window in self.find_windows(text=text, exact=exact):
             yield window
 
     def find_window_by_text(self, *args, **kwargs):
-        return next(self.find_windows_by_text(*args, **kwargs))
+        with suppress(StopIteration):
+            return next(self.find_windows_by_text(*args, **kwargs))
