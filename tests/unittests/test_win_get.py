@@ -35,3 +35,16 @@ def test_win_close():
     finally:
         if p is not None:
             p.terminate()
+
+def test_find_window_func():
+    p = None
+    try:
+        p = subprocess.Popen('notepad')
+        time.sleep(1)  # give notepad time to start up
+        def func(win):
+            return b'Untitled' in win.title
+        win = ahk.find_window(title=b'Untitled - Notepad')
+        assert win == ahk.find_window(func=func)
+    finally:
+        if p is not None:
+            p.terminate()
