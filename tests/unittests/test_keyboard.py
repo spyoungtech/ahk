@@ -9,7 +9,7 @@ import time, subprocess
 from ahk.keyboard import KEYS
 
 
-class TestScreen(TestCase):
+class TestKeyboard(TestCase):
     def setUp(self):
         """
         Record all open windows
@@ -25,14 +25,14 @@ class TestScreen(TestCase):
         time.sleep(0.2)
 
     def test_window_send(self):
-        self.notepad.send('hello world{!}')
+        self.notepad.send('hello world')
         time.sleep(1)
-        self.assertIn(b'hello world!', self.notepad.text)
+        self.assertIn(b'hello world', self.notepad.text)
 
     def test_send(self):
         self.notepad.activate()
-        self.ahk.send('hello world{!}')
-        assert b'hello world!' in self.notepad.text
+        self.ahk.send('hello world')
+        assert b'hello world' in self.notepad.text
 
     def test_key_mult(self):
         self.notepad.send(KEYS.TAB * 4)
