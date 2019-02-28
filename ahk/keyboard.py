@@ -1,5 +1,7 @@
 from ahk.script import ScriptEngine
 from typing import Union
+import warnings
+
 
 class Hotkey:
     def __init__(self, engine: ScriptEngine, hotkey: str, script: str):
@@ -178,24 +180,29 @@ class KEYS:
     NumpadEnter = NUMPAD_ENTER
 
 
-for i in range(0, 10):
-    #  set numpad keys
-    key_name = f'Numpad{i}'
-    key = Key(key_name)
-    setattr(KEYS, key_name, key)
-    setattr(KEYS, key_name.upper(), key)
+def _init_keys():
+    '''put this in a function to avoid polluting global namespace'''
+    for i in range(0, 10):
+        #  set numpad keys
+        key_name = f'Numpad{i}'
+        key = Key(key_name)
+        setattr(KEYS, key_name, key)
+        setattr(KEYS, key_name.upper(), key)
 
 
-for i in range(1, 25):
-    # set function keys
-    key_name = f'F{i}'
-    setattr(KEYS, key_name, Key(key_name))
+    for i in range(1, 25):
+        # set function keys
+        key_name = f'F{i}'
+        setattr(KEYS, key_name, Key(key_name))
 
-for i in range(1, 33):
-    # set joystick keys
-    key_name = f'Joy{i}'
-    setattr(KEYS, key_name, Key(key_name))
-    setattr(KEYS, key_name.upper(), Key(key_name))
+    for i in range(1, 33):
+        # set joystick keys
+        key_name = f'Joy{i}'
+        setattr(KEYS, key_name, Key(key_name))
+        setattr(KEYS, key_name.upper(), Key(key_name))
+
+
+_init_keys()
 
 
 class KeyboardMixin(ScriptEngine):
@@ -223,7 +230,12 @@ class KeyboardMixin(ScriptEngine):
         raise NotImplementedError
 
     def send_input(self, s):
-        raise NotImplementedError
+        if len(s) > 5000:
+            warnings.warn('String length greater than allowed. Characters beyond 5000 may not be sent '
+                          'see https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.')
+
+        script = self.render_template('keyboard/send_input.ahk')
+        return self.run_script(script)
 
     def send_play(self, s):
         raise NotImplementedError
