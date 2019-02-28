@@ -8,6 +8,7 @@ logger = make_logger(__name__)
 class WindowNotFoundError(ValueError):
     pass
 
+
 class Control:
     def __init__(self):
         raise NotImplementedError
@@ -185,6 +186,13 @@ class Window(object):
     def height(self, new_height):
         self.move(height=new_height)
 
+    @property
+    def active(self):
+        script = self._render_template('window/win_is_active.ahk')
+        result = self.engine.run_script(script)
+        result = bool(ast.literal_eval(result))
+        return result
+
     def disable(self):
         self.win_set('Disable', '')
 
@@ -254,6 +262,11 @@ class Window(object):
         self.engine.run_script(script)
 
     def send(self, keys, delay=None, raw=False, blocking=False):
+        """
+        Send keystrokes directly to the window.
+        Uses ControlSend
+        https://autohotkey.com/docs/commands/Send.htm
+        """
         script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, delay=delay, blocking=blocking)
         return self.engine.run_script(script, blocking=blocking)
 
