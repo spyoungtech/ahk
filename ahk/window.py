@@ -1,6 +1,6 @@
 from ahk.script import ScriptEngine
 import ast
-from .utils import make_logger
+from ahk.utils import make_logger, escape_sequence_replace
 from contextlib import suppress
 logger = make_logger(__name__)
 
@@ -267,6 +267,8 @@ class Window(object):
         Uses ControlSend
         https://autohotkey.com/docs/commands/Send.htm
         """
+        if not raw:
+            keys = escape_sequence_replace(keys)
         script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, delay=delay, blocking=blocking)
         return self.engine.run_script(script, blocking=blocking)
 

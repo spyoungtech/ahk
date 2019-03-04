@@ -2,6 +2,7 @@
 The ahk.keys module contains some useful classes for working with 'special' keys.
 It also
 """
+from collections import UserString
 
 
 class Key:
@@ -43,11 +44,24 @@ class Key:
     def __repr__(self):
         return f'{self.__class__.__name__}(key_name={self.name!r})'
 
+    def __format__(self, format_spec):
+        return str(self)
+
 
 SYMBOLS = {
     'Win': '#',
     'LWin': '<#',
     'RWin': '>#',
+    'Shift': '+',
+    'LShift': '<+',
+    'RShift': '>+',
+    'Alt': '!',
+    'LAlt': '<!',
+    'RAlt': '>!',
+    'Control': '^',
+    'LControl': '<^',
+    'RControl': '>^',
+
 }
 
 
@@ -143,7 +157,6 @@ def _init_keys():
         key = Key(key_name)
         setattr(KEYS, key_name, key)
         setattr(KEYS, key_name.upper(), key)
-
 
     for i in range(1, 25):
         # set function keys

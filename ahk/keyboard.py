@@ -1,4 +1,5 @@
 from ahk.script import ScriptEngine
+from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 import warnings
 
@@ -62,6 +63,13 @@ class KeyboardMixin(ScriptEngine):
         script = self.render_template('keyboard/key_wait.ahk', key, timeout, options)
         return self.run_script(script)
 
+    def write(self, s):
+        """
+        Sends keystrokes using send_input, also escaping the string for use in AHK.
+        """
+        s = escape_sequence_replace(s)
+        self.send_input(s)
+
     def send(self, s, delay=None):
         script = self.render_template('keyboard/send.ahk', s=s, delay=delay)
         return self.run_script(script)
@@ -71,10 +79,10 @@ class KeyboardMixin(ScriptEngine):
 
     def send_input(self, s):
         if len(s) > 5000:
-            warnings.warn('String length greater than allowed. Characters beyond 5000 may not be sent '
-                          'see https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.')
+            warnings.warn('String length greater than allowed. Characters beyond 5000 may not be sent. '
+                          'See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.')
 
-        script = self.render_template('keyboard/send_input.ahk')
+        script = self.render_template('keyboard/send_input.ahk', s=s)
         return self.run_script(script)
 
     def send_play(self, s):
@@ -85,23 +93,26 @@ class KeyboardMixin(ScriptEngine):
 
     def key_press(self, key, release=True):
         """
-        Press and (optionally) release a key
+        Press and (optionally) release a single key
 
         :param key:
         :param release:
         :return:
         """
-        raise NotImplementedError
+
+        self.key_down(key)
+        if release:
+            self.key_up(key)
 
     def key_release(self, key):
         if isinstance(key, str):
             key = Key(key_name=key)
-        return self.send(key.UP)
+        return self.send_input(key.UP)
 
     def key_down(self, key):
         if isinstance(key, str):
             key = Key(key_name=key)
-        return self.key_press(key.DOWN, release=False)
+        return self.send_input(key.DOWN)
 
     def key_up(self, key):
         """
