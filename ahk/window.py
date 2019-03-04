@@ -259,7 +259,7 @@ class Window(object):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
 
-    def send(self, keys, delay=None, raw=False, blocking=False, escape=True):
+    def send(self, keys, delay=None, raw=False, blocking=False, escape=False):
         """
         Send keystrokes directly to the window.
         Uses ControlSend
