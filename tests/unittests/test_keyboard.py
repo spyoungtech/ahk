@@ -47,5 +47,5 @@ class TestKeyboard(TestCase):
 
     def test_type(self):
         self.notepad.activate()
-        self.ahk.type('Hello, world!')
+        self.ahk.type('Hello, World!')
         assert b'Hello, World!' in self.notepad.text
