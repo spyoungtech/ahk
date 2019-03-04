@@ -79,8 +79,6 @@ class Control:
         raise NotImplementedError
 
 
-
-
 class Window(object):
     _subcommands = {
         'id': 'ID',
@@ -261,13 +259,13 @@ class Window(object):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
 
-    def send(self, keys, delay=None, raw=False, blocking=False):
+    def send(self, keys, delay=None, raw=False, blocking=False, escape=True):
         """
         Send keystrokes directly to the window.
         Uses ControlSend
         https://autohotkey.com/docs/commands/Send.htm
         """
-        if not raw:
+        if escape:
             keys = escape_sequence_replace(keys)
         script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, delay=delay, blocking=blocking)
         return self.engine.run_script(script, blocking=blocking)

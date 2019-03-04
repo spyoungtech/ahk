@@ -63,19 +63,19 @@ class KeyboardMixin(ScriptEngine):
         script = self.render_template('keyboard/key_wait.ahk', key, timeout, options)
         return self.run_script(script)
 
-    def write(self, s):
+    def type(self, s):
         """
         Sends keystrokes using send_input, also escaping the string for use in AHK.
         """
         s = escape_sequence_replace(s)
         self.send_input(s)
 
-    def send(self, s, delay=None):
-        script = self.render_template('keyboard/send.ahk', s=s, delay=delay)
+    def send(self, s, raw=False, delay=None):
+        script = self.render_template('keyboard/send.ahk', s=s, raw=raw, delay=delay)
         return self.run_script(script)
 
-    def send_raw(self, s):
-        raise NotImplementedError
+    def send_raw(self, s, delay=None):
+        return self.send(s, raw=True, delay=delay)
 
     def send_input(self, s):
         if len(s) > 5000:
@@ -83,13 +83,15 @@ class KeyboardMixin(ScriptEngine):
                           'See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.')
 
         script = self.render_template('keyboard/send_input.ahk', s=s)
-        return self.run_script(script)
+        self.run_script(script)
 
     def send_play(self, s):
-        raise NotImplementedError
+        script = self.render_template('keyboard/send_play.ahk', s=s)
+        self.run_script(script)
 
-    def send_event(self, s):
-        raise NotImplementedError
+    def send_event(self, s, delay=None):
+        script = self.render_template('keyboard/send_event.ahk', s=s, delay=delay)
+        self.run_script(script)
 
     def key_press(self, key, release=True):
         """
