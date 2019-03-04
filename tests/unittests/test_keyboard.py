@@ -6,7 +6,7 @@ from ahk import AHK
 from unittest import TestCase
 from itertools import product
 import time, subprocess
-from ahk.keyboard import KEYS
+from ahk.keys import KEYS, ALT, CTRL
 
 
 class TestKeyboard(TestCase):
@@ -20,6 +20,7 @@ class TestKeyboard(TestCase):
         self.p = subprocess.Popen('notepad')
         time.sleep(1)
         self.notepad = self.ahk.find_window(title=b'Untitled - Notepad')
+
     def tearDown(self):
         self.p.terminate()
         time.sleep(0.2)
@@ -34,7 +35,17 @@ class TestKeyboard(TestCase):
         self.ahk.send('hello world')
         assert b'hello world' in self.notepad.text
 
-    def test_key_mult(self):
+    def test_send_key_mult(self):
         self.notepad.send(KEYS.TAB * 4)
         time.sleep(0.5)
         self.assertEqual(self.notepad.text.count(b'\t'), 4, self.notepad.text)
+
+    def test_send_input(self):
+        self.notepad.activate()
+        self.ahk.send_input('Hello World')
+        assert b'Hello World' in self.notepad.text
+
+    def test_type(self):
+        self.notepad.activate()
+        self.ahk.type('Hello, world!')
+        assert b'Hello, World!' in self.notepad.text
