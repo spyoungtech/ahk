@@ -9,6 +9,7 @@ coverage run -a -m pytest .\tests\unittests --junitxml=reports\pytestresults.xml
 if ($LastExitCode -ne 0) {
   $failure = 1
 }
+coverage report
 $wc = New-Object 'System.Net.WebClient';
 Get-ChildItem .\reports |
 Foreach-Object {

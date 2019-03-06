@@ -1,12 +1,13 @@
 from ahk.script import ScriptEngine
 import ast
-from .utils import make_logger
-
+from ahk.utils import make_logger, escape_sequence_replace
+from contextlib import suppress
 logger = make_logger(__name__)
 
 
 class WindowNotFoundError(ValueError):
     pass
+
 
 class Control:
     def __init__(self):
@@ -76,8 +77,6 @@ class Control:
         :return:
         """
         raise NotImplementedError
-
-
 
 
 class Window(object):
@@ -185,6 +184,13 @@ class Window(object):
     def height(self, new_height):
         self.move(height=new_height)
 
+    @property
+    def active(self):
+        script = self._render_template('window/win_is_active.ahk')
+        result = self.engine.run_script(script)
+        result = bool(ast.literal_eval(result))
+        return result
+
     def disable(self):
         self.win_set('Disable', '')
 
@@ -212,7 +218,7 @@ class Window(object):
 
     @property
     def always_on_top(self):
-        script = self.render_template('window/win_is_always_on_top.ahk')
+        script = self._render_template('window/win_is_always_on_top.ahk')
         resp = self.engine.run_script(script)
         return bool(ast.literal_eval(resp))
 
@@ -253,6 +259,17 @@ class Window(object):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
 
+    def send(self, keys, delay=None, raw=False, blocking=False, escape=False):
+        """
+        Send keystrokes directly to the window.
+        Uses ControlSend
+        https://autohotkey.com/docs/commands/Send.htm
+        """
+        if escape:
+            keys = escape_sequence_replace(keys)
+        script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, delay=delay, blocking=blocking)
+        return self.engine.run_script(script, blocking=blocking)
+
     def __eq__(self, other):
         if not isinstance(other, Window):
             return False
@@ -260,6 +277,7 @@ class Window(object):
 
     def __hash__(self):
         return hash(repr(self))
+
 
 class WindowMixin(ScriptEngine):
     def __init__(self, *args, **kwargs):
@@ -317,18 +335,21 @@ class WindowMixin(ScriptEngine):
             yield window
 
     def find_window(self, func=None, **kwargs):
-        return next(self.find_windows(func=func, **kwargs))
+        with suppress(StopIteration):
+            return next(self.find_windows(func=func, **kwargs))
 
     def find_windows_by_title(self, title, exact=False):
         for window in self.find_windows(title=title, exact=exact):
             yield window
 
     def find_window_by_title(self, *args, **kwargs):
-        return next(self.find_windows_by_title(*args, **kwargs))
+        with suppress(StopIteration):
+            return next(self.find_windows_by_title(*args, **kwargs))
 
     def find_windows_by_text(self, text, exact=False):
         for window in self.find_windows(text=text, exact=exact):
             yield window
 
     def find_window_by_text(self, *args, **kwargs):
-        return next(self.find_windows_by_text(*args, **kwargs))
+        with suppress(StopIteration):
+            return next(self.find_windows_by_text(*args, **kwargs))
