@@ -14,6 +14,8 @@ A Python wrapper around AHK.
 pip install ahk
 ```
 
+See also [Non-python-depencies](#deps)  
+
 
 # Usage
 
@@ -269,6 +271,7 @@ logging.basicConfig(level=logging.DEBUG)
 Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling 
 will be added.
 
+<a name="deps" />
 ## Non-Python dependencies
 
 To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). 
