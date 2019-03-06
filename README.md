@@ -272,6 +272,7 @@ Also note that, for now, errors with running AHK scripts will often pass silentl
 will be added.
 
 <a name="deps" />
+
 ## Non-Python dependencies
 
 To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). 
