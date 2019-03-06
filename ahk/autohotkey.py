@@ -34,6 +34,6 @@ class ActionChain(AHK):
         :param n: how long (in seconds) to sleep
         :return:
         """
-        n = n * 1000  # convert to miliseconds
+        n = n * 1000  # convert to milliseconds
         script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent',})
         self.run_script(script)

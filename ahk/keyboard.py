@@ -1,8 +1,10 @@
+import ast
+import warnings
+
 from ahk.script import ScriptEngine
 from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
-import warnings
-
+from ahk.directives import InstallKeybdHook, InstallMouseHook
 
 class Hotkey:
     def __init__(self, engine: ScriptEngine, hotkey: str, script: str):
@@ -53,18 +55,32 @@ class Hotkey:
 
 
 class KeyboardMixin(ScriptEngine):
-    def key_state(self, key_name):
-        raise NotImplementedError
+    def key_state(self, key_name, mode=None) -> bool:
+        """
+        Check the state of a key.
+
+        https://autohotkey.com/docs/commands/GetKeyState.htm
+
+        :param key_name: the name of the key (or virtual key code)
+        :param mode: see AHK docs
+        :return: True if pressed down, else False
+        """
+        script = self.render_template('keyboard/key_state.ahk', key_name=key_name, mode=mode, directives=(InstallMouseHook, InstallKeybdHook))
+        result = ast.literal_eval(self.run_script(script))
+        return bool(result)
 
     def key_wait(self, key_name, timeout: int=None, logical_state=False, released=False):
         """
-        Wait for key to be pressed or released (specify one; default is pressed). https://autohotkey.com/docs/commands/KeyWait.htm
+        Wait for key to be pressed or released (default is pressed; specify ``released=True`` to wait for key release).
+
+        https://autohotkey.com/docs/commands/KeyWait.htm
 
         :param key_name: The name of the key
-        :param timeout: how long (in seconds) to wait for the key
+        :param timeout: how long (in seconds) to wait for the key. If not specified, waits indefinitely
         :param logical_state: Check the logical state of the key, which is the state that the OS and the active window believe the key to be in (not necessarily the same as the physical state). This option is ignored for joystick buttons.
-        :param released: check i
+        :param released: Set to True to wait for the key to be released rather than pressed
         :return:
+        :raises TimeoutError: if the key was not pressed (or released, if specified) within timeout
         """
         options = ''
         if not released:
@@ -74,7 +90,9 @@ class KeyboardMixin(ScriptEngine):
         if timeout:
             options += f'T{timeout}'
         script = self.render_template('keyboard/key_wait.ahk', key_name=key_name, options=options)
-        self.run_script(script)
+        result = self.run_script(script)
+        if result == "1":
+            raise TimeoutError(f'timed out waiting for {key_name}')
 
     def type(self, s):
         """
