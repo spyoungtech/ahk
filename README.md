@@ -60,6 +60,9 @@ ahk.send_input('Hello`, World{!}')  # Like AHK SendInput, must escape strings yo
 ahk.key_wait('a', timeout=3)  # wait up to 3 seconds for the "a" key to be pressed
 ahk.key_state('Control')  # return True or False based on whether Control key is pressed down
 ahk.key_state('CapsLock', mode='T')  # check toggle state of a key (like for NumLock, CapsLock, etc)
+ahk.key_press('a')  # press and release a key
+ahk.key_down('Control')  # press down (but do not release) Control key
+ahk.key_up('Control')  # release the key
 ```
 
 ## Windows
@@ -253,7 +256,7 @@ There are couple convenience functions, but not sure if these will stay around o
 * find_windows_by_text
 * find_window_by_text
 
-## Debugging
+## Errors and Debugging
 
 You can enable debug logging, which will output script text before execution, and some other potentially useful 
 debugging information.
@@ -263,6 +266,8 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
 
+Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling 
+will be added.
 
 ## Non-Python dependencies
 
