@@ -69,7 +69,10 @@ class TestKeys(TestCase):
     def tearDown(self):
         if self.thread is not None:
             self.thread.join(timeout=3)
-        self.ahk.key_up('a')
+        if self.ahk.key_state('a'):
+            self.ahk.key_up('a')
+        if self.ahk.key_down('Control'):
+            self.ahk.key_up('Control')
 
     def test_key_wait_pressed(self):
         start = time.time()
@@ -88,3 +91,10 @@ class TestKeys(TestCase):
 
     def test_key_wait_timeout(self):
         self.assertRaises(TimeoutError, self.ahk.key_wait, 'f', timeout=1)
+
+    def test_key_state_when_not_pressed(self):
+        self.assertFalse(self.ahk.key_state('a'))
+
+    def test_key_state_pressed(self):
+        self.ahk.key_down('Control')
+        self.assertTrue(self.ahk.key_state('Control'))
