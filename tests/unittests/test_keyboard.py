@@ -7,8 +7,7 @@ from unittest import TestCase
 from itertools import product
 import time, subprocess
 from ahk.keys import KEYS, ALT, CTRL
-
-
+import threading
 class TestKeyboard(TestCase):
     def setUp(self):
         """
@@ -49,3 +48,43 @@ class TestKeyboard(TestCase):
         self.notepad.activate()
         self.ahk.type('Hello, World!')
         assert b'Hello, World!' in self.notepad.text
+
+def press_a():
+    time.sleep(0.5)
+    ahk = AHK()
+    ahk.key_down('a')
+
+
+def release_a():
+    time.sleep(0.5)
+    ahk = AHK()
+    ahk.key_up('a')
+
+
+class TestKeys(TestCase):
+    def setUp(self):
+        self.ahk = AHK()
+        self.thread = None
+
+    def tearDown(self):
+        if self.thread is not None:
+            self.thread.join(timeout=3)
+        self.ahk.key_up('a')
+
+    def test_key_wait_pressed(self):
+        start = time.time()
+        self.thread = threading.Thread(target=press_a)
+        self.thread.start()
+        self.ahk.key_wait('a', timeout=5)
+        end = time.time()
+        assert end - start < 5
+
+    def test_key_wait_released(self):
+        start = time.time()
+        press_a()
+        self.thread = threading.Thread(target=release_a)
+        self.thread.start()
+        self.ahk.key_wait('a', timeout=2)
+
+    def test_key_wait_timeout(self):
+        self.assertRaises(TimeoutError, self.ahk.key_wait, 'f', timeout=1)
