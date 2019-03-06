@@ -49,7 +49,7 @@ class TestKeyboard(TestCase):
         self.ahk.type('Hello, World!')
         assert b'Hello, World!' in self.notepad.text
 
-def press_a():
+def a_down():
     time.sleep(0.5)
     ahk = AHK()
     ahk.key_down('a')
@@ -60,6 +60,10 @@ def release_a():
     ahk = AHK()
     ahk.key_up('a')
 
+def press_a():
+    time.sleep(0.5)
+    ahk = AHK()
+    ahk.key_press('a')
 
 class TestKeys(TestCase):
     def setUp(self):
@@ -74,9 +78,13 @@ class TestKeys(TestCase):
         if self.ahk.key_down('Control'):
             self.ahk.key_up('Control')
 
+        notepad = self.ahk.find_window(title=b'Untitled - Notepad')
+        if notepad:
+            notepad.close()
+
     def test_key_wait_pressed(self):
         start = time.time()
-        self.thread = threading.Thread(target=press_a)
+        self.thread = threading.Thread(target=a_down)
         self.thread.start()
         self.ahk.key_wait('a', timeout=5)
         end = time.time()
@@ -84,7 +92,7 @@ class TestKeys(TestCase):
 
     def test_key_wait_released(self):
         start = time.time()
-        press_a()
+        a_down()
         self.thread = threading.Thread(target=release_a)
         self.thread.start()
         self.ahk.key_wait('a', timeout=2)
@@ -98,3 +106,11 @@ class TestKeys(TestCase):
     def test_key_state_pressed(self):
         self.ahk.key_down('Control')
         self.assertTrue(self.ahk.key_state('Control'))
+
+    def test_hotkey(self):
+        hotkey = self.ahk.hotkey(hotkey='a', script='Run Notepad')
+        self.thread = threading.Thread(target=a_down)
+        self.thread.start()
+        hotkey.start()
+        time.sleep(1)
+        self.assertIsNotNone(self.ahk.find_window(title=b'Untitled - Notepad'))

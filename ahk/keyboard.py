@@ -55,6 +55,16 @@ class Hotkey:
 
 
 class KeyboardMixin(ScriptEngine):
+    def hotkey(self, *args, **kwargs):
+        """
+        Convenience function for creating ``Hotkey`` instance using current engine.
+
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        return Hotkey(engine=self, *args, **kwargs)
+
     def key_state(self, key_name, mode=None) -> bool:
         """
         Check the state of a key.
