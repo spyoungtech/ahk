@@ -2,7 +2,6 @@
 The ahk.keys module contains some useful classes for working with 'special' keys.
 It also
 """
-from collections import UserString
 
 
 class Key:
@@ -65,14 +64,52 @@ SYMBOLS = {
 }
 
 
+class KeyCombo:
+    def __init__(self, *modifiers):
+        self._s = None
+        self.modifiers = list(modifiers)
+        assert all([isinstance(key, KeyModifier) for key in self.modifiers]), 'Keys must be modifiers'
+
+    def __str__(self):
+        s = ''.join(mod.symbol for mod in self.modifiers)
+        if self._s is not None:
+            s += self._s
+        return s
+
+    def __add__(self, other):
+        if self._s is not None:
+            raise ValueError('Key combo is already terminated')
+        if isinstance(other, KeyCombo):
+            combo = KeyCombo(*[*self.modifiers, *other.modifiers])
+            if other._s:
+                combo = combo + other._s
+            return combo
+        if isinstance(other, KeyModifier):
+            self.modifiers.append(other)
+        elif isinstance(other, Key) or isinstance(other, str):
+            self._s = str(other)
+            return self
+        else:
+            raise TypeError(f"unsupported operand type(s) for +: '{self.__class__.__name__}' and '{type(other)}'")
+
+    def __repr__(self):
+        key_modifiers = ', '.join(repr(mod) for mod in self.modifiers)
+        return f'{self.__class__.__name__}({key_modifiers}){f"+{self._s!r}" if self._s else f""}'
+
+
 class KeyModifier(Key):
     is_modifier = True
 
     @property
     def symbol(self):
-        return SYMBOLS.get(self.name, self.name)
+        return SYMBOLS.get(self.name, str(self))
 
     def __add__(self, other):
+        if isinstance(other, KeyModifier):
+            return KeyCombo(self, other)
+        elif isinstance(other, KeyCombo):
+            return other + self
+
         return self.symbol + str(other)
 
 
@@ -102,6 +139,10 @@ class KEYS:
     Left = LEFT
     RIGHT = Key('Right')
     Right = RIGHT
+    DELETE = Key('Delete')
+    DEL = DELETE
+    Delete = DELETE
+    Del = DELETE
 
     WIN = KeyModifier('Win')
     Win = WIN
