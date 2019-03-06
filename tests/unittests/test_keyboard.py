@@ -69,6 +69,7 @@ class TestKeys(TestCase):
     def setUp(self):
         self.ahk = AHK()
         self.thread = None
+        self.hotkey = None
 
     def tearDown(self):
         if self.thread is not None:
@@ -81,6 +82,9 @@ class TestKeys(TestCase):
         notepad = self.ahk.find_window(title=b'Untitled - Notepad')
         if notepad:
             notepad.close()
+
+        if self.hotkey and self.hotkey.running:
+            self.hotkey.stop()
 
     def test_key_wait_pressed(self):
         start = time.time()
@@ -108,9 +112,17 @@ class TestKeys(TestCase):
         self.assertTrue(self.ahk.key_state('Control'))
 
     def test_hotkey(self):
-        hotkey = self.ahk.hotkey(hotkey='a', script='Run Notepad')
+        self.hotkey = self.ahk.hotkey(hotkey='a', script='Run Notepad')
         self.thread = threading.Thread(target=a_down)
         self.thread.start()
-        hotkey.start()
+        self.hotkey.start()
         time.sleep(1)
         self.assertIsNotNone(self.ahk.find_window(title=b'Untitled - Notepad'))
+
+    def test_hotkey_stop(self):
+        self.hotkey = self.ahk.hotkey(hotkey='a', script='Run Notepad')
+        self.hotkey.start()
+        assert self.hotkey.running
+        self.hotkey.stop()
+        self.ahk.key_press('a')
+        self.assertIsNone(self.ahk.find_window(title=b'Untitled - Notepad'))
