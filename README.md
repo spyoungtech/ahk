@@ -14,7 +14,7 @@ A Python wrapper around AHK.
 pip install ahk
 ```
 
-See also [Non-python-depencies](#deps)  
+See also [Non-Python dependencies](#deps)  
 
 
 # Usage
