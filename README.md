@@ -113,6 +113,19 @@ print(window.pid)
 print(window.process)
 ```
 
+## Screen
+
+```
+from ahk import AHK
+ahk = AHK()
+ahk.image_search('C:\\path\\to\\image.jpg')  # find an image on screen
+# find image within a boundary on screen
+ahk.image_search('C:\\path\\to\\image.jpg', upper_bound=(100, 100),  # upper-left corner of search area
+                                            lower_bound=(400, 400))  # lower-right corner of search area
+ahk.pixel_get_color(100, 100)  # get color of pixel located at coords (100, 100)
+ahk.pixel_search('0x9d6346')  # get coords of first pixel with specified color
+```
+
 ## non-blocking modes
 
 For some functions, you can also opt for a non-blocking interface, so you can do other stuff while AHK scripts run.
