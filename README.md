@@ -115,7 +115,7 @@ print(window.process)
 
 ## Screen
 
-```
+```python
 from ahk import AHK
 ahk = AHK()
 ahk.image_search('C:\\path\\to\\image.jpg')  # find an image on screen
