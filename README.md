@@ -126,6 +126,20 @@ ahk.pixel_get_color(100, 100)  # get color of pixel located at coords (100, 100)
 ahk.pixel_search('0x9d6346')  # get coords of first pixel with specified color
 ```
 
+## Sound
+
+```python
+from ahk import AHK
+ahk = AHK()
+
+ahk.sound_play('C:\\path\\to\\sound.wav')  # play an audio file
+ahk.sound_beep(frequency=440, duration=1000)  # play a beep
+ahk.get_volume(device_number=1)  # get volume of a device
+ahk.set_volume(50, device_number=1)  # set volume of a device
+ahk.sound_get(device_number=1, component_type='MASTER', control_type='VOLUME') # get sound device property
+ahk.sound_set(50, device_number=1, component_type='MASTER', control_type='VOLUME') # set sound device property
+```
+
 ## non-blocking modes
 
 For some functions, you can also opt for a non-blocking interface, so you can do other stuff while AHK scripts run.
