@@ -41,7 +41,7 @@ class SoundMixin(ScriptEngine):
         script = self.render_template('sound/sound_get.ahk')
         return self.run_script(script)
 
-    def get_volume(self, device_number):
+    def get_volume(self, device_number=1):
         """
         REF: https://autohotkey.com/docs/commands/SoundGetWaveVolume.htm
 
