@@ -14,17 +14,18 @@ class SoundMixin(ScriptEngine):
         script = self.render_template('sound/beep.ahk', frequency=frequency, duration=duration)
         self.run_script(script)
 
-    def sound_play(self, filename, wait=None):
+    def sound_play(self, filename, blocking=True):
         """
         REF: https://autohotkey.com/docs/commands/SoundPlay.htm
 
         :param filename:
+        :param blocking:
         :param wait:
         :return:
         """
 
-        script = self.render_template('sound/play.ahk', filename=filename, wait=wait)
-        self.run_script(script)
+        script = self.render_template('sound/play.ahk', filename=filename, wait=1, blocking=blocking)
+        self.run_script(script, blocking=blocking)
 
     def sound_get(self, device_number=1, component_type='MASTER', control_type='VOLUME'):
         """
