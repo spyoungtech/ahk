@@ -111,6 +111,17 @@ class KeyboardMixin(ScriptEngine):
         s = escape_sequence_replace(s)
         self.send_input(s)
 
+    def control_send(self, s, hwnd):
+        """
+        https://autohotkey.com/docs/commands/ControlSend.htm
+
+        :param s:
+        :param hwnd:
+        :return:
+        """
+        script = self.render_template('keyboard/control_send.ahk', s=s, hwnd=hwnd)
+        self.run_script(script)
+
     def send(self, s, raw=False, delay=None):
         """
         https://autohotkey.com/docs/commands/Send.htm
