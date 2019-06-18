@@ -13,6 +13,7 @@ A Python wrapper around AHK.
 ```
 pip install ahk
 ```
+Requires Python 3.6+
 
 See also [Non-Python dependencies](#deps)  
 
