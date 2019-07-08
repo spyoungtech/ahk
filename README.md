@@ -26,7 +26,7 @@ from ahk import AHK
 
 ahk = AHK()
 
-ahk.mouse_move(x=100, y=100, blocking=True)  # blocks until mouse finishes moving (the default)
+ahk.mouse_move(x=100, y=100, blocking=True)  # Blocks until mouse finishes moving (the default)
 ahk.mouse_move(x=150, y=150, speed=10, blocking=True) # Moves the mouse to x, y taking 'speed' seconds to move
 print(ahk.mouse_position)  #  (150, 150)
 ```
@@ -47,14 +47,14 @@ from ahk import AHK
 
 ahk = AHK()
 
-ahk.mouse_position  # returns a tuple of mouse coordinates (x, y)
-ahk.mouse_move(100, 100, speed=10, relative=True)  # moves the mouse reletave to the current position
-ahk.mouse_position = (100, 100)  # moves the mouse instantly to absolute screen position
-ahk.click()  # click the primary mouse button
-ahk.double_click() # clicks the primary mouse button twice
-ahk.click(200, 200)  # moves the mouse to a particular position and clicks
-ahk.right_click() # clicks the secondary mouse button
-ahk.mouse_drag(100, 100, relative=True) # holds down primary button and moves the mouse
+ahk.mouse_position  # Returns a tuple of mouse coordinates (x, y)
+ahk.mouse_move(100, 100, speed=10, relative=True)  # Moves the mouse reletave to the current position
+ahk.mouse_position = (100, 100)  # Moves the mouse instantly to absolute screen position
+ahk.click()  # Click the primary mouse button
+ahk.double_click() # Clicks the primary mouse button twice
+ahk.click(200, 200)  # Moves the mouse to a particular position and clicks
+ahk.right_click() # Clicks the secondary mouse button
+ahk.mouse_drag(100, 100, relative=True) # Holds down primary button and moves the mouse
 ```
 
 ## Keyboard
