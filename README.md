@@ -321,7 +321,7 @@ debugging information.
 import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
-(See the ![logging module documentation](https://docs.python.org/3/library/logging.html) for more information)
+(See the [logging module documentation](https://docs.python.org/3/library/logging.html) for more information)
 
 Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling 
 will be added.
