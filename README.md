@@ -45,14 +45,14 @@ from ahk import AHK
 
 ahk = AHK()
 
-ahk.mouse_position  # tuple of mouse coordinates (x,y)
-ahk.mouse_move(100, 100, speed=10, relative=True)  # move mouse offset from current position
-ahk.mouse_position = (100, 100)  # moves mouse instantly to absolute position
+ahk.mouse_position  # returns a tuple of mouse coordinates (x,y)
+ahk.mouse_move(100, 100, speed=10, relative=True)  # moves the mouse reletave to the current position
+ahk.mouse_position = (100, 100)  # moves the mouse instantly to absolute screen position
 ahk.click()  # click primary mouse button
 ahk.double_click()
-ahk.click(200, 200)  # click a particular position
-ahk.right_click()
-ahk.mouse_drag(100, 100, relative=True)
+ahk.click(200, 200)  # moves the mouse to a particular position and clicks
+ahk.right_click() # clicks the secondary mouse button
+ahk.mouse_drag(100, 100, relative=True) # holds down primary button and moves the mouse
 ```
 
 ## Keyboard
@@ -130,6 +130,7 @@ from ahk import AHK
 ahk = AHK()
 
 ahk.image_search('C:\\path\\to\\image.jpg')  # find an image on screen
+
 # find image within a boundary on screen
 ahk.image_search('C:\\path\\to\\image.jpg', upper_bound=(100, 100),  # upper-left corner of search area
                                             lower_bound=(400, 400))  # lower-right corner of search area
@@ -165,7 +166,7 @@ ahk = AHK()
 
 ahk.mouse_position = (200, 200)  # moves the mouse instantly to the position
 start = time.time()
-ahk.mouse_move(x=100, y=100, speed=30, blocking=False)
+ahk.mouse_move(x=100, y=100, speed=30, blocking=False) # Move mouse to x,y over 30 seconds
 while True:  #  report mouse position while it moves
     t = round(time.time() - start, 4)
     position = ahk.mouse_position
@@ -279,6 +280,8 @@ from ahk import ActionChain
 
 ac = ActionChain()
 
+# An Action Chain doesn't perform the actions until perform() is called on the chain
+
 ac.mouse_move(100, 100, speed=10)  # nothing yet
 ac.sleep(1)  # still nothing happening
 ac.mouse_move(500, 500, speed=10)  # not yet
@@ -315,6 +318,7 @@ debugging information.
 import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
+(See the ![logging module documentation](https://docs.python.org/3/library/logging.html) for more information)
 
 Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling 
 will be added.
