@@ -25,7 +25,7 @@ from ahk import AHK
 
 ahk = AHK()
 
-ahk.mouse_move(x=100, y=100, speed=10, blocking=True)  # blocks until mouse finishes moving (the default)
+ahk.mouse_move(x=100, y=100, speed=10, blocking=True)  # Moves mouse to 100, 100
 print(ahk.mouse_position)  #  (100, 100)
 ```
 
