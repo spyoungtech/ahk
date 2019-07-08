@@ -169,7 +169,7 @@ ahk = AHK()
 
 ahk.mouse_position = (200, 200)  # Moves the mouse instantly to the start position
 start = time.time()
-ahk.mouse_move(x=100, y=100, speed=30, blocking=False) # Move mouse to x, y over speed time
+ahk.mouse_move(x=100, y=100, speed=30, blocking=False)
 while True:  #  report mouse position while it moves
     t = round(time.time() - start, 4)
     position = ahk.mouse_position
@@ -251,7 +251,7 @@ from ahk import AHK, Hotkey
 
 ahk = AHK()
 
-key_combo = '#n' # Define an AutoHotKey key combonation
+key_combo = '#n' # Define an AutoHotkey key combonation
 script = 'Run Notepad' # Define an ahk script
 hotkey = Hotkey(ahk, key_combo, script) # Create Hotkey
 hotkey.start()  #  Start listening for hotkey
@@ -267,6 +267,7 @@ To stop the hotkey call the `stop()` method.
 hotkey.stop()
 ```
 
+See also the [relevant AHK documentation](https://www.autohotkey.com/docs/Hotkeys.htm)
 
 ### ActionChain
 
