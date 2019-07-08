@@ -22,7 +22,9 @@ See also [Non-Python dependencies](#deps)
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
+
 ahk.mouse_move(x=100, y=100, speed=10, blocking=True)  # blocks until mouse finishes moving (the default)
 print(ahk.mouse_position)  #  (100, 100)
 ```
@@ -40,6 +42,7 @@ Non-exhaustive examples of some of the functions available with this package. Fu
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
 
 ahk.mouse_position  # tuple of mouse coordinates (x,y)
@@ -56,6 +59,7 @@ ahk.mouse_drag(100, 100, relative=True)
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
 
 ahk.type('hello, world!')  # sends keys, as if typed (performs ahk string escapes)
@@ -78,7 +82,9 @@ Getting windows
 ```python
 from ahk import AHK
 from ahk.window import Window
+
 ahk = AHK()
+
 win = ahk.active_window  # get the active window
 win = ahk.win_get(title='Untitled - Notepad')  # by title
 win = list(ahk.windows())  # list of all windows
@@ -90,7 +96,9 @@ win = Window.from_pid('20366')  # by process ID
 Working with windows
 ```python
 from ahk import AHK
+
 ahk = AHK()
+
 ahk.run_script('Run Notepad')
 win = ahk.find_window(title=b'Untitled - Notepad')
 win.send('hello')  # send keys directly to a window (does not need focus!)
@@ -106,19 +114,21 @@ win.close()
 for window in ahk.windows():
     print(window.title)
     
-#  some more attributes
-print(window.text)
-print(window.rect)  # (x, y, width, height)
-print(window.id)  # ahk_id
-print(window.pid)
-print(window.process)
+    #  some more attributes
+    print(window.text)
+    print(window.rect)  # (x, y, width, height)
+    print(window.id)  # ahk_id
+    print(window.pid)
+    print(window.process)
 ```
 
 ## Screen
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
+
 ahk.image_search('C:\\path\\to\\image.jpg')  # find an image on screen
 # find image within a boundary on screen
 ahk.image_search('C:\\path\\to\\image.jpg', upper_bound=(100, 100),  # upper-left corner of search area
@@ -131,6 +141,7 @@ ahk.pixel_search('0x9d6346')  # get coords of first pixel with specified color
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
 
 ahk.sound_play('C:\\path\\to\\sound.wav')  # play an audio file
@@ -147,8 +158,11 @@ For some functions, you can also opt for a non-blocking interface, so you can do
 
 ```python
 import time
+
 from ahk import AHK
+
 ahk = AHK()
+
 ahk.mouse_position = (200, 200)  # moves the mouse instantly to the position
 start = time.time()
 ahk.mouse_move(x=100, y=100, speed=30, blocking=False)
@@ -177,7 +191,9 @@ You should see an output something like
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
+
 ahk_script = 'Run Notepad'
 ahk.run_script(ahk_script, blocking=False)
 ```
@@ -228,7 +244,9 @@ and the body of an AHK script to execute as a response to the hotkey.
 
 ```python
 from ahk import AHK, Hotkey
+
 ahk = AHK()
+
 key_combo = '#n'
 script = 'Run Notepad'
 hotkey = Hotkey(ahk, key_combo, script)
@@ -258,7 +276,9 @@ An additional method `sleep` is provided to allow for waiting between actions.
 
 ```python
 from ahk import ActionChain
+
 ac = ActionChain()
+
 ac.mouse_move(100, 100, speed=10)  # nothing yet
 ac.sleep(1)  # still nothing happening
 ac.mouse_move(500, 500, speed=10)  # not yet
@@ -311,6 +331,7 @@ Alternatively, you may provide the path in code
 
 ```python
 from ahk import AHK
+
 ahk = AHK(executable_path='C:\\path\\to\\AutoHotkey.exe')
 ```
 
