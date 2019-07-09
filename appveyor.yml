@@ -26,9 +26,14 @@ test_script:
   - powershell .\ci\runtests.ps1
 
 on_finish:
-  - cmd: |
-      venv\Scripts\activate.bat
-      python -m coveralls
+  - ps: |
+      venv\Scripts\activate.ps1
+      if (Test-Path env:COVERALLS_REPO_TOKEN ) { 
+          python -m coveralls
+      } else {
+          python -m coverage
+      }
+      
 
 cache:
   - ahk_install.exe -> appveyor.yml
