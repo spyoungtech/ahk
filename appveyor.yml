@@ -26,13 +26,11 @@ test_script:
   - powershell .\ci\runtests.ps1
 
 on_finish:
-  - ps: |
-      venv\Scripts\activate.ps1
-      if (Test-Path env:COVERALLS_REPO_TOKEN ) { 
-          python -m coveralls
-      } else {
-          python -m coverage
-      }
+  - cmd: |
+      venv\Scripts\activate.bat
+      IF defined COVERALLS_REPO_TOKEN (
+      python -m coveralls
+      )
       
 
 cache:
