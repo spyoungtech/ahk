@@ -1,10 +1,66 @@
 import ast
 import warnings
+import logging
 
 from ahk.script import ScriptEngine
 from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
+
+from threading import Thread
+
+import time
+
+class Bindable_Hotkey:
+
+    def __init__(self, engine: ScriptEngine, hotkey: str, function, script = None):
+        """
+            Takes an instance of AHK as first arg, the AHK hotkey, the function
+            to bind to the hotkey, and (optional) the script to run on hotkey press.
+        """
+        self.script = script
+        self.hotkey = hotkey
+        self.engine = engine
+        self.stop_thread = False
+        self.bound_function = function
+
+    # This class has no way to check if it is running
+    def start(self):
+        print(self.hotkey)
+        self.rendered_script = self.engine.render_template("bindable_hotkey.ahk", 
+        hotkey = self.hotkey, script = self.script, blocking = True)
+
+        print("starting")
+        self.thread = Thread(target = self._loop)
+        self.thread.start()
+        print("Main Thread")
+    
+    def _on_press(self, output):
+        self.bound_function()
+        self._loop()
+
+    def _loop(self):
+        if self.stop_thread == True:
+            return
+        result = self.engine.run_script(self.rendered_script, blocking=True)
+        if self.stop_thread == True:
+            return
+        if result == "Hotkey Pressed":
+            self._on_press(result)
+        else:
+            print(result)
+            self.empty_loop(result)
+    
+    def empty_loop(self, result):
+        time.sleep(.25)
+        self._loop
+
+    def stop(self):
+        try:
+            self.stop_thread = True
+            self.rendered_script.terminate()
+        except Exception as e:
+            logging.warning(f"Bindable Hotkey encountered an error while stopping: {e}")
 
 class Hotkey:
     def __init__(self, engine: ScriptEngine, hotkey: str, script: str):
