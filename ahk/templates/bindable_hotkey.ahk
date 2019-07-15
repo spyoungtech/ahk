@@ -3,4 +3,5 @@
 {{ hotkey }}::
     {{ script }}
     FileAppend, Hotkey Fired, *
+    ExitApp
 {% endblock body %}
