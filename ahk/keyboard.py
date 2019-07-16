@@ -46,14 +46,15 @@ class Bindable_Hotkey:
                         if data:
                             print('got data:', data)
                             self._on_hotkey()
-                        else:
-                            print('No data yet...')
                         pos = file.tell()
                 except FileNotFoundError:
                     next_time = time.time() + self.check_time
-
+                except PermissionError:
+                    continue
             if self.stop_thread == True:
                 return
+
+
 
     def _on_hotkey(self):
         self.bound_function()
