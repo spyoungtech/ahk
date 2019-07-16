@@ -7,60 +7,96 @@ from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
 
-from threading import Thread
-
+import pathlib
+import threading
+import os
 import time
 
 class Bindable_Hotkey:
 
-    def __init__(self, engine: ScriptEngine, hotkey: str, function, script = None):
+    def __init__(self, engine: ScriptEngine, hotkey: str, function, script = "", check_wait=.1):
         """
             Takes an instance of AHK as first arg, the AHK hotkey, the function
-            to bind to the hotkey, and (optional) the script to run on hotkey press.
+            to bind to the hotkey, (optional) the script to run on hotkey press, 
+            (optional) check_wait the amount of time between hotkey checks, defines precision.
         """
         self.script = script
         self.hotkey = hotkey
         self.engine = engine
         self.stop_thread = False
         self.bound_function = function
+        self.path = pathlib.Path(os.path.abspath("."))/"hotkey_file"
+        self.check_time = check_wait
+        self.thread = threading.Thread(target=self.heartbeat)
 
-    # This class has no way to check if it is running
-    def start(self):
-        print(self.hotkey)
-        self.rendered_script = self.engine.render_template("bindable_hotkey.ahk", 
-        hotkey = self.hotkey, script = self.script, blocking = True)
+    @property
+    def running(self):
+        return hasattr(self, '_proc')
 
-        print("starting")
-        self.thread = Thread(target = self._loop)
-        self.thread.start()
-        print("Main Thread")
-    
-    def _on_press(self, output):
+    def heartbeat(self):
+        pos = 0
+        next_time = time.time() + self.check_time
+        while self.running:
+            if time.time() >= next_time:
+                try:
+                    with open(self.path) as file:
+                        file.seek(pos)
+                        data = file.read()
+                        if data:
+                            print('got data:', data)
+                            self._on_hotkey()
+                        else:
+                            print('No data yet...')
+                        pos = file.tell()
+                except FileNotFoundError:
+                    next_time = time.time() + self.check_time
+
+            if self.stop_thread == True:
+                return
+
+    def _on_hotkey(self):
         self.bound_function()
-        self._loop()
 
-    def _loop(self):
-        if self.stop_thread == True:
+    def _start(self, script):
+        try:
+            proc = self.engine.run_script(script, blocking=False)
+            print(script)
+            yield proc
+        finally:
+            self._stop()
+
+    def start(self):
+        """
+        Starts an AutoHotkey process with the hotkey script
+        """
+        if self.running:
+            raise RuntimeError('Hotkey is already running')
+        script = self.engine.render_template('bindable_hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
+        self._gen = self._start(script)
+        proc = next(self._gen)
+        self._proc = proc
+        self.thread.start()
+
+    def _stop(self):
+        if not self.running:
             return
-        result = self.engine.run_script(self.rendered_script, blocking=True)
-        if self.stop_thread == True:
-            return
-        if result == "Hotkey Pressed":
-            self._on_press(result)
-        else:
-            print(result)
-            self.empty_loop(result)
-    
-    def empty_loop(self, result):
-        time.sleep(.25)
-        self._loop
+        self._proc.terminate()
+        del self._proc
 
     def stop(self):
+        """
+        Stops the process if it is running
+        """
+        if not self.running:
+            raise RuntimeError('Hotkey is not running')
         try:
+            next(self._gen)
+        except StopIteration:
+            pass
+        finally:
             self.stop_thread = True
-            self.rendered_script.terminate()
-        except Exception as e:
-            logging.warning(f"Bindable Hotkey encountered an error while stopping: {e}")
+            del self._gen
+   
 
 class Hotkey:
     def __init__(self, engine: ScriptEngine, hotkey: str, script: str):
