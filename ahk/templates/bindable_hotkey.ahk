@@ -2,6 +2,6 @@
 {% block body %}
 {{ hotkey }}::
     {{ script }}
-    FileAppend, Hotkey Fired, *
-    ExitApp
+    FileAppend, Hotkey, hotkey_file
+    return
 {% endblock body %}
