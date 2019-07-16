@@ -39,6 +39,7 @@ class Bindable_Hotkey:
         while self.running:
             if time.time() >= next_time:
                 try:
+                    # Fix when both ahk, and python try to access at same time
                     with open(self.path) as file:
                         file.seek(pos)
                         data = file.read()
