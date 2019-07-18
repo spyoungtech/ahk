@@ -12,6 +12,11 @@ import threading
 import os
 import time
 
+import win32file
+import win32event
+import win32con
+
+
 class Bindable_Hotkey:
 
     def __init__(self, engine: ScriptEngine, hotkey: str, function, script = "", check_wait=.1):
@@ -25,7 +30,7 @@ class Bindable_Hotkey:
         self.engine = engine
         self.stop_thread = False
         self.bound_function = function
-        self.path = pathlib.Path(os.path.abspath("."))/"hotkey_file"
+        self.path = pathlib.Path(os.path.abspath("."))/"tmp"
         self.check_time = check_wait
         self.thread = threading.Thread(target=self.heartbeat)
 
@@ -34,26 +39,27 @@ class Bindable_Hotkey:
         return hasattr(self, '_proc')
 
     def heartbeat(self):
-        pos = 0
-        next_time = time.time() + self.check_time
-        while self.running:
-            if time.time() >= next_time:
-                try:
-                    # Fix when both ahk, and python try to access at same time
-                    with open(self.path) as file:
-                        file.seek(pos)
-                        data = file.read()
-                        if data:
-                            print('got data:', data)
-                            self._on_hotkey()
-                        pos = file.tell()
-                except FileNotFoundError:
-                    next_time = time.time() + self.check_time
-                except PermissionError:
-                    continue
-            if self.stop_thread == True:
-                return
+        print(self.path)
+        change_handle = win32file.FindFirstChangeNotification (
+        str(self.path),
+        0,
+        win32con.FILE_NOTIFY_CHANGE_FILE_NAME
+        )
+        try:
+            while self.stop_thread == False:
+                result = win32event.WaitForSingleObject (change_handle, 500)
 
+                #
+                # If the WaitFor... returned because of a notification (as
+                #  opposed to timing out or some error) then look for the
+                #  changes in the directory contents.
+                #
+                if result == win32con.WAIT_OBJECT_0:
+                    print("File changed!")
+                win32file.FindNextChangeNotification (change_handle)
+
+        finally:
+            win32file.FindCloseChangeNotification (change_handle)
 
 
     def _on_hotkey(self):
@@ -73,11 +79,24 @@ class Bindable_Hotkey:
         """
         if self.running:
             raise RuntimeError('Hotkey is already running')
-        script = self.engine.render_template('bindable_hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
+        script = self.engine.render_template('bindable_hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey,
+            file_name="Hotkey_reader.txt")
         self._gen = self._start(script)
         proc = next(self._gen)
         self._proc = proc
+        
+        file = open(self.path/"Hotkey_reader.txt","w")
+        file.write("start:")
+        file.close()
         self.thread.start()
+
+        """
+from ahk import AHK
+ahk = AHK()
+from keyboard import Bindable_Hotkey
+hotkey = Bindable_Hotkey
+hotkey = Bindable_Hotkey(ahk, 'j', lambda: print("Lambdaaaaaaa"))
+        """
 
     def _stop(self):
         if not self.running:
