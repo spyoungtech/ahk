@@ -49,7 +49,6 @@ class Bindable_Hotkey:
             while self.stop_thread == False:
                 result = win32event.WaitForSingleObject (change_handle, 500)
 
-                #
                 # If the WaitFor... returned because of a notification (as
                 #  opposed to timing out or some error) then look for the
                 #  changes in the directory contents.
