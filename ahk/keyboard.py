@@ -32,19 +32,19 @@ class Bindable_Hotkey:
         self.bound_function = function
         self.path = pathlib.Path(os.path.abspath("."))/"tmp"
         self.check_time = check_wait
-        self.thread = threading.Thread(target=self.heartbeat)
 
     @property
     def running(self):
         return hasattr(self, '_proc')
 
     def heartbeat(self):
-        print(self.path)
+        print("Starting Thread")
         change_handle = win32file.FindFirstChangeNotification (
         str(self.path),
         0,
-        win32con.FILE_NOTIFY_CHANGE_FILE_NAME
+        win32con.FILE_NOTIFY_CHANGE_LAST_WRITE
         )
+
         try:
             while self.stop_thread == False:
                 result = win32event.WaitForSingleObject (change_handle, 500)
@@ -60,6 +60,7 @@ class Bindable_Hotkey:
 
         finally:
             win32file.FindCloseChangeNotification (change_handle)
+        return
 
 
     def _on_hotkey(self):
@@ -77,10 +78,12 @@ class Bindable_Hotkey:
         """
         Starts an AutoHotkey process with the hotkey script
         """
+        self.stop_thread = False
         if self.running:
             raise RuntimeError('Hotkey is already running')
-        script = self.engine.render_template('bindable_hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey,
-            file_name="Hotkey_reader.txt")
+        self.thread = threading.Thread(target=self.heartbeat)
+        script = self.engine.render_template('bindable_hotkey.ahk', blocking=False, script=self.script,
+         hotkey=self.hotkey, file_name="Hotkey_reader.txt")
         self._gen = self._start(script)
         proc = next(self._gen)
         self._proc = proc
