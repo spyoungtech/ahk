@@ -2,8 +2,10 @@ import os
 import subprocess
 from shutil import which
 from ahk.utils import make_logger
+from ahk.utils import EventListener
 from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
+import pathlib
 
 logger = make_logger(__name__)
 
@@ -34,6 +36,11 @@ class ScriptEngine(object):
             autoescape=False,
             trim_blocks=True
         )
+        self.Communication = EventListener(pathlib.Path(
+                os.path.abspath(__file__)).parents[0]/"tmp")
+    
+    def __del__(self):
+        self.Communication.stop_thread = True
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         if directives is None:
