@@ -2,22 +2,16 @@ import ast
 import warnings
 import logging
 
-import ahk
 from ahk.script import ScriptEngine
 from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
 
 import pathlib
-import threading
 import random
 import os
-import time
 import string
 
-import win32file
-import win32event
-import win32con
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -38,7 +32,7 @@ class Bindable_Hotkey:
         self.hotkey = hotkey
         self.engine = engine
         self.bound_function = [function]
-        self.path = pathlib.Path(os.path.abspath(ahk.__file__)).parents[0]/"tmp"
+        self.path = pathlib.Path(engine.module_path).parents[0]/"tmp"
         self.path.resolve()
 
         self.listener = engine.Communication
