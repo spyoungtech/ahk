@@ -2,68 +2,62 @@ import ast
 import warnings
 import logging
 
+import ahk
 from ahk.script import ScriptEngine
-from ahk.utils import escape_sequence_replace
+from ahk.utils import escape_sequence_replace, EventListener
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
 
 import pathlib
 import threading
+import random
 import os
 import time
+import string
 
 import win32file
 import win32event
 import win32con
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 class Bindable_Hotkey:
 
-    def __init__(self, engine: ScriptEngine, hotkey: str, function, script = "", check_wait=.1):
+    def __init__(self, engine: ScriptEngine, hotkey: str, function,
+            script = "", check_wait=.1):
         """
             Takes an instance of AHK as first arg, the AHK hotkey, the function
             to bind to the hotkey, (optional) the script to run on hotkey press, 
             (optional) check_wait the amount of time between hotkey checks, defines precision.
         """
         self.script = script
+        N = 9
+        self.script_code = ''.join(random.choices(string.ascii_uppercase + 
+            string.digits, k=N))+".txt"
         self.hotkey = hotkey
         self.engine = engine
-        self.stop_thread = False
-        self.bound_function = function
-        self.path = pathlib.Path(os.path.abspath("."))/"tmp"
+        self.bound_function = [function]
+        self.path = pathlib.Path(os.path.abspath(ahk.__file__)).parents[0]/"tmp"
+        self.path.resolve()
+
+        self.listener = EventListener(self.path)
+        self.listener.add(self.script_code, self._on_hotkey)
         self.check_time = check_wait
+
+    def __del__(self):
+        logging.debug("deleting keyboard class")
+        for i in os.listdir(str(self.path)):
+            os.remove(i)
+        self.listener.stop_thread = True
 
     @property
     def running(self):
         return hasattr(self, '_proc')
 
-    def heartbeat(self):
-        print("Starting Thread")
-        change_handle = win32file.FindFirstChangeNotification (
-        str(self.path),
-        0,
-        win32con.FILE_NOTIFY_CHANGE_LAST_WRITE
-        )
-
-        try:
-            while self.stop_thread == False:
-                result = win32event.WaitForSingleObject (change_handle, 500)
-
-                # If the WaitFor... returned because of a notification (as
-                #  opposed to timing out or some error) then look for the
-                #  changes in the directory contents.
-                #
-                if result == win32con.WAIT_OBJECT_0:
-                    print("File changed!")
-                win32file.FindNextChangeNotification (change_handle)
-
-        finally:
-            win32file.FindCloseChangeNotification (change_handle)
-        return
-
-
     def _on_hotkey(self):
-        self.bound_function()
+        for i in self.bound_function:
+            i()
 
     def _start(self, script):
         try:
@@ -77,20 +71,13 @@ class Bindable_Hotkey:
         """
         Starts an AutoHotkey process with the hotkey script
         """
-        self.stop_thread = False
         if self.running:
             raise RuntimeError('Hotkey is already running')
-        self.thread = threading.Thread(target=self.heartbeat)
         script = self.engine.render_template('bindable_hotkey.ahk', blocking=False, script=self.script,
-         hotkey=self.hotkey, file_name="Hotkey_reader.txt")
+         hotkey=self.hotkey, file_path=(str(self.path/self.script_code)))
         self._gen = self._start(script)
         proc = next(self._gen)
         self._proc = proc
-        
-        file = open(self.path/"Hotkey_reader.txt","w")
-        file.write("start:")
-        file.close()
-        self.thread.start()
 
         """
 from ahk import AHK
@@ -117,7 +104,6 @@ hotkey = Bindable_Hotkey(ahk, 'j', lambda: print("Lambdaaaaaaa"))
         except StopIteration:
             pass
         finally:
-            self.stop_thread = True
             del self._gen
    
 

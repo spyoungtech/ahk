@@ -63,8 +63,8 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
             self.path = pathlib.Path(directory)     
         self.path = pathlib.Path(directory)
         
-        # "Cover your ass in assert statements" - Unknown Author.
-        if not type(self.path) == pathlib.Path or not type(self.path) == pathlib.WindowsPath:
+        # "Cover your ass in assert statements" - Unremembered Author.
+        if not type(self.path) == pathlib.Path and not type(self.path) == pathlib.WindowsPath:
             raise TypeError("Expected pathlib.path or pathlib.WindowsPath but got"+ 
                 f" type {type(self.path)}")
 
@@ -137,14 +137,17 @@ class EventListener(Abstract_Communicator):
 
     def on_event(self):
         changed_files = self.get_changed_file()
-        codes = [i[0] for i in changed_files]
-        for i in codes:
+        for i in changed_files:
+            logging.debug(i)
             self._call_keycode(i)
 
     def _call_keycode(self, code):
-        functions = self.code_dict[code]
-        for i in functions:
-            i[0]()
+        try:
+            functions = self.code_dict[code]
+            for i in functions:
+                i[0]()
+        except KeyError:
+            logging.info("not my keycode!")
 
     def add(self, keycode, function_to_bind):
         try:
