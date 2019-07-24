@@ -55,28 +55,55 @@ def escape_sequence_replace(s):
 
 class Abstract_Communicator(metaclass=abc.ABCMeta):
 
-    def __init__(self, directory:str):
+    last_pass_dict = {}
+    this_pass_dict = {}
 
-        if directory == None:
-            self.path = pathlib.Path(os.path.abspath(".")) / "tmp"
-        else:
-            if type(directory) != str: 
-                raise TypeError(f"Expected type str, but got type {type(directory)}")
-            
-            self.path = pathlib.Path(directory)
-        if not self.path.exists():
-            raise FileNotFoundError(f"The directory or file at {self.path} doesn't exist")
+    def __init__(self, directory):
+        if type(directory) == str:
+            self.path = pathlib.Path(directory)     
+        self.path = pathlib.Path(directory)
+        
+        # "Cover your ass in assert statements" - Unknown Author.
+        if not type(self.path) == pathlib.Path or not type(self.path) == pathlib.WindowsPath:
+            raise TypeError("Expected pathlib.path or pathlib.WindowsPath but got"+ 
+                f" type {type(self.path)}")
+
+        assert self.path.exists() == True, f"The given path doesn't exist: {str(self.path)}"
+        assert self.path.is_dir() == True, ("The given path must"+
+            f" be a directory: {str(self.path)}")
         
         self.stop_thread = False
         self.thread = threading.Thread(target=self.event_loop)
         self.thread.start()
 
     def __del__(self):
-        self.stop_thread = True  
+        self.stop_thread = True 
 
+    def get_changed_file(self)->set:
+        self.path
+        # Some fancy pants dictionary comprehension that uses the path to cycle through
+        # all of the files in the path, make the file path the key, and set the value
+        # to the last time it was modified
+        self.this_pass_dict={self.path/i:os.path.getmtime(str(self.path/i))
+             for i in os.listdir(str(self.path))}
+        # Log the dictionary (temperary while I check that it works)
+        logging.info(self.this_pass_dict)
+
+        # Compares the two dicts and copies the ones that are the same to a variable
+        matching = self.last_pass_dict.items() & self.this_pass_dict.items()
+        # Reconstruct a dictionary out of the returned set from above
+        matching = {e[0]:e[1] for e in matching}
+        # Removes the matching keys, returning only that files that have changed
+        different = self.this_pass_dict.keys() - matching.keys()
+        # Update the last_pass dictionary to the latest files
+        self.last_pass_dict = self.this_pass_dict.copy()
+        # If there are any files that have changed, return them
+        if different != set():
+            return different
+        
     @abc.abstractmethod
     def on_event(self):
-        print("An event!!!")
+        pass
 
     def event_loop(self):
         change_handle = win32file.FindFirstChangeNotification (
@@ -105,8 +132,14 @@ class EventListener(Abstract_Communicator):
 
     code_dict={}    
 
+    def __init__(self, directory):
+        super().__init__(directory)
+
     def on_event(self):
-        return super().on_event()
+        changed_files = self.get_changed_file()
+        codes = [i[0] for i in changed_files]
+        for i in codes:
+            self._call_keycode(i)
 
     def _call_keycode(self, code):
         functions = self.code_dict[code]
@@ -130,4 +163,3 @@ class EventListener(Abstract_Communicator):
             if existing[i] == function_to_bind:
                 del existing[i]
 
-                
