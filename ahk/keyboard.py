@@ -4,7 +4,7 @@ import logging
 
 import ahk
 from ahk.script import ScriptEngine
-from ahk.utils import escape_sequence_replace, EventListener
+from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
 
@@ -41,15 +41,15 @@ class Bindable_Hotkey:
         self.path = pathlib.Path(os.path.abspath(ahk.__file__)).parents[0]/"tmp"
         self.path.resolve()
 
-        self.listener = EventListener(self.path)
+        self.listener = engine.Communication
         self.listener.add(self.script_code, self._on_hotkey)
         self.check_time = check_wait
 
     def __del__(self):
+        self.listener.stop_thread = True
         logging.debug("deleting keyboard class")
         for i in os.listdir(str(self.path)):
             os.remove(i)
-        self.listener.stop_thread = True
 
     @property
     def running(self):
@@ -104,6 +104,7 @@ hotkey = Bindable_Hotkey(ahk, 'j', lambda: print("Lambdaaaaaaa"))
         except StopIteration:
             pass
         finally:
+            self.listener.remove(self.script_code, self._on_hotkey)
             del self._gen
    
 
