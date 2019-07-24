@@ -77,7 +77,8 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
         self.thread.start()
 
     def __del__(self):
-        self.stop_thread = True 
+        self.stop_thread = True
+        logging.debug("deleting abstract_communication") 
 
     def get_changed_file(self)->set:
         self.path
@@ -86,8 +87,6 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
         # to the last time it was modified
         self.this_pass_dict={self.path/i:os.path.getmtime(str(self.path/i))
              for i in os.listdir(str(self.path))}
-        # Log the dictionary (temperary while I check that it works)
-        logging.info(self.this_pass_dict)
 
         # Compares the two dicts and copies the ones that are the same to a variable
         matching = self.last_pass_dict.items() & self.this_pass_dict.items()
@@ -114,6 +113,7 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
 
         try:
             while self.stop_thread == False:
+                logging.debug("Looping")
                 result = win32event.WaitForSingleObject (change_handle, 500)
 
                 #
@@ -127,6 +127,7 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
 
         finally:
             win32file.FindCloseChangeNotification (change_handle)
+            logging.debug("stopping notification loop")
 
 class EventListener(Abstract_Communicator):
 
@@ -138,14 +139,16 @@ class EventListener(Abstract_Communicator):
     def on_event(self):
         changed_files = self.get_changed_file()
         for i in changed_files:
-            logging.debug(i)
-            self._call_keycode(i)
+            self._call_keycode(os.path.basename(i))
 
     def _call_keycode(self, code):
+
+        logging.debug(code)
         try:
             functions = self.code_dict[code]
             for i in functions:
-                i[0]()
+                logging.debug(i)
+                i()
         except KeyError:
             logging.info("not my keycode!")
 
