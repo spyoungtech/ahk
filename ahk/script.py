@@ -30,14 +30,15 @@ class ScriptEngine(object):
                                           'Provide the absolute path with the `executable_path` keyword argument '
                                           'or in the AHK_PATH environment variable.')
         self.executable_path = executable_path
-        templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
+        self.module_path = os.path.abspath(os.path.dirname(__file__))
+        templates_path = os.path.join(self.module_path, 'templates')
         self.env = Environment(
             loader=FileSystemLoader(templates_path),
             autoescape=False,
             trim_blocks=True
         )
         self.Communication = EventListener(pathlib.Path(
-                os.path.abspath(__file__)).parents[0]/"tmp")
+                self.module_path).parents[0]/"tmp")
     
     def __del__(self):
         self.Communication.stop_thread = True
