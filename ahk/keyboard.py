@@ -35,7 +35,7 @@ class Bindable_Hotkey:
         self.path = pathlib.Path(os.path.abspath(os.path.dirname(__file__))).parents[0]/"tmp"
         self.path.resolve()
 
-        self.listener = engine.Communicator.EventListener
+        self.listener = engine.EventListener
         self.listener.add(self.script_code, self._on_hotkey)
         self.check_time = check_wait        
 
