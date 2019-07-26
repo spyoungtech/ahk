@@ -35,15 +35,9 @@ class Bindable_Hotkey:
         self.path = pathlib.Path(engine.module_path).parents[0]/"tmp"
         self.path.resolve()
 
-        self.listener = engine.Communication
+        self.listener = engine.Communicator.EventListener
         self.listener.add(self.script_code, self._on_hotkey)
-        self.check_time = check_wait
-
-    def __del__(self):
-        self.listener.stop_thread = True
-        logging.debug("deleting keyboard class")
-        for i in os.listdir(str(self.path)):
-            os.remove(i)
+        self.check_time = check_wait        
 
     @property
     def running(self):
@@ -76,7 +70,7 @@ class Bindable_Hotkey:
         """
 from ahk import AHK
 ahk = AHK()
-from keyboard import Bindable_Hotkey
+from ahk import Bindable_Hotkey
 hotkey = Bindable_Hotkey
 hotkey = Bindable_Hotkey(ahk, 'j', lambda: print("Lambdaaaaaaa"))
         """
