@@ -67,14 +67,6 @@ class Bindable_Hotkey:
         proc = next(self._gen)
         self._proc = proc
 
-        """
-from ahk import AHK
-ahk = AHK()
-from ahk import Bindable_Hotkey
-hotkey = Bindable_Hotkey
-hotkey = Bindable_Hotkey(ahk, 'j', lambda: print("Lambdaaaaaaa"))
-        """
-
     def _stop(self):
         if not self.running:
             return
