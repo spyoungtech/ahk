@@ -5,8 +5,10 @@ from ahk.script import ScriptEngine
 from ahk.screen import ScreenMixin
 from ahk.keyboard import KeyboardMixin
 from ahk.sound import SoundMixin
+from ahk.communication import Communicator
 
-class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin):
+class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin,
+    Communicator):
     pass
 
 
