@@ -32,7 +32,7 @@ class Bindable_Hotkey:
         self.hotkey = hotkey
         self.engine = engine
         self.bound_function = [function]
-        self.path = pathlib.Path(engine.module_path).parents[0]/"tmp"
+        self.path = pathlib.Path(os.path.abspath(os.path.dirname(__file__))).parents[0]/"tmp"
         self.path.resolve()
 
         self.listener = engine.Communicator.EventListener
