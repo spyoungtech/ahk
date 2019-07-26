@@ -2,10 +2,8 @@ import os
 import subprocess
 from shutil import which
 from ahk.utils import make_logger
-from ahk.utils import EventListener
 from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
-import pathlib
 
 logger = make_logger(__name__)
 
@@ -30,19 +28,12 @@ class ScriptEngine(object):
                                           'Provide the absolute path with the `executable_path` keyword argument '
                                           'or in the AHK_PATH environment variable.')
         self.executable_path = executable_path
-        self.module_path = os.path.abspath(os.path.dirname(__file__))
-        templates_path = os.path.join(self.module_path, 'templates')
+        templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
         self.env = Environment(
             loader=FileSystemLoader(templates_path),
             autoescape=False,
             trim_blocks=True
         )
-        self.Communication = EventListener(pathlib.Path(
-                self.module_path).parents[0]/"tmp")
-    
-    def _stop_thread(self):
-        logger.debug("stopping event thread")
-        self.Communication.stop_thread = True
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         if directives is None:
