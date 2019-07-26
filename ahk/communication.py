@@ -1,10 +1,12 @@
 import abc
+import atexit
 import pathlib
 import os
 import threading
 import win32file
 import win32event
 import win32con
+
 from ahk.utils import make_logger
 
 logger = make_logger(__name__)
@@ -19,16 +21,6 @@ ahk = AHK()
 from ahk import Bindable_Hotkey
 hotkey = Bindable_Hotkey(ahk, 'j', lambda: print("Lambdaaaaaaa"))
     """
-
-    def __init__(self):
-        logger.debug("Initing Communicator")
-        self.EventListener = EventListener()
-        self.module_path = os.path
-
-    def all_stop(self):
-        self.EventListener.stop()
-        # Add the other communicator when made
-
 
 class Abstract_Communicator(metaclass=abc.ABCMeta):
 
@@ -56,12 +48,6 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
 
     def stop_loop(self):
         self.stop_thread = True
-
-    def __del__(self):
-        self.stop_thread = True
-        for i in os.listdir(str(self.path)):
-            os.remove(i)
-        logger.debug("deleting abstract_communication") 
 
     def get_changed_file(self)->set:
         # Some fancy pants dictionary comprehension that uses the path to cycle through
@@ -95,8 +81,6 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
 
         try:
             while self.stop_thread == False:
-                logger.debug("Looping")
-                logger.debug(self.stop_thread)
                 result = win32event.WaitForSingleObject (change_handle, 500)
 
                 #
@@ -118,6 +102,7 @@ class EventListener(Abstract_Communicator):
     code_dict={}    
 
     def __init__(self):
+        atexit.register(self.cleanup)
         super().__init__(pathlib.Path(
             os.path.abspath(os.path.dirname(__file__))).parents[0]/"tmp")
 
@@ -126,17 +111,17 @@ class EventListener(Abstract_Communicator):
         for i in changed_files:
             self._call_keycode(os.path.basename(i))
 
-    def stop(self):
-        logger.debug("Stopping thread from EventListener")
-        self.stop_thread = True
+    def cleanup(self):
+        self.stop_loop()
+        for i in os.listdir(str(self.path)):
+            print(os.path.join(self.path, i))
+            os.remove(os.path.join(self.path, i))
 
     def _call_keycode(self, code):
-
         logger.debug(code)
         try:
             functions = self.code_dict[code]
             for i in functions:
-                logger.debug(i)
                 i()
         except KeyError:
             logger.info("not my keycode!")
