@@ -5,16 +5,24 @@ from ahk.script import ScriptEngine
 from ahk.screen import ScreenMixin
 from ahk.keyboard import KeyboardMixin
 from ahk.sound import SoundMixin
-from ahk.communication import Communicator
+from ahk.communication import EventListener
 
-class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin,
-    Communicator):
-    pass
+class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
+        is_main = kwargs.pop("use_event_loop", None)
+        if is_main == None:
+            self.EventListener = EventListener()
+
+    def __del__(self):
+        self.EventListener.stop()
 
 
 class ActionChain(AHK):
     def __init__(self, *args, **kwargs):
         self._actions = deque()
+        kwargs.append("use_event_loop", True)
         super().__init__(*args, **kwargs)
 
     def run_script(self, *args, **kwargs):
