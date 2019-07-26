@@ -40,7 +40,8 @@ class ScriptEngine(object):
         self.Communication = EventListener(pathlib.Path(
                 self.module_path).parents[0]/"tmp")
     
-    def __del__(self):
+    def _stop_thread(self):
+        logger.debug("stopping event thread")
         self.Communication.stop_thread = True
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
