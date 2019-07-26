@@ -1,11 +1,5 @@
-import abc
-import logging
-import pathlib
-import threading
 import os
-import win32file
-import win32event
-import win32con
+import logging
 
 ESCAPE_SEQUENCE_MAP = {
     '\n': '`n',
