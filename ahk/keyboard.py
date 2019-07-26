@@ -26,9 +26,8 @@ class Bindable_Hotkey:
             (optional) check_wait the amount of time between hotkey checks, defines precision.
         """
         self.script = script
-        N = 9
         self.script_code = ''.join(random.choices(string.ascii_uppercase + 
-            string.digits, k=N))+".txt"
+            string.digits, k=9))+".txt"
         self.hotkey = hotkey
         self.engine = engine
         self.bound_function = [function]
@@ -36,8 +35,7 @@ class Bindable_Hotkey:
         self.path.resolve()
 
         self.listener = engine.EventListener
-        self.listener.add(self.script_code, self._on_hotkey)
-        self.check_time = check_wait        
+        self.listener.add(self.script_code, self._on_hotkey)   
 
     @property
     def running(self):
