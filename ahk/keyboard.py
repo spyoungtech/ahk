@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class Bindable_Hotkey:
 
-    def __init__(self, engine: ScriptEngine, hotkey: str, function=None,
+    def __init__(self, engine: ScriptEngine, hotkey: str,
             script = "", check_wait=.1):
         """
             Takes an instance of AHK as first arg, the AHK hotkey, (optional) the function
@@ -28,10 +28,7 @@ class Bindable_Hotkey:
             string.digits, k=9))+".txt"
         self.hotkey = hotkey
         self.engine = engine
-        if function == None:
-            self.is_function = False
-        else:
-            self.bound_function = [function]
+        self.bound_function = []
         self.path = pathlib.Path(os.path.abspath(os.path.dirname(__file__))).parents[0]/"tmp"
         self.path.resolve()
 
