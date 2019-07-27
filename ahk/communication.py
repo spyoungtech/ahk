@@ -118,7 +118,6 @@ class EventListener(Abstract_Communicator):
             os.remove(os.path.join(self.path, i))
 
     def _call_keycode(self, code):
-        logger.debug(code)
         try:
             functions = self.code_dict[code]
             for i in functions:
