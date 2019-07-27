@@ -12,16 +12,14 @@ import random
 import os
 import string
 
-
 logging.basicConfig(level=logging.DEBUG)
-
 
 class Bindable_Hotkey:
 
-    def __init__(self, engine: ScriptEngine, hotkey: str, function,
+    def __init__(self, engine: ScriptEngine, hotkey: str, function=None,
             script = "", check_wait=.1):
         """
-            Takes an instance of AHK as first arg, the AHK hotkey, the function
+            Takes an instance of AHK as first arg, the AHK hotkey, (optional) the function
             to bind to the hotkey, (optional) the script to run on hotkey press, 
             (optional) check_wait the amount of time between hotkey checks, defines precision.
         """
@@ -30,7 +28,10 @@ class Bindable_Hotkey:
             string.digits, k=9))+".txt"
         self.hotkey = hotkey
         self.engine = engine
-        self.bound_function = [function]
+        if function == None:
+            self.is_function = False
+        else:
+            self.bound_function = [function]
         self.path = pathlib.Path(os.path.abspath(os.path.dirname(__file__))).parents[0]/"tmp"
         self.path.resolve()
 
@@ -41,9 +42,21 @@ class Bindable_Hotkey:
     def running(self):
         return hasattr(self, '_proc')
 
+    def unbind(self, function_to_unbind):
+        for i in range(0, len(self.bound_function) - 1):
+            if self.bound_function[i] == function_to_unbind:
+                del self.bound_function[i]
+                return True
+            else:
+                return False
+
+    def bind(self, function_to_bind):
+        self.bound_function.append(function_to_bind)
+
     def _on_hotkey(self):
-        for i in self.bound_function:
-            i()
+        if self.is_function == True:
+            for i in self.bound_function:
+                i()
 
     def _start(self, script):
         try:
@@ -85,7 +98,6 @@ class Bindable_Hotkey:
             self.listener.remove(self.script_code, self._on_hotkey)
             del self._gen
    
-
 class Hotkey:
     def __init__(self, engine: ScriptEngine, hotkey: str, script: str):
         self.hotkey = hotkey
