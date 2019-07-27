@@ -51,9 +51,8 @@ class Bindable_Hotkey:
         self.bound_function.append(function_to_bind)
 
     def _on_hotkey(self):
-        if self.is_function == True:
-            for i in self.bound_function:
-                i()
+        for i in self.bound_function:
+            i()
 
     def _start(self, script):
         try:
