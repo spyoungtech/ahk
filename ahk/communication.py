@@ -11,17 +11,6 @@ from ahk.utils import make_logger
 
 logger = make_logger(__name__)
 
-
-class Communicator:
-    """
-The following is a personal note
-
-from ahk import AHK
-ahk = AHK()
-from ahk import Bindable_Hotkey
-hotkey = Bindable_Hotkey(ahk, 'j', lambda: print("Lambdaaaaaaa"))
-    """
-
 class Abstract_Communicator(metaclass=abc.ABCMeta):
 
     last_pass_dict = {}
