@@ -35,7 +35,7 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
         self.thread.daemon = True
         self.thread.start()
 
-    def stop_loop(self):
+    def stop(self):
         self.stop_thread = True
 
     def get_changed_file(self)->set:
