@@ -22,9 +22,12 @@ See also [Non-Python dependencies](#deps)
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
-ahk.mouse_move(x=100, y=100, speed=10, blocking=True)  # blocks until mouse finishes moving (the default)
-print(ahk.mouse_position)  #  (100, 100)
+
+ahk.mouse_move(x=100, y=100, blocking=True)  # Blocks until mouse finishes moving (the default)
+ahk.mouse_move(x=150, y=150, speed=10, blocking=True) # Moves the mouse to x, y taking 'speed' seconds to move
+print(ahk.mouse_position)  #  (150, 150)
 ```
 
 ![ahk](https://raw.githubusercontent.com/spyoungtech/ahk/master/docs/_static/ahk.gif)
@@ -40,32 +43,35 @@ Non-exhaustive examples of some of the functions available with this package. Fu
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
 
-ahk.mouse_position  # tuple of mouse coordinates (x,y)
-ahk.mouse_move(100, 100, speed=10, relative=True)  # move mouse offset from current position
-ahk.mouse_position = (100, 100)  # moves mouse instantly to absolute position
-ahk.click()  # click primary mouse button
-ahk.double_click()
-ahk.click(200, 200)  # click a particular position
-ahk.right_click()
-ahk.mouse_drag(100, 100, relative=True)
+ahk.mouse_position  # Returns a tuple of mouse coordinates (x, y)
+ahk.mouse_move(100, 100, speed=10, relative=True)  # Moves the mouse reletave to the current position
+ahk.mouse_position = (100, 100)  # Moves the mouse instantly to absolute screen position
+ahk.click()  # Click the primary mouse button
+ahk.double_click() # Clicks the primary mouse button twice
+ahk.click(200, 200)  # Moves the mouse to a particular position and clicks
+ahk.right_click() # Clicks the secondary mouse button
+ahk.mouse_drag(100, 100, relative=True) # Holds down primary button and moves the mouse
 ```
 
 ## Keyboard
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
 
-ahk.type('hello, world!')  # sends keys, as if typed (performs ahk string escapes)
+ahk.type('hello, world!')  # Send keys, as if typed (performs ahk string escapes)
 ahk.send_input('Hello`, World{!}')  # Like AHK SendInput, must escape strings yourself!
-ahk.key_wait('a', timeout=3)  # wait up to 3 seconds for the "a" key to be pressed
-ahk.key_state('Control')  # return True or False based on whether Control key is pressed down
-ahk.key_state('CapsLock', mode='T')  # check toggle state of a key (like for NumLock, CapsLock, etc)
-ahk.key_press('a')  # press and release a key
-ahk.key_down('Control')  # press down (but do not release) Control key
-ahk.key_up('Control')  # release the key
+ahk.key_state('Control')  # Return True or False based on whether Control key is pressed down
+ahk.key_state('CapsLock', mode='T')  # Check toggle state of a key (like for NumLock, CapsLock, etc)
+ahk.key_press('a')  # Press and release a key
+ahk.key_down('Control')  # Press down (but do not release) Control key
+ahk.key_up('Control')  # Release the key
+ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be pressed. NOTE: This throws 
+                              # a TimeoutError if the key isn't pressed within the timeout window
 ```
 
 ## Windows
@@ -78,67 +84,75 @@ Getting windows
 ```python
 from ahk import AHK
 from ahk.window import Window
+
 ahk = AHK()
-win = ahk.active_window  # get the active window
+
+win = ahk.active_window  # Get the active window
 win = ahk.win_get(title='Untitled - Notepad')  # by title
 win = list(ahk.windows())  # list of all windows
 win = Window(ahk, ahk_id='0xabc123')  # by ahk_id
-win = Window.from_mouse_position(ahk)  # a window under the mouse cursor
+win = Window.from_mouse_position(ahk)  # the window under the mouse cursor
 win = Window.from_pid('20366')  # by process ID
 ```
 
 Working with windows
 ```python
 from ahk import AHK
+
 ahk = AHK()
-ahk.run_script('Run Notepad')
-win = ahk.find_window(title=b'Untitled - Notepad')
-win.send('hello')  # send keys directly to a window (does not need focus!)
+
+ahk.run_script('Run Notepad') # Open notepad
+win = ahk.find_window(title=b'Untitled - Notepad') # Find the opened window
+win.send('hello')  # Send keys directly to the window (does not need focus!)
 win.move(x=200, y=300, width=500, height=800)
-win.activate()  # give the window focus
-win.disable()  # make the window non-interactable
-win.enable()  # enable it again
-win.to_top()  # moves window on top of other windows
-win.to_bottom()
-win.always_on_top = True  # make the windows always on top
-win.close()
+win.activate()  # Give the window focus
+win.disable()  # Make the window non-interactable
+win.enable()  # Enable it again
+win.to_top()  # Move the window on top of other windows
+win.to_bottom() # Move the window to the bottom of the other windows
+win.always_on_top = True  # Make the window always on top
+win.close() # Close the window
 
 for window in ahk.windows():
     print(window.title)
     
-#  some more attributes
-print(window.text)
-print(window.rect)  # (x, y, width, height)
-print(window.id)  # ahk_id
-print(window.pid)
-print(window.process)
+    # Some more attributes
+    print(window.text)
+    print(window.rect)  # (x, y, width, height)
+    print(window.id)  # ahk_id
+    print(window.pid)
+    print(window.process)
 ```
 
 ## Screen
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
-ahk.image_search('C:\\path\\to\\image.jpg')  # find an image on screen
-# find image within a boundary on screen
+
+ahk.image_search('C:\\path\\to\\image.jpg')  # Find an image on screen
+
+# Find an image within a boundary on screen
 ahk.image_search('C:\\path\\to\\image.jpg', upper_bound=(100, 100),  # upper-left corner of search area
                                             lower_bound=(400, 400))  # lower-right corner of search area
-ahk.pixel_get_color(100, 100)  # get color of pixel located at coords (100, 100)
-ahk.pixel_search('0x9d6346')  # get coords of first pixel with specified color
+ahk.pixel_get_color(100, 100)  # Get color of pixel located at coords (100, 100)
+ahk.pixel_search('0x9d6346')  # Get coords of the first pixel with specified color
 ```
 
 ## Sound
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
 
-ahk.sound_play('C:\\path\\to\\sound.wav')  # play an audio file
-ahk.sound_beep(frequency=440, duration=1000)  # play a beep
-ahk.get_volume(device_number=1)  # get volume of a device
-ahk.set_volume(50, device_number=1)  # set volume of a device
-ahk.sound_get(device_number=1, component_type='MASTER', control_type='VOLUME') # get sound device property
-ahk.sound_set(50, device_number=1, component_type='MASTER', control_type='VOLUME') # set sound device property
+ahk.sound_play('C:\\path\\to\\sound.wav')  # Play an audio file
+ahk.sound_beep(frequency=440, duration=1000)  # Play a beep for 1 second (duration in microseconds)
+ahk.get_volume(device_number=1)  # Get volume of a device
+ahk.set_volume(50, device_number=1)  # Set volume of a device
+ahk.sound_get(device_number=1, component_type='MASTER', control_type='VOLUME') # Get sound device property
+ahk.sound_set(50, device_number=1, component_type='MASTER', control_type='VOLUME') # Set sound device property
 ```
 
 ## non-blocking modes
@@ -147,9 +161,12 @@ For some functions, you can also opt for a non-blocking interface, so you can do
 
 ```python
 import time
+
 from ahk import AHK
+
 ahk = AHK()
-ahk.mouse_position = (200, 200)  # moves the mouse instantly to the position
+
+ahk.mouse_position = (200, 200)  # Moves the mouse instantly to the start position
 start = time.time()
 ahk.mouse_move(x=100, y=100, speed=30, blocking=False)
 while True:  #  report mouse position while it moves
@@ -177,7 +194,9 @@ You should see an output something like
 
 ```python
 from ahk import AHK
+
 ahk = AHK()
+
 ahk_script = 'Run Notepad'
 ahk.run_script(ahk_script, blocking=False)
 ```
@@ -228,11 +247,13 @@ and the body of an AHK script to execute as a response to the hotkey.
 
 ```python
 from ahk import AHK, Hotkey
+
 ahk = AHK()
-key_combo = '#n'
-script = 'Run Notepad'
-hotkey = Hotkey(ahk, key_combo, script)
-hotkey.start()  #  listener process activated
+
+key_combo = '#n' # Define an AutoHotkey key combonation
+script = 'Run Notepad' # Define an ahk script
+hotkey = Hotkey(ahk, key_combo, script) # Create Hotkey
+hotkey.start()  #  Start listening for hotkey
 ```
 At this point, the hotkey is active. 
 If you press <kbd>![Windows Key][winlogo]</kbd> + <kbd>n</kbd>, the script `Run Notepad` will execute.
@@ -245,6 +266,7 @@ To stop the hotkey call the `stop()` method.
 hotkey.stop()
 ```
 
+See also the [relevant AHK documentation](https://www.autohotkey.com/docs/Hotkeys.htm)
 
 ### ActionChain
 
@@ -258,7 +280,11 @@ An additional method `sleep` is provided to allow for waiting between actions.
 
 ```python
 from ahk import ActionChain
+
 ac = ActionChain()
+
+# An Action Chain doesn't perform the actions until perform() is called on the chain
+
 ac.mouse_move(100, 100, speed=10)  # nothing yet
 ac.sleep(1)  # still nothing happening
 ac.mouse_move(500, 500, speed=10)  # not yet
@@ -295,6 +321,7 @@ debugging information.
 import logging
 logging.basicConfig(level=logging.DEBUG)
 ```
+(See the [logging module documentation](https://docs.python.org/3/library/logging.html) for more information)
 
 Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling 
 will be added.
@@ -311,6 +338,7 @@ Alternatively, you may provide the path in code
 
 ```python
 from ahk import AHK
+
 ahk = AHK(executable_path='C:\\path\\to\\AutoHotkey.exe')
 ```
 
