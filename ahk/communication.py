@@ -101,7 +101,7 @@ class EventListener(Abstract_Communicator):
             self._call_keycode(os.path.basename(i))
 
     def cleanup(self):
-        self.stop_loop()
+        self.stop()
         for i in os.listdir(str(self.path)):
             print(os.path.join(self.path, i))
             os.remove(os.path.join(self.path, i))
