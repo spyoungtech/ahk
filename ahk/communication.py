@@ -19,7 +19,8 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
     def __init__(self, directory):
         if type(directory) == str:
             self.path = pathlib.Path(directory)     
-        
+        else:
+            self.path = directory
         
         # "Cover your ass in assert statements" - Unremembered Author.
         if not type(self.path) == pathlib.Path and not type(self.path) == pathlib.WindowsPath:
