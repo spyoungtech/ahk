@@ -13,7 +13,7 @@ class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(self, *args, **kwargs)
         is_main = kwargs.pop("use_event_loop", None)
-        if is_main == None:
+        if is_main == None or is_main == True:
             self.EventListener = EventListener()
         atexit.register(self._on_exit)
         
