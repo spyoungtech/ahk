@@ -1,18 +1,14 @@
 import ast
+import pathlib
+import random
+import os
+import string
 import warnings
-import logging
 
 from ahk.script import ScriptEngine
 from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
-
-import pathlib
-import random
-import os
-import string
-
-logging.basicConfig(level=logging.DEBUG)
 
 class Bindable_Hotkey:
 
