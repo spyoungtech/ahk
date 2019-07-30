@@ -93,8 +93,9 @@ class EventListener(Abstract_Communicator):
 
     def __init__(self):
         atexit.register(self.cleanup)
-        super().__init__(pathlib.Path(
-            os.path.abspath(os.path.dirname(__file__))).parents[0]/"tmp")
+        self.directory = pathlib.Path(
+            os.path.abspath(os.path.dirname(__file__))).parents[0]/"tmp"
+        super().__init__(self.directory)
 
     def on_event(self):
         changed_files = self.get_changed_file()
