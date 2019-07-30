@@ -4,6 +4,4 @@ behave-classy
 coveralls
 wheel
 pillow
-atexit
 pywin32
-tempfile
