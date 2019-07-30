@@ -62,6 +62,7 @@ class Abstract_Communicator(metaclass=abc.ABCMeta):
         pass
 
     def event_loop(self):
+        logger.debug("Starting event notification loop")
         change_handle = win32file.FindFirstChangeNotification (
         str(self.path),
         0,
@@ -102,9 +103,7 @@ class EventListener(Abstract_Communicator):
 
     def cleanup(self):
         self.stop()
-        for i in os.listdir(str(self.path)):
-            print(os.path.join(self.path, i))
-            os.remove(os.path.join(self.path, i))
+        
 
     def _call_keycode(self, code):
         try:
