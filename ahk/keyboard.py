@@ -121,7 +121,7 @@ class KeyboardMixin(ScriptEngine):
         :return:
         """
         script = self.render_template('keyboard/send.ahk', s=s, raw=raw, delay=delay)
-        return self.run_script(script)
+        self.run_script(script)
 
     def send_raw(self, s, delay=None):
         """
