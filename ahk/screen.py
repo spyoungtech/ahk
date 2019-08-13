@@ -48,6 +48,17 @@ class ScreenMixin(ScriptEngine):
         elif scale_width and not scale_height:
             scale_height = -1
 
+        options = []
+        if icon:
+            options.append(f'Icon{icon}')
+        if color_variation:
+            options.append(color_variation)
+        if transparent:
+            options.append(f'Trans{transparent}')
+        if scale_width:
+            options.append(f'w{scale_width}')
+            options.append(f'h{scale_height}')
+
         x1, y1 = upper_bound
         if lower_bound:
             x2, y2 = lower_bound
@@ -56,12 +67,8 @@ class ScreenMixin(ScriptEngine):
         script = self.render_template('screen/image_search.ahk',
                                       x1=x1, x2=x2, y1=y1, y2=y2,
                                       coord_mode=coord_mode,
-                                      scale_width=scale_width,
-                                      scale_height=scale_height,
                                       image_path=image_path,
-                                      color_variation=color_variation,
-                                      transparent=transparent,
-                                      icon=icon)
+                                      options=options)
         resp = self.run_script(script)
         try:
             return ast.literal_eval(resp)
