@@ -1,5 +1,6 @@
 {% block directives %}
 #NoEnv
+#NoTrayIcon
 {% for directive in directives %}
 {{ directive }}
 {% endfor %}
