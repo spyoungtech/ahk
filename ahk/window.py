@@ -209,6 +209,14 @@ class Window(object):
         return result.stdout
 
     @property
+    def class_name(self):
+        script = self._render_template('window/win_get_class.ahk')
+        result = self.engine.run_script(script, decode=False)
+        if self.encoding:
+            return result.stdout.decode(encoding=self.encoding)
+        return result.stdout
+
+    @property
     def text(self):
         script = self._render_template('window/win_get_text.ahk')
         result = self.engine.run_script(script, decode=False)
@@ -353,3 +361,11 @@ class WindowMixin(ScriptEngine):
     def find_window_by_text(self, *args, **kwargs):
         with suppress(StopIteration):
             return next(self.find_windows_by_text(*args, **kwargs))
+
+    def find_windows_by_class(self, class_name, exact=False):
+        for window in self.find_windows(class_name=class_name, exact=exact):
+            yield window
+
+    def find_window_by_class(self, *args, **kwargs):
+        with suppress(StopIteration):
+            return next(self.find_windows_by_class(*args, **kwargs))
