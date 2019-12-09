@@ -70,7 +70,14 @@ class ScriptEngine(object):
                 pass  # for now, this seems needed to avoid blocking and use stdin
             return proc
 
-    def run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
+    def run_script(self, script: str, decode=True, blocking=True, **runkwargs):
+        if os.path.exists(script):
+            logger.debug('Script was a valid system path, reading the file for script text')
+            with open(script) as script_file:
+                script_text = script_file.read()
+        else:
+            logger.debug('Script is not a valid system path, assuming it is script text')
+            script_text = script
         logger.debug('Running script text: %s', script_text)
         try:
             result = self._run_script(script_text, decode=decode, blocking=blocking, **runkwargs)
