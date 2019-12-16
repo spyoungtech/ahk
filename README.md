@@ -15,7 +15,7 @@ pip install ahk
 ```
 Requires Python 3.6+
 
-See also [Non-Python dependencies](#deps)  
+See also [Non-Python dependencies](#non-python-dependencies)
 
 
 # Usage
