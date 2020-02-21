@@ -27,6 +27,12 @@ class ScriptEngine(object):
             raise ExecutableNotFoundError('Could not find AutoHotkey.exe on PATH. '
                                           'Provide the absolute path with the `executable_path` keyword argument '
                                           'or in the AHK_PATH environment variable.')
+        if not os.path.exists(executable_path):
+            raise ExecutableNotFoundError(f"File does not seems to exist: '{executable_path}'")
+        if os.path.isdir(executable_path):
+            raise ExecutableNotFoundError(f"The path {executable_path} exists, but it seems to exist "
+                                          "but it appears to be a directory, not a file. "
+                                          "Please specify the full path to the autohotkey.exe executable file")
         self.executable_path = executable_path
         templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
         self.env = Environment(
