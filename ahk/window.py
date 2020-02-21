@@ -239,7 +239,8 @@ class Window(object):
         elif value in ('toggle', 'Toggle', -1):
             self.win_set('AlwaysOnTop', 'Toggle')
         else:
-            raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
+            raise ValueError(
+                f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
     def close(self, seconds_to_wait=''):
         script = self._render_template('window/win_close.ahk', seconds_to_wait=seconds_to_wait)
@@ -263,6 +264,22 @@ class Window(object):
         script = self._render_template('window/win_activate.ahk')
         self.engine.run_script(script)
 
+    def hide(self):
+        script = self._render_template('window/win_hide.ahk')
+        self.engine.run_script(script)
+
+    def minimize(self):
+        script = self._render_template('window/win_minimize.ahk')
+        self.engine.run_script(script)
+
+    def show(self):
+        script = self._render_template('window/win_show.ahk')
+        self.engine.run_script(script)
+
+    def restore(self):
+        script = self._render_template('window/win_restore.ahk')
+        self.engine.run_script(script)
+
     def move(self, x='', y='', width=None, height=None):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
         self.engine.run_script(script)
@@ -275,7 +292,8 @@ class Window(object):
         """
         if escape:
             keys = escape_sequence_replace(keys)
-        script = self._render_template('window/win_send.ahk', keys=keys, raw=raw, delay=delay, blocking=blocking)
+        script = self._render_template('window/win_send.ahk', keys=keys,
+                                       raw=raw, delay=delay, blocking=blocking)
         return self.engine.run_script(script, blocking=blocking)
 
     def __eq__(self, other):
@@ -304,7 +322,8 @@ class WindowMixin(ScriptEngine):
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     def win_set(self, subcommand, *args, blocking=True):
-        script = self.render_template('window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
+        script = self.render_template(
+            'window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
         self.run_script(script, blocking=blocking)
 
     @property
@@ -330,6 +349,7 @@ class WindowMixin(ScriptEngine):
     def find_windows(self, func=None, **kwargs):
         if func is None:
             exact = kwargs.pop('exact', False)
+
             def func(win):
                 for attr, expected in kwargs.items():
                     if exact:
