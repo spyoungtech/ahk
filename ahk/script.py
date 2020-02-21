@@ -12,25 +12,32 @@ logger = make_logger(__name__)
 class ExecutableNotFoundError(EnvironmentError):
     pass
 
-def _resolve_executable_path(executable_path: str=''):
+
+def _resolve_executable_path(executable_path: str = ''):
     if not executable_path:
         executable_path = os.environ.get('AHK_PATH') or which('AutoHotkey.exe') or which('AutoHotkeyA32.exe')
     if not executable_path:
-        raise ExecutableNotFoundError('Could not find AutoHotkey.exe on PATH. '
-                                      'Provide the absolute path with the `executable_path` keyword argument '
-                                      'or in the AHK_PATH environment variable.')
+        raise ExecutableNotFoundError(
+            'Could not find AutoHotkey.exe on PATH. '
+            'Provide the absolute path with the `executable_path` keyword argument '
+            'or in the AHK_PATH environment variable.'
+        )
     if not os.path.exists(executable_path):
         raise ExecutableNotFoundError(f"executable_path does not seems to exist: '{executable_path}' not found")
     if os.path.isdir(executable_path):
-        raise ExecutableNotFoundError(f"The path {executable_path} appears to be a directory, but should be a file."
-                                      " Please specify the *full path* to the autohotkey.exe executable file")
+        raise ExecutableNotFoundError(
+            f"The path {executable_path} appears to be a directory, but should be a file."
+            " Please specify the *full path* to the autohotkey.exe executable file"
+        )
     if not executable_path.endswith('.exe'):
-        warnings.warn('Provided executable_path does not appear to have a .exe extension. This may be the result '
-                      'of a misconfiguration.')
+        warnings.warn(
+            'executable_path does not appear to have a .exe extension. This may be the result of a misconfiguration.'
+        )
     return executable_path
 
+
 class ScriptEngine(object):
-    def __init__(self, executable_path: str='', **kwargs):
+    def __init__(self, executable_path: str = '', **kwargs):
         """
         :param executable_path: the path to the AHK executable.
         Defaults to environ['AHK_PATH'] if not explicitly provided
@@ -38,15 +45,10 @@ class ScriptEngine(object):
         :param keep_scripts:
         :raises ExecutableNotFound: if AHK executable is not provided and cannot be found in environment variables or PATH
         """
-
         self.executable_path = _resolve_executable_path(executable_path)
 
         templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
-        self.env = Environment(
-            loader=FileSystemLoader(templates_path),
-            autoescape=False,
-            trim_blocks=True
-        )
+        self.env = Environment(loader=FileSystemLoader(templates_path), autoescape=False, trim_blocks=True)
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         if directives is None:
