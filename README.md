@@ -126,10 +126,18 @@ for window in ahk.windows():
     
     # Some more attributes
     print(window.text)
-    print(window.rect)  # (x, y, width, height)
-    print(window.id)    # ahk_id
+    print(window.rect)   # (x, y, width, height)
+    print(window.id)     # ahk_id
     print(window.pid)
     print(window.process)
+
+
+if window.active:        # Check if window active
+    window.minimize()
+
+if window.exist:         # Check if window exist
+    window.maximize()
+
 ```
 
 ## Screen
