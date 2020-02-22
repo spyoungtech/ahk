@@ -8,7 +8,6 @@ A Python wrapper around AHK.
 [![Coverage](https://coveralls.io/repos/github/spyoungtech/ahk/badge.svg?branch=master)](https://coveralls.io/github/spyoungtech/ahk?branch=master)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/ahk)
 
-
 # Installation
 
 ```
@@ -33,14 +32,11 @@ print(ahk.mouse_position)  #  (150, 150)
 
 ![ahk](https://raw.githubusercontent.com/spyoungtech/ahk/master/docs/_static/ahk.gif)
 
-
 # Examples
 
 Non-exhaustive examples of some of the functions available with this package. Full documentation coming soon!
 
-
 ## Mouse
-
 
 ```python
 from ahk import AHK
@@ -80,7 +76,7 @@ ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be press
 You can do stuff with windows, too.
 
 
-Getting windows
+### Getting windows
 
 ```python
 from ahk import AHK
@@ -88,15 +84,16 @@ from ahk.window import Window
 
 ahk = AHK()
 
-win = ahk.active_window  # Get the active window
+win = ahk.active_window                        # Get the active window
 win = ahk.win_get(title='Untitled - Notepad')  # by title
-win = list(ahk.windows())  # list of all windows
-win = Window(ahk, ahk_id='0xabc123')  # by ahk_id
-win = Window.from_mouse_position(ahk)  # the window under the mouse cursor
-win = Window.from_pid('20366')  # by process ID
+win = list(ahk.windows())                      # list of all windows
+win = Window(ahk, ahk_id='0xabc123')           # by ahk_id
+win = Window.from_mouse_position(ahk)          # the window under the mouse cursor
+win = Window.from_pid('20366')                 # by process ID
 ```
 
-Working with windows
+### Working with windows
+
 ```python
 from ahk import AHK
 
@@ -104,15 +101,25 @@ ahk = AHK()
 
 ahk.run_script('Run Notepad') # Open notepad
 win = ahk.find_window(title=b'Untitled - Notepad') # Find the opened window
+
 win.send('hello')  # Send keys directly to the window (does not need focus!)
 win.move(x=200, y=300, width=500, height=800)
-win.activate()  # Give the window focus
-win.disable()  # Make the window non-interactable
-win.enable()  # Enable it again
-win.to_top()  # Move the window on top of other windows
-win.to_bottom() # Move the window to the bottom of the other windows
-win.always_on_top = True  # Make the window always on top
-win.close() # Close the window
+
+win.activate()           # Give the window focus
+win.activate_buttom()    # Give the window focus
+win.close()              # Close the window
+win.hide()               # Hide the windwow
+win.kill()               # Kill the window 
+win.maximize()           # Maximize the window
+win.minimize()           # Minimize the window
+win.restore()            # Restore the window
+win.show()               # Show the window
+win.disable()            # Make the window non-interactable
+win.enable()             # Enable it again
+win.to_top()             # Move the window on top of other windows
+win.to_bottom()          # Move the window to the bottom of the other windows
+
+win.always_on_top = True # Make the window always on top
 
 for window in ahk.windows():
     print(window.title)
@@ -120,7 +127,7 @@ for window in ahk.windows():
     # Some more attributes
     print(window.text)
     print(window.rect)  # (x, y, width, height)
-    print(window.id)  # ahk_id
+    print(window.id)    # ahk_id
     print(window.pid)
     print(window.process)
 ```
