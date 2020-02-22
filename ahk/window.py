@@ -298,7 +298,7 @@ class Window(object):
         kwargs['win'] = self
         return self.engine.render_template(*args, **kwargs)
 
-    def _base_method(self, command, seconds_to_wait=""):
+    def _base_method(self, command, seconds_to_wait="", blocking=False):
         script = self._render_template(
             "window/base_command.ahk",
             command=command,
@@ -306,7 +306,7 @@ class Window(object):
             seconds_to_wait=seconds_to_wait
         )
 
-        return self.engine.run_script(script)
+        return self.engine.run_script(script, blocking=blocking)
 
     def activate(self):
         self._base_method("WinActivate")
@@ -334,6 +334,18 @@ class Window(object):
 
     def show(self):
         self._base_method("WinShow")
+
+    def wait(self, seconds_to_wait=""):
+        self._base_method("WinWait", seconds_to_wait=seconds_to_wait, blocking=True)
+
+    def wait_active(self, seconds_to_wait=""):
+        self._base_method("WinWaitActive", seconds_to_wait=seconds_to_wait, blocking=True)
+
+    def wait_not_active(self, seconds_to_wait=""):
+        self._base_method("WinWaitNotActive", seconds_to_wait=seconds_to_wait, blocking=True)
+
+    def wait_close(self, seconds_to_wait=""):
+        self._base_method("WinWaitClose", seconds_to_wait=seconds_to_wait, blocking=True)
 
     def move(self, x='', y='', width=None, height=None):
         script = self._render_template(
