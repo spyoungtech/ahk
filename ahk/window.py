@@ -266,7 +266,7 @@ class Window(object):
     def _base_method(self, command, *args, **kwargs):
         kwargs['command'] = command
 
-        script = self._render_template("window/base_command.ahk", *args, *kwargs)
+        script = self._render_template("window/base_command.ahk", *args, **kwargs)
         self.engine.run_script(script)
 
     def activate(self):
