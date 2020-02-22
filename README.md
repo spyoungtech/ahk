@@ -111,6 +111,10 @@ win.disable()  # Make the window non-interactable
 win.enable()  # Enable it again
 win.to_top()  # Move the window on top of other windows
 win.to_bottom() # Move the window to the bottom of the other windows
+win.minimize() # Minimize the window
+win.restore() # un-minimize it
+win.hide() # make the window hidden
+win.show() # unhide the window
 win.always_on_top = True  # Make the window always on top
 win.close() # Close the window
 
