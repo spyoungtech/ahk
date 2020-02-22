@@ -124,9 +124,12 @@ class Window(object):
         sub = self._subcommands.get(subcommand)
         if not sub:
             raise ValueError(f'No such subcommand {subcommand}')
-        script = self._render_template('window/get.ahk',
-                                       subcommand=sub,
-                                       title=f'ahk_id {self.id}')
+
+        script = self._render_template(
+            'window/get.ahk',
+            subcommand=sub,
+            title=f"ahk_id {self.id}",
+        )
 
         return self.engine.run_script(script)
 
@@ -198,15 +201,6 @@ class Window(object):
     def exist(self):
         return self._base_method(command="WinExist")
 
-    def disable(self):
-        self.win_set('Disable', '')
-
-    def enable(self):
-        self.win_set('Enable', '')
-
-    def redraw(self):
-        self.win_set('Redraw', '')
-
     @property
     def title(self):
         script = self._render_template('window/win_get_title.ahk')
@@ -232,6 +226,18 @@ class Window(object):
         return result.stdout
 
     @property
+    def transparent(self, value):
+        return self.get("Transparent")
+
+    @transparent.setter
+    def transparent(self, value):
+        if isinstance(value, int) and 0 <= value <= 255:
+            self.win_set("Transparent", value)
+        else:
+            raise ValueError(
+                f'"{value}" not a valid option. Please use [0, 255] integer')
+
+    @property
     def always_on_top(self):
         script = self._render_template('window/win_is_always_on_top.ahk')
         resp = self.engine.run_script(script)
@@ -248,6 +254,15 @@ class Window(object):
         else:
             raise ValueError(
                 f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
+
+    def disable(self):
+        self.win_set('Disable', '')
+
+    def enable(self):
+        self.win_set('Enable', '')
+
+    def redraw(self):
+        self.win_set('Redraw', '')
 
     def to_bottom(self):
         """
@@ -366,12 +381,14 @@ class WindowMixin(ScriptEngine):
 
     def win_get(self, title='', text='', exclude_title='', exclude_text='', encoding=None):
         encoding = encoding or self.window_encoding
-        script = self.render_template('window/get.ahk',
-                                      subcommand='ID',
-                                      title=title,
-                                      text=text,
-                                      exclude_text=exclude_text,
-                                      exclude_title=exclude_title)
+        script = self.render_template(
+            'window/get.ahk',
+            subcommand='ID',
+            title=title,
+            text=text,
+            exclude_text=exclude_text,
+            exclude_title=exclude_title
+        )
         ahk_id = self.run_script(script)
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
