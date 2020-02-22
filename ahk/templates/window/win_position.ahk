@@ -1,6 +1,6 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinGetPos, x, y, width, height, ahk_id {{ win.id }}
+WinGetPos, x, y, width, height, {{ title }}
 s .= Format("({}, {}, {}, {})", x, y, width, height)
 FileAppend, %s%, *
 {% endblock body %}

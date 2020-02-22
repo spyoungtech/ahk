@@ -138,12 +138,24 @@ class Window(object):
     def __repr__(self):
         return f'<ahk.window.Window ahk_id={self.id}>'
 
-    def win_set(self, subcommand, value):
-        script = self._render_template('window/win_set.ahk', subcommand=subcommand, value=value)
-        self.engine.run_script(script)
+    def set(self, subcommand, value):
+        sub = self._subcommands.get(subcommand)
+        if not sub:
+            raise ValueError(f'No such subcommand {subcommand}')
+
+        script = self._render_template(
+            'window/win_set.ahk',
+            subcommand=subcommand,
+            value=value,
+            title=f"ahk_id {self.id}"
+        )
+        return self.engine.run_script(script)
 
     def _get_pos(self):
-        script = self._render_template('window/win_position.ahk')
+        script = self._render_template(
+            'window/win_position.ahk',
+            title=f"ahk_id {self.id}"
+        )
         resp = self.engine.run_script(script)
         try:
             value = ast.literal_eval(resp)
@@ -207,29 +219,28 @@ class Window(object):
     def exist(self):
         return self._base_property(command="WinExist")
 
-    @property
-    def title(self):
-        script = self._render_template('window/win_get_title.ahk')
+    def _base_get_method(self, command):
+        script = self._render_template(
+            "window/base_get_command.ahk",
+            command=command,
+            title=f"ahk_id {self.id}"
+        )
         result = self.engine.run_script(script, decode=False)
         if self.encoding:
             return result.stdout.decode(encoding=self.encoding)
         return result.stdout
+
+    @property
+    def title(self):
+        return self._base_get_method("WinGetTitle")
 
     @property
     def class_name(self):
-        script = self._render_template('window/win_get_class.ahk')
-        result = self.engine.run_script(script, decode=False)
-        if self.encoding:
-            return result.stdout.decode(encoding=self.encoding)
-        return result.stdout
+        return self._base_get_method("WinGetClass")
 
     @property
     def text(self):
-        script = self._render_template('window/win_get_text.ahk')
-        result = self.engine.run_script(script, decode=False)
-        if self.encoding:
-            return result.stdout.decode(encoding=self.encoding)
-        return result.stdout
+        return self._base_get_method("WinGetText")
 
     @property
     def transparent(self, value):
@@ -238,47 +249,50 @@ class Window(object):
     @transparent.setter
     def transparent(self, value):
         if isinstance(value, int) and 0 <= value <= 255:
-            self.win_set("Transparent", value)
+            self.set("Transparent", value)
         else:
             raise ValueError(
                 f'"{value}" not a valid option. Please use [0, 255] integer')
 
     @property
     def always_on_top(self):
-        script = self._render_template('window/win_is_always_on_top.ahk')
+        script = self._render_template(
+            'window/win_is_always_on_top.ahk',
+            title=f"ahk_id {self.id}"
+        )
         resp = self.engine.run_script(script)
         return bool(ast.literal_eval(resp))
 
     @always_on_top.setter
     def always_on_top(self, value):
         if value in ('on', 'On', True, 1):
-            self.win_set('AlwaysOnTop', 'On')
+            self.set('AlwaysOnTop', 'On')
         elif value in ('off', 'Off', False, 0):
-            self.win_set('AlwaysOnTop', 'Off')
+            self.set('AlwaysOnTop', 'Off')
         elif value in ('toggle', 'Toggle', -1):
-            self.win_set('AlwaysOnTop', 'Toggle')
+            self.set('AlwaysOnTop', 'Toggle')
         else:
             raise ValueError(
                 f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
     def disable(self):
-        self.win_set('Disable', '')
+        self.set('Disable', '')
 
     def enable(self):
-        self.win_set('Enable', '')
+        self.set('Enable', '')
 
     def redraw(self):
-        self.win_set('Redraw', '')
+        self.set('Redraw', '')
 
     def to_bottom(self):
         """
         Send window to bottom (behind other windows)
         :return:
         """
-        self.win_set('Bottom', '')
+        self.set('Bottom', '')
 
     def to_top(self):
-        self.win_set('Top', '')
+        self.set('Top', '')
 
     def _render_template(self, *args, **kwargs):
         kwargs['win'] = self
@@ -322,7 +336,11 @@ class Window(object):
         self._base_method("WinShow")
 
     def move(self, x='', y='', width=None, height=None):
-        script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
+        script = self._render_template(
+            'window/win_move.ahk',
+            title=f"ahk_id {self.id}",
+            x=x, y=y, width=width, height=height
+        )
         self.engine.run_script(script)
 
     def send(self, keys, delay=None, raw=False, blocking=False, escape=False):
@@ -333,8 +351,11 @@ class Window(object):
         """
         if escape:
             keys = escape_sequence_replace(keys)
-        script = self._render_template('window/win_send.ahk', keys=keys,
-                                       raw=raw, delay=delay, blocking=blocking)
+        script = self._render_template(
+            'window/win_send.ahk',
+            title=f"ahk_id {self.id}",
+            keys=keys, raw=raw, delay=delay, blocking=blocking
+        )
         return self.engine.run_script(script, blocking=blocking)
 
     def __eq__(self, other):
