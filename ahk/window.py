@@ -242,10 +242,6 @@ class Window(object):
             raise ValueError(
                 f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
-    def close(self, seconds_to_wait=''):
-        script = self._render_template('window/win_close.ahk', seconds_to_wait=seconds_to_wait)
-        self.engine.run_script(script)
-
     def to_bottom(self):
         """
         Send window to bottom (behind other windows)
@@ -260,25 +256,38 @@ class Window(object):
         kwargs['win'] = self
         return self.engine.render_template(*args, **kwargs)
 
-    def activate(self):
-        script = self._render_template('window/win_activate.ahk')
+    def _base_method(self, command, *args, **kwargs):
+        kwargs['command'] = command
+
+        script = self._render_template("window/base_command.ahk", *args, *kwargs)
         self.engine.run_script(script)
+
+    def activate(self):
+        self._base_method("WinActivate")
+
+    def activate_buttom(self):
+        self._base_method("WinActivateBottom")
+
+    def close(self, seconds_to_wait=""):
+        self._base_method("WinClose", seconds_to_wait=seconds_to_wait)
 
     def hide(self):
-        script = self._render_template('window/win_hide.ahk')
-        self.engine.run_script(script)
+        self._base_method("WinHide")
+
+    def kill(self, seconds_to_wait=""):
+        self._base_method("WinKill", seconds_to_wait=seconds_to_wait)
+
+    def maximize(self):
+        self._base_method("WinMaximize")
 
     def minimize(self):
-        script = self._render_template('window/win_minimize.ahk')
-        self.engine.run_script(script)
-
-    def show(self):
-        script = self._render_template('window/win_show.ahk')
-        self.engine.run_script(script)
+        self._base_method("WinMinimize")
 
     def restore(self):
-        script = self._render_template('window/win_restore.ahk')
-        self.engine.run_script(script)
+        self._base_method("WinRestore")
+
+    def show(self):
+        self._base_method("WinShow")
 
     def move(self, x='', y='', width=None, height=None):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)
