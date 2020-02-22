@@ -20,7 +20,7 @@ def _resolve_executable_path(executable_path: str = ''):
 
     if not executable_path:
         ahk_default_path = r"C:\Program Files\AutoHotkey\AutoHotkey.exe"
-        if os.path.exists(executable_path):
+        if os.path.exists(ahk_default_path):
             executable_path = ahk_default_path
 
     if not executable_path:
