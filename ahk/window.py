@@ -234,6 +234,15 @@ class Window(object):
     def title(self):
         return self._base_get_method("WinGetTitle")
 
+    @title.setter
+    def title(self, value):
+        script = self._render_template(
+            "window/win_set_title.ahk",
+            title=f"ahk_id {self.id}",
+            new_title=value
+        )
+        return self.engine.run_script(script)
+
     @property
     def class_name(self):
         return self._base_get_method("WinGetClass")
