@@ -1,7 +1,9 @@
-from ahk.script import ScriptEngine
 import ast
-from ahk.utils import make_logger, escape_sequence_replace
 from contextlib import suppress
+
+from ahk.script import ScriptEngine
+from ahk.utils import escape_sequence_replace, make_logger
+
 logger = make_logger(__name__)
 
 
@@ -188,7 +190,11 @@ class Window(object):
         self.move(height=new_height)
 
     def _base_property(self, command):
-        script = self._render_template("window/base_check.ahk")
+        script = self._render_template(
+            "window/base_check.ahk",
+            command=command,
+            title=f"ahk_id {self.id}"
+        )
         result = self.engine.run_script(script)
         result = bool(ast.literal_eval(result))
         return result
@@ -199,7 +205,7 @@ class Window(object):
 
     @property
     def exist(self):
-        return self._base_method(command="WinExist")
+        return self._base_property(command="WinExist")
 
     @property
     def title(self):
@@ -278,67 +284,42 @@ class Window(object):
         kwargs['win'] = self
         return self.engine.render_template(*args, **kwargs)
 
-    def _base_method(self, command, *args, **kwargs):
-        kwargs['command'] = command
+    def _base_method(self, command, seconds_to_wait=""):
+        script = self._render_template(
+            "window/base_command.ahk",
+            command=command,
+            title=f"ahk_id {self.id}",
+            seconds_to_wait=seconds_to_wait
+        )
 
-        script = self._render_template("window/base_command.ahk", *args, **kwargs)
-        self.engine.run_script(script)
+        return self.engine.run_script(script)
 
     def activate(self):
-        self._base_method(
-            "WinActivate",
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinActivate")
 
     def activate_buttom(self):
-        self._base_method(
-            "WinActivateBottom",
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinActivateBottom")
 
     def close(self, seconds_to_wait=""):
-        self._base_method(
-            "WinClose",
-            seconds_to_wait=seconds_to_wait,
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinClose", seconds_to_wait=seconds_to_wait)
 
     def hide(self):
-        self._base_method(
-            "WinHide",
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinHide")
 
     def kill(self, seconds_to_wait=""):
-        self._base_method(
-            "WinKill",
-            seconds_to_wait=seconds_to_wait,
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinKill", seconds_to_wait=seconds_to_wait)
 
     def maximize(self):
-        self._base_method(
-            "WinMaximize",
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinMaximize")
 
     def minimize(self):
-        self._base_method(
-            "WinMinimize",
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinMinimize")
 
     def restore(self):
-        self._base_method(
-            "WinRestore",
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinRestore")
 
     def show(self):
-        self._base_method(
-            "WinShow",
-            title=f"ahk_id {self.id}"
-        )
+        self._base_method("WinShow")
 
     def move(self, x='', y='', width=None, height=None):
         script = self._render_template('window/win_move.ahk', x=x, y=y, width=width, height=height)

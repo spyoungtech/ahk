@@ -1,6 +1,6 @@
 {% extends "base.ahk" %}
 {% block body %}
-if {{ command }}("ahk_id {{ win.id }}") {
+if {{ command }}("{{ title }}") {
     FileAppend, 1, *
 else
 	FileAppend, 0, *
