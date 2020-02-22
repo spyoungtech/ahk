@@ -5,8 +5,13 @@ from ahk.script import ScriptEngine
 from ahk.screen import ScreenMixin
 from ahk.keyboard import KeyboardMixin
 from ahk.sound import SoundMixin
+from ahk.registery import RegisteryMixin
 
-class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin):
+
+class AHK(
+    WindowMixin, MouseMixin, KeyboardMixin,
+    ScreenMixin, SoundMixin, RegisteryMixin
+):
     pass
 
 
@@ -35,5 +40,5 @@ class ActionChain(AHK):
         :return:
         """
         n = n * 1000  # convert to milliseconds
-        script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent',})
+        script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent', })
         self.run_script(script)
