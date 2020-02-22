@@ -1,4 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinActivate, ahk_id {{ win.id }}
+WinShow, ahk_id {{ win.id }}
 {% endblock body %}
