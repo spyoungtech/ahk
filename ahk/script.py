@@ -15,29 +15,42 @@ class ExecutableNotFoundError(EnvironmentError):
 
 def _resolve_executable_path(executable_path: str = ''):
     if not executable_path:
-        executable_path = os.environ.get('AHK_PATH') or which('AutoHotkey.exe') or which('AutoHotkeyA32.exe')
+        executable_path = os.environ.get('AHK_PATH') or which(
+            'AutoHotkey.exe') or which('AutoHotkeyA32.exe')
+
+    if not executable_path:
+        ahk_default_path = r"C:\Program Files\AutoHotkey\AutoHotkey.exe"
+        if os.path.exists(executable_path):
+            executable_path = ahk_default_path
+
     if not executable_path:
         raise ExecutableNotFoundError(
             'Could not find AutoHotkey.exe on PATH. '
             'Provide the absolute path with the `executable_path` keyword argument '
             'or in the AHK_PATH environment variable.'
         )
+
     if not os.path.exists(executable_path):
-        raise ExecutableNotFoundError(f"executable_path does not seems to exist: '{executable_path}' not found")
+        raise ExecutableNotFoundError(
+            f"executable_path does not seems to exist: '{executable_path}' not found")
+
     if os.path.isdir(executable_path):
         raise ExecutableNotFoundError(
             f"The path {executable_path} appears to be a directory, but should be a file."
             " Please specify the *full path* to the autohotkey.exe executable file"
         )
+
     if not executable_path.endswith('.exe'):
         warnings.warn(
             'executable_path does not appear to have a .exe extension. This may be the result of a misconfiguration.'
         )
+
     return executable_path
 
 
 class ScriptEngine(object):
-    def __init__(self, executable_path: str = '', **kwargs):
+
+    def __init__(self, executable_path: str = "", **kwargs):
         """
         :param executable_path: the path to the AHK executable.
         Defaults to environ['AHK_PATH'] if not explicitly provided
@@ -48,7 +61,8 @@ class ScriptEngine(object):
         self.executable_path = _resolve_executable_path(executable_path)
 
         templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
-        self.env = Environment(loader=FileSystemLoader(templates_path), autoescape=False, trim_blocks=True)
+        self.env = Environment(loader=FileSystemLoader(templates_path),
+                               autoescape=False, trim_blocks=True)
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         if directives is None:
@@ -70,7 +84,8 @@ class ScriptEngine(object):
         decode = kwargs.pop('decode', False)
         script_bytes = bytes(script_text, 'utf-8')
         if blocking:
-            result = subprocess.run(runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
+            result = subprocess.run(runargs, input=script_bytes,
+                                    stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
             if decode:
                 logger.debug('Stdout: %s', repr(result.stdout))
                 logger.debug('Stderr: %s', repr(result.stderr))
@@ -78,7 +93,8 @@ class ScriptEngine(object):
             else:
                 return result
         else:
-            proc = subprocess.Popen(runargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+            proc = subprocess.Popen(runargs, stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
             try:
                 proc.communicate(script_bytes, timeout=0)
             except subprocess.TimeoutExpired:
