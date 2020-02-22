@@ -284,69 +284,60 @@ class Window(object):
         script = self._render_template("window/base_command.ahk", *args, **kwargs)
         self.engine.run_script(script)
 
-    def activate(self, title="", text="", exclude_title="", exclude_text=""):
+    def activate(self):
         self._base_method(
             "WinActivate",
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def activate_buttom(self, title="", text="", exclude_title="", exclude_text=""):
+    def activate_buttom(self):
         self._base_method(
             "WinActivateBottom",
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def close(self, seconds_to_wait="", title="", text="", exclude_title="", exclude_text=""):
+    def close(self, seconds_to_wait=""):
         self._base_method(
             "WinClose",
             seconds_to_wait=seconds_to_wait,
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def hide(self, title="", text="", exclude_title="", exclude_text=""):
+    def hide(self):
         self._base_method(
             "WinHide",
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def kill(self, seconds_to_wait="", title="", text="", exclude_title="", exclude_text=""):
+    def kill(self, seconds_to_wait=""):
         self._base_method(
             "WinKill",
             seconds_to_wait=seconds_to_wait,
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def maximize(self, title="", text="", exclude_title="", exclude_text=""):
+    def maximize(self):
         self._base_method(
             "WinMaximize",
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def minimize(self, title="", text="", exclude_title="", exclude_text=""):
+    def minimize(self):
         self._base_method(
             "WinMinimize",
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def restore(self, title="", text="", exclude_title="", exclude_text=""):
+    def restore(self):
         self._base_method(
             "WinRestore",
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
-    def show(self, title="", text="", exclude_title="", exclude_text=""):
+    def show(self):
         self._base_method(
             "WinShow",
-            title=title, text=text,
-            exclude_title=exclude_title, exclude_text=exclude_text
+            title=f"ahk_id {self.id}"
         )
 
     def move(self, x='', y='', width=None, height=None):
