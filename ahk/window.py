@@ -184,12 +184,19 @@ class Window(object):
     def height(self, new_height):
         self.move(height=new_height)
 
-    @property
-    def active(self):
-        script = self._render_template('window/win_is_active.ahk')
+    def _base_property(self, command):
+        script = self._render_template("window/base_check.ahk")
         result = self.engine.run_script(script)
         result = bool(ast.literal_eval(result))
         return result
+
+    @property
+    def active(self):
+        return self._base_property(command="WinActive")
+
+    @property
+    def exist(self):
+        return self._base_method(command="WinExist")
 
     def disable(self):
         self.win_set('Disable', '')
