@@ -82,15 +82,24 @@ class Control:
 
 
 class Window(object):
+
+    MINIMIZED = "-1"
+    MAXIMIZED = "1"
+    NON_MIN_NON_MAX = "0"
+
     _subcommands = {
         'id': 'ID',
-        'process_name': 'ProcessName',
+        'id_last': 'IDLast',
         'pid': 'PID',
+        'process_name': 'ProcessName',
         'process_path': 'ProcessPath',
         'process': 'ProcessPath',
+        'count': 'count',
+        'list': 'list',
+        'min_max': "MinMax",
         'controls': 'ControlList',
         'controls_hwnd': 'ControlListHwnd',
-        'transparency': 'Transparent',
+        'transparent': 'Transparent',
         'trans_color': 'TransColor',
         'style': 'Style',   # This will probably get a property later
         'ex_style': 'ExStyle',  # This will probably get a property later
@@ -207,9 +216,8 @@ class Window(object):
             command=command,
             title=f"ahk_id {self.id}"
         )
-        result = self.engine.run_script(script)
-        result = bool(ast.literal_eval(result))
-        return result
+        resp = self.engine.run_script(script)
+        return bool(ast.literal_eval(resp))
 
     @property
     def active(self):
@@ -252,7 +260,19 @@ class Window(object):
         return self._base_get_method("WinGetText")
 
     @property
-    def transparent(self, value):
+    def minimized(self):
+        return self.get("MinMax") == self.MINIMIZED
+
+    @property
+    def maximized(self):
+        return self.get("MinMax") == self.MAXIMIZED
+
+    @property
+    def non_max_non_min(self):
+        return self.get("MinMax") == self.NON_MIN_NON_MAX
+
+    @property
+    def transparent(self):
         return self.get("Transparent")
 
     @transparent.setter
