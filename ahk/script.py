@@ -13,15 +13,17 @@ class ExecutableNotFoundError(EnvironmentError):
     pass
 
 
+DEFAULT_EXECUTABLE_PATH = r"C:\Program Files\AutoHotkey\AutoHotkey.exe"
+
+
 def _resolve_executable_path(executable_path: str = ''):
     if not executable_path:
         executable_path = os.environ.get('AHK_PATH') or which(
             'AutoHotkey.exe') or which('AutoHotkeyA32.exe')
 
     if not executable_path:
-        ahk_default_path = r"C:\Program Files\AutoHotkey\AutoHotkey.exe"
-        if os.path.exists(ahk_default_path):
-            executable_path = ahk_default_path
+        if os.path.exists(DEFAULT_EXECUTABLE_PATH):
+            executable_path = DEFAULT_EXECUTABLE_PATH
 
     if not executable_path:
         raise ExecutableNotFoundError(
