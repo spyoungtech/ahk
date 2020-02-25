@@ -1,6 +1,7 @@
-from unittest import TestCase, main
 import subprocess
 import time
+from unittest import TestCase
+
 from ahk import AHK
 
 
