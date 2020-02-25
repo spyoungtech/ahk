@@ -87,7 +87,21 @@ class Window(object):
     MAXIMIZED = "1"
     NON_MIN_NON_MAX = "0"
 
-    _subcommands = {
+    _set_subcommands = {
+        'always_on_top': 'AlwaysOnTop',
+        'bottom': 'Bottom',
+        'top': 'Top',
+        'disable': 'Disable',
+        'enable': 'Enable',
+        'redraw': 'Redraw',
+        'style': 'Style',
+        'ex_style': 'ExStyle',
+        'region': 'Region',
+        'transparent': 'Transparent',
+        'transcolor': 'TransColor'
+    }
+
+    _get_subcommands = {
         'id': 'ID',
         'id_last': 'IDLast',
         'pid': 'PID',
@@ -104,8 +118,10 @@ class Window(object):
         'style': 'Style',   # This will probably get a property later
         'ex_style': 'ExStyle',  # This will probably get a property later
     }
+
     #  add reverse lookups
-    _subcommands.update({value: value for value in _subcommands.values()})
+    _set_subcommands.update({value: value for value in _set_subcommands.values()})
+    _get_subcommands.update({value: value for value in _get_subcommands.values()})
 
     def __init__(self, engine: ScriptEngine, ahk_id: str, encoding=None):
         self.engine = engine  # should this be a weakref instead?
@@ -127,12 +143,12 @@ class Window(object):
         return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
     def __getattr__(self, attr):
-        if attr.lower() in self._subcommands:
+        if attr.lower() in self._get_subcommands:
             return self.get(attr)
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attr}'")
 
     def get(self, subcommand):
-        sub = self._subcommands.get(subcommand)
+        sub = self._get_subcommands.get(subcommand)
         if not sub:
             raise ValueError(f'No such subcommand {subcommand}')
 
@@ -148,7 +164,7 @@ class Window(object):
         return f'<ahk.window.Window ahk_id={self.id}>'
 
     def set(self, subcommand, value):
-        sub = self._subcommands.get(subcommand)
+        sub = self._set_subcommands.get(subcommand)
         if not sub:
             raise ValueError(f'No such subcommand {subcommand}')
 
@@ -272,8 +288,12 @@ class Window(object):
         return self.get("MinMax") == self.NON_MIN_NON_MAX
 
     @property
-    def transparent(self):
-        return self.get("Transparent")
+    def transparent(self) -> int:
+        result = self.get("Transparent")
+        if result:
+            return int(result)
+        else:
+            return 255
 
     @transparent.setter
     def transparent(self, value):
@@ -284,7 +304,7 @@ class Window(object):
                 f'"{value}" not a valid option. Please use [0, 255] integer')
 
     @property
-    def always_on_top(self):
+    def always_on_top(self) -> bool:
         script = self._render_template(
             'window/win_is_always_on_top.ahk',
             title=f"ahk_id {self.id}"
