@@ -1,13 +1,18 @@
-import sys
 import os
+import subprocess
+import sys
+import threading
+import time
+from itertools import product
+from unittest import TestCase
+
+from ahk import AHK
+from ahk.keys import ALT, CTRL, KEYS
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
-from ahk import AHK
-from unittest import TestCase
-from itertools import product
-import time, subprocess
-from ahk.keys import KEYS, ALT, CTRL
-import threading
+
+
 class TestKeyboard(TestCase):
     def setUp(self):
         """
@@ -49,6 +54,7 @@ class TestKeyboard(TestCase):
         self.ahk.type('Hello, World!')
         assert b'Hello, World!' in self.notepad.text
 
+
 def a_down():
     time.sleep(0.5)
     ahk = AHK()
@@ -60,10 +66,12 @@ def release_a():
     ahk = AHK()
     ahk.key_up('a')
 
+
 def press_a():
     time.sleep(0.5)
     ahk = AHK()
     ahk.key_press('a')
+
 
 class TestKeys(TestCase):
     def setUp(self):

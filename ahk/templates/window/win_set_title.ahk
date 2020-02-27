@@ -1,4 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinMinimize, ahk_id {{ win.id }}
+WinSetTitle, {{ title }}, {{ text }}, {{ new_title }}
 {% endblock body %}

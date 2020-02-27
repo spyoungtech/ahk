@@ -1,4 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinRestore, ahk_id {{ win.id }}
+RegDelete, {{ key_name }}, {{ value_name }}
 {% endblock body %}

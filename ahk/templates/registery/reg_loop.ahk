@@ -1,5 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinGetClass, text, ahk_id {{ win.id }}
-FileAppend, %text%, *
+Loop, {{ reg }}, {{ key_name }}, {{ mode }}
 {% endblock body %}
