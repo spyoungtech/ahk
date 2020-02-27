@@ -38,25 +38,31 @@ class TestWindow(TestCase):
 
     def test_show_hide(self):
         self.win.hide()
+        time.sleep(0.5)
         self.assertFalse(self.win.exist)
 
         self.win.show()
+        time.sleep(0.5)
         self.assertTrue(self.win.exist)
 
     def test_kill(self):
         self.win.kill()
+        time.sleep(0.5)
         self.assertFalse(self.win.exist)
 
     def test_max_min(self):
         self.assertTrue(self.win.non_max_non_min)
 
         self.win.maximize()
+        time.sleep(0.5)
         self.assertTrue(self.win.maximized)
 
         self.win.minimize()
+        time.sleep(0.5)
         self.assertTrue(self.win.minimized)
 
         self.win.restore()
+        time.sleep(0.5)
         self.assertTrue(self.win.maximized)
 
     def test_names(self):
