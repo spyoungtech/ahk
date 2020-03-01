@@ -1,5 +1,6 @@
-from ahk.script import ScriptEngine
 import os
+
+from ahk.script import ScriptEngine
 
 
 class RegisteryMixin(ScriptEngine):
