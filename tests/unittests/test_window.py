@@ -1,18 +1,16 @@
-import subprocess
 import time
 from unittest import TestCase
 
 from ahk import AHK
+from ahk.window import Window
 
 
 class TestWindow(TestCase):
 
     def setUp(self):
         self.ahk = AHK()
-        self.p = subprocess.Popen('notepad')
-        time.sleep(1)
-        self.win = self.ahk.win_get(title='Untitled - Notepad')
-        self.assertIsNotNone(self.win)
+        self.win = self.ahk.run_window("notepad")
+        self.assertIsInstance(self.win, Window)
 
     def test_transparent(self):
         self.assertEqual(self.win.transparent, 255)
@@ -71,13 +69,18 @@ class TestWindow(TestCase):
         self.assertEqual(self.win.text, b'')
 
     def tearDown(self):
-        self.p.terminate()
+        self.win.close()
+        self.assertFalse(self.win.exist)
 
 
 if __name__ == "__main__":
+    import logging
+    import coloredlogs
+
+    coloredlogs.install(level='DEBUG')
+    logger = logging.getLogger(__name__)
+
     ahk = AHK()
-    p = subprocess.Popen('notepad')
-    time.sleep(1)
-    win = ahk.win_get(title='Untitled - Notepad')
-    print(win.transparent)
-    win.transparent = 255
+    win = ahk.run("notepad")
+    win.close()
+    print(win)

@@ -1,7 +1,8 @@
+import ast
 from collections import namedtuple
+
 from ahk.script import ScriptEngine
 from ahk.utils import make_logger
-import ast
 
 logger = make_logger(__name__)
 
@@ -18,6 +19,7 @@ _BUTTONS = {
     'wheelleft': 'WL',
     'wheelright': 'WR',
 }
+
 
 def resolve_button(button):
     """
@@ -41,6 +43,7 @@ class MouseMixin(ScriptEngine):
     """
     Provides mouse functionality for the AHK class
     """
+
     def __init__(self, mouse_speed=2, mode=None, **kwargs):
         if mode is None:
             mode = 'Screen'

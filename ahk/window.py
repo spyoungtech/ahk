@@ -429,6 +429,7 @@ class Window(object):
 
 
 class WindowMixin(ScriptEngine):
+
     def __init__(self, *args, **kwargs):
         self.window_encoding = kwargs.pop('window_encoding', None)
         super().__init__(*args, **kwargs)
@@ -467,7 +468,7 @@ class WindowMixin(ScriptEngine):
         """
         windowze = []
         for ahk_id in self._all_window_ids():
-            win = Window(engine=self, ahk_id=ahk_id, encoding=self.window_encoding)
+            win = self.find_window_by_id(ahk_id)
             windowze.append(win)
         return windowze
 
@@ -490,6 +491,9 @@ class WindowMixin(ScriptEngine):
     def find_window(self, func=None, **kwargs):
         with suppress(StopIteration):
             return next(self.find_windows(func=func, **kwargs))
+
+    def find_window_by_id(self, ahk_id):
+        return Window(engine=self, ahk_id=ahk_id, encoding=self.window_encoding)
 
     def find_windows_by_title(self, title, exact=False):
         for window in self.find_windows(title=title, exact=exact):
@@ -514,3 +518,51 @@ class WindowMixin(ScriptEngine):
     def find_window_by_class(self, *args, **kwargs):
         with suppress(StopIteration):
             return next(self.find_windows_by_class(*args, **kwargs))
+
+    def run_window(self, target: str, working_dir="", options="") -> Window:
+        """Run command
+
+        Arguments:
+            target {str} -- Command
+
+        Keyword Arguments:
+            working_dir {str} -- Working dir (default: {""})
+            options {str} -- Options (default: {""})
+
+        Returns:
+            Window -- Window object
+        """
+        script = self.render_template(
+            "window/run.ahk",
+            command="Run",
+            target=target,
+            working_dir=working_dir,
+            options=options,
+            wait=True
+        )
+        ahk_id = self.run_script(script)
+        return self.find_window_by_id(ahk_id)
+
+    def run(self, target, working_dir="", options=""):
+        """Run command
+
+        Arguments:
+            target {string} -- Command
+
+        Keyword Arguments:
+            working_dir {str} -- Working dir (default: {""})
+            options {str} -- Options (default: {""})
+
+        Returns:
+            {str} -- AHK pid value
+        """
+        script = self.render_template(
+            "window/run.ahk",
+            command="Run",
+            target=target,
+            working_dir=working_dir,
+            options=options,
+            wait=False
+        )
+
+        return self.run_script(script)

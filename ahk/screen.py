@@ -1,14 +1,15 @@
 import ast
+from typing import Optional, Tuple, Union
+
 from ahk.script import ScriptEngine
-from typing import Tuple, Union, Optional
 
 
 class ScreenMixin(ScriptEngine):
     def image_search(self, image_path: str,
-                     upper_bound: Tuple[int, int]=(0, 0), lower_bound: Tuple[int, int]=None,
-                     color_variation: int=None, coord_mode: str='Screen',
-                     scale_height: int=None, scale_width: int=None,
-                     transparent: str=None, icon: int=None) -> Union[Tuple[int, int], None]:
+                     upper_bound: Tuple[int, int] = (0, 0), lower_bound: Tuple[int, int] = None,
+                     color_variation: int = None, coord_mode: str = 'Screen',
+                     scale_height: int = None, scale_width: int = None,
+                     transparent: str = None, icon: int = None) -> Union[Tuple[int, int], None]:
         """
         `AutoHotkey ImageSearch reference`_
 
@@ -24,7 +25,7 @@ class ScreenMixin(ScriptEngine):
 
         :param color_variation: Shades of variation (up or down) for the intensity of RGB for each pixel. Equivalent of
         ``*n`` option. Defaults to 0.
-        
+
         :param coord_mode: the Pixel CoordMode to use. Default is 'Screen'
         :param scale_height: Scale height in pixels. Equivalent of ``*hn`` option
         :param scale_width: Scale width in pixels. Equivalent of ``*wn`` option
@@ -75,8 +76,8 @@ class ScreenMixin(ScriptEngine):
         except SyntaxError:
             return None
 
-    def pixel_get_color(self, x: int, y: int, coord_mode: str='Screen',
-                        alt: bool=False, slow: bool=False, rgb=True) -> Union[str, None]:
+    def pixel_get_color(self, x: int, y: int, coord_mode: str = 'Screen',
+                        alt: bool = False, slow: bool = False, rgb=True) -> Union[str, None]:
         """
         `AutoHotkey PixelGetColor reference`_
 
@@ -106,9 +107,9 @@ class ScreenMixin(ScriptEngine):
         resp = self.run_script(script)
         return resp
 
-    def pixel_search(self, color: Union[str, int], variation: int=0,
-                     upper_bound: Tuple[int, int]=(0, 0), lower_bound: Tuple[int, int]=None,
-                     coord_mode: str='Screen', fast: bool=True, rgb: bool=True) -> Union[Tuple[int, int], None]:
+    def pixel_search(self, color: Union[str, int], variation: int = 0,
+                     upper_bound: Tuple[int, int] = (0, 0), lower_bound: Tuple[int, int] = None,
+                     coord_mode: str = 'Screen', fast: bool = True, rgb: bool = True) -> Union[Tuple[int, int], None]:
         """
         `AutoHotkey PixelSearch reference`_
 
