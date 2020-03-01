@@ -74,6 +74,7 @@ def press_a():
 
 
 class TestKeys(TestCase):
+
     def setUp(self):
         self.ahk = AHK()
         self.thread = None

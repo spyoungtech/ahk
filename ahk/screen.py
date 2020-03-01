@@ -5,6 +5,7 @@ from ahk.script import ScriptEngine
 
 
 class ScreenMixin(ScriptEngine):
+
     def image_search(self, image_path: str,
                      upper_bound: Tuple[int, int] = (0, 0), lower_bound: Tuple[int, int] = None,
                      color_variation: int = None, coord_mode: str = 'Screen',

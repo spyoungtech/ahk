@@ -45,3 +45,5 @@ def escape_sequence_replace(s):
     >>> escape_sequence_replace('Hello, World!')
     'Hello`, World{!}'
     """
+
+    return s.translate(_TRANSLATION_TABLE)

@@ -1,3 +1,4 @@
+import time
 from unittest import TestCase
 
 from ahk import AHK
@@ -12,6 +13,8 @@ class TestCommand(TestCase):
     def test_run(self):
         pid = self.ahk.run("notepad")
         self.assertNotIsInstance(pid, Window)
+
+        time.sleep(0.5)
 
     def test_run_window(self):
         self.win = self.ahk.run_window("notepad")
