@@ -1,10 +1,11 @@
 import ast
 import warnings
 
+from ahk.directives import InstallKeybdHook, InstallMouseHook
+from ahk.keys import Key
 from ahk.script import ScriptEngine
 from ahk.utils import escape_sequence_replace
-from ahk.keys import Key
-from ahk.directives import InstallKeybdHook, InstallMouseHook
+
 
 class Hotkey:
     def __init__(self, engine: ScriptEngine, hotkey: str, script: str):
@@ -29,7 +30,8 @@ class Hotkey:
         """
         if self.running:
             raise RuntimeError('Hotkey is already running')
-        script = self.engine.render_template('hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
+        script = self.engine.render_template(
+            'hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
         self._gen = self._start(script)
         proc = next(self._gen)
         self._proc = proc
@@ -75,11 +77,12 @@ class KeyboardMixin(ScriptEngine):
         :param mode: see AHK docs
         :return: True if pressed down, else False
         """
-        script = self.render_template('keyboard/key_state.ahk', key_name=key_name, mode=mode, directives=(InstallMouseHook, InstallKeybdHook))
+        script = self.render_template('keyboard/key_state.ahk', key_name=key_name,
+                                      mode=mode, directives=(InstallMouseHook, InstallKeybdHook))
         result = ast.literal_eval(self.run_script(script))
         return bool(result)
 
-    def key_wait(self, key_name, timeout: int=None, logical_state=False, released=False):
+    def key_wait(self, key_name, timeout: int = None, logical_state=False, released=False):
         """
         Wait for key to be pressed or released (default is pressed; specify ``released=True`` to wait for key release).
 

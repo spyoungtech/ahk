@@ -2,8 +2,9 @@ import os
 import subprocess
 import warnings
 from shutil import which
-from ahk.utils import make_logger
+
 from ahk.directives import Persistent
+from ahk.utils import make_logger
 from jinja2 import Environment, FileSystemLoader
 
 logger = make_logger(__name__)

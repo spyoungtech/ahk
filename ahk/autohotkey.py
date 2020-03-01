@@ -1,11 +1,11 @@
 from collections import deque
-from ahk.mouse import MouseMixin
-from ahk.window import Window, WindowMixin
-from ahk.script import ScriptEngine
-from ahk.screen import ScreenMixin
+
 from ahk.keyboard import KeyboardMixin
-from ahk.sound import SoundMixin
+from ahk.mouse import MouseMixin
 from ahk.registery import RegisteryMixin
+from ahk.screen import ScreenMixin
+from ahk.sound import SoundMixin
+from ahk.window import WindowMixin
 
 
 class AHK(
@@ -16,6 +16,7 @@ class AHK(
 
 
 class ActionChain(AHK):
+
     def __init__(self, *args, **kwargs):
         self._actions = deque()
         super().__init__(*args, **kwargs)

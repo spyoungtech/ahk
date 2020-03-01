@@ -22,6 +22,7 @@ class Directive(SimpleNamespace, metaclass=DirectiveMeta):
     They are designed to be hashable and comparable with string equivalent of AHK directive.
     Directives that don't require arguments do not need to be instantiated.
     """
+
     def __init__(self, **kwargs):
         super().__init__(name=self.name, **kwargs)
         self._kwargs = kwargs
@@ -114,22 +115,22 @@ class MaxMem(Directive):
 
 class MaxThreads(Directive):
     def __init__(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class MaxThreadsBuffer(Directive):
     def __init__(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class MaxThreadsPerHotkey(Directive):
     def __init__(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class MenuMaskKey(Directive):
     def __init__(self):
-        raise NotImplemented
+        raise NotImplementedError
 
 
 class NoEnv(Directive):
