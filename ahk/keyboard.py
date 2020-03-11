@@ -30,8 +30,7 @@ class Hotkey:
         """
         if self.running:
             raise RuntimeError('Hotkey is already running')
-        script = self.engine.render_template(
-            'hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
+        script = self.engine.render_template('hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
         self._gen = self._start(script)
         proc = next(self._gen)
         self._proc = proc
@@ -77,8 +76,9 @@ class KeyboardMixin(ScriptEngine):
         :param mode: see AHK docs
         :return: True if pressed down, else False
         """
-        script = self.render_template('keyboard/key_state.ahk', key_name=key_name,
-                                      mode=mode, directives=(InstallMouseHook, InstallKeybdHook))
+        script = self.render_template(
+            'keyboard/key_state.ahk', key_name=key_name, mode=mode, directives=(InstallMouseHook, InstallKeybdHook)
+        )
         result = ast.literal_eval(self.run_script(script))
         return bool(result)
 
@@ -144,8 +144,10 @@ class KeyboardMixin(ScriptEngine):
         :return:
         """
         if len(s) > 5000:
-            warnings.warn('String length greater than allowed. Characters beyond 5000 may not be sent. '
-                          'See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.')
+            warnings.warn(
+                'String length greater than allowed. Characters beyond 5000 may not be sent. '
+                'See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.'
+            )
 
         script = self.render_template('keyboard/send_input.ahk', s=s)
         self.run_script(script)

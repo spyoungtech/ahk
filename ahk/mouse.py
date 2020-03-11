@@ -95,7 +95,9 @@ class MouseMixin(ScriptEngine):
             x = x or posx
             y = y or posy
 
-        return self.render_template('mouse/mouse_move.ahk', x=x, y=y, speed=speed, relative=relative, mode=mode, blocking=blocking)
+        return self.render_template(
+            'mouse/mouse_move.ahk', x=x, y=y, speed=speed, relative=relative, mode=mode, blocking=blocking
+        )
 
     def mouse_move(self, *args, **kwargs):
         """
@@ -203,7 +205,9 @@ class MouseMixin(ScriptEngine):
         """
         self.mouse_wheel('down', *args, **kwargs)
 
-    def mouse_drag(self, x, y=None, *, from_position=None, speed=None, button=1, relative=None, blocking=True, mode=None):
+    def mouse_drag(
+        self, x, y=None, *, from_position=None, speed=None, button=1, relative=None, blocking=True, mode=None
+    ):
         """
         Click and drag the mouse
 
@@ -239,15 +243,17 @@ class MouseMixin(ScriptEngine):
         if mode is None:
             mode = self.mode
 
-        script = self.render_template('mouse/mouse_drag.ahk',
-                                      button=button,
-                                      x1=x1,
-                                      y1=y1,
-                                      x2=x2,
-                                      y2=y2,
-                                      speed=speed,
-                                      relative=relative,
-                                      blocking=blocking,
-                                      mode=mode)
+        script = self.render_template(
+            'mouse/mouse_drag.ahk',
+            button=button,
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            speed=speed,
+            relative=relative,
+            blocking=blocking,
+            mode=mode,
+        )
 
         self.run_script(script, blocking=blocking)

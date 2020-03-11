@@ -8,15 +8,11 @@ from ahk.sound import SoundMixin
 from ahk.window import WindowMixin
 
 
-class AHK(
-    WindowMixin, MouseMixin, KeyboardMixin,
-    ScreenMixin, SoundMixin, RegisteryMixin
-):
+class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, RegisteryMixin):
     pass
 
 
 class ActionChain(AHK):
-
     def __init__(self, *args, **kwargs):
         self._actions = deque()
         super().__init__(*args, **kwargs)
@@ -41,5 +37,5 @@ class ActionChain(AHK):
         :return:
         """
         n = n * 1000  # convert to milliseconds
-        script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent', })
+        script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent',})
         self.run_script(script)

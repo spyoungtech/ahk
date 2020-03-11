@@ -24,8 +24,7 @@ class SoundMixin(ScriptEngine):
         :return:
         """
 
-        script = self.render_template(
-            'sound/play.ahk', filename=filename, wait=1, blocking=blocking)
+        script = self.render_template('sound/play.ahk', filename=filename, wait=1, blocking=blocking)
         self.run_script(script, blocking=blocking)
 
     def sound_get(self, device_number=1, component_type='MASTER', control_type='VOLUME'):
@@ -66,10 +65,13 @@ class SoundMixin(ScriptEngine):
         :return:
         """
 
-        script = self.render_template('sound/sound_set.ahk', value=value,
-                                      device_number=device_number,
-                                      component_type=component_type,
-                                      control_type=control_type)
+        script = self.render_template(
+            'sound/sound_set.ahk',
+            value=value,
+            device_number=device_number,
+            component_type=component_type,
+            control_type=control_type,
+        )
         self.run_script(script)
 
     def set_volume(self, value, device_number=1):
@@ -81,6 +83,5 @@ class SoundMixin(ScriptEngine):
         :return:
         """
 
-        script = self.render_template('sound/set_volume.ahk',
-                                      value=value, device_number=device_number)
+        script = self.render_template('sound/set_volume.ahk', value=value, device_number=device_number)
         self.run_script(script)

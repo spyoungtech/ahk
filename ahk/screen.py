@@ -5,12 +5,18 @@ from ahk.script import ScriptEngine
 
 
 class ScreenMixin(ScriptEngine):
-
-    def image_search(self, image_path: str,
-                     upper_bound: Tuple[int, int] = (0, 0), lower_bound: Tuple[int, int] = None,
-                     color_variation: int = None, coord_mode: str = 'Screen',
-                     scale_height: int = None, scale_width: int = None,
-                     transparent: str = None, icon: int = None) -> Union[Tuple[int, int], None]:
+    def image_search(
+        self,
+        image_path: str,
+        upper_bound: Tuple[int, int] = (0, 0),
+        lower_bound: Tuple[int, int] = None,
+        color_variation: int = None,
+        coord_mode: str = 'Screen',
+        scale_height: int = None,
+        scale_width: int = None,
+        transparent: str = None,
+        icon: int = None,
+    ) -> Union[Tuple[int, int], None]:
         """
         `AutoHotkey ImageSearch reference`_
 
@@ -66,19 +72,25 @@ class ScreenMixin(ScriptEngine):
             x2, y2 = lower_bound
         else:
             x2, y2 = ('%A_ScreenWidth%', '%A_ScreenHeight%')
-        script = self.render_template('screen/image_search.ahk',
-                                      x1=x1, x2=x2, y1=y1, y2=y2,
-                                      coord_mode=coord_mode,
-                                      image_path=image_path,
-                                      options=options)
+        script = self.render_template(
+            'screen/image_search.ahk',
+            x1=x1,
+            x2=x2,
+            y1=y1,
+            y2=y2,
+            coord_mode=coord_mode,
+            image_path=image_path,
+            options=options,
+        )
         resp = self.run_script(script)
         try:
             return ast.literal_eval(resp)
         except SyntaxError:
             return None
 
-    def pixel_get_color(self, x: int, y: int, coord_mode: str = 'Screen',
-                        alt: bool = False, slow: bool = False, rgb=True) -> Union[str, None]:
+    def pixel_get_color(
+        self, x: int, y: int, coord_mode: str = 'Screen', alt: bool = False, slow: bool = False, rgb=True
+    ) -> Union[str, None]:
         """
         `AutoHotkey PixelGetColor reference`_
 
@@ -101,16 +113,20 @@ class ScreenMixin(ScriptEngine):
             options.append('Alt')
         if rgb:
             options.append('RGB')
-        script = self.render_template('screen/pixel_get_color.ahk',
-                                      x=x, y=y,
-                                      coord_mode=coord_mode,
-                                      options=options)
+        script = self.render_template('screen/pixel_get_color.ahk', x=x, y=y, coord_mode=coord_mode, options=options)
         resp = self.run_script(script)
         return resp
 
-    def pixel_search(self, color: Union[str, int], variation: int = 0,
-                     upper_bound: Tuple[int, int] = (0, 0), lower_bound: Tuple[int, int] = None,
-                     coord_mode: str = 'Screen', fast: bool = True, rgb: bool = True) -> Union[Tuple[int, int], None]:
+    def pixel_search(
+        self,
+        color: Union[str, int],
+        variation: int = 0,
+        upper_bound: Tuple[int, int] = (0, 0),
+        lower_bound: Tuple[int, int] = None,
+        coord_mode: str = 'Screen',
+        fast: bool = True,
+        rgb: bool = True,
+    ) -> Union[Tuple[int, int], None]:
         """
         `AutoHotkey PixelSearch reference`_
 
@@ -136,12 +152,17 @@ class ScreenMixin(ScriptEngine):
         else:
             x2, y2 = ('%A_ScreenWidth%', '%A_ScreenHeight%')
 
-        script = self.render_template('screen/pixel_search.ahk',
-                                      x1=x1, y1=y1, x2=x2, y2=y2,
-                                      coord_mode=coord_mode,
-                                      color=color,
-                                      variation=variation,
-                                      options=options)
+        script = self.render_template(
+            'screen/pixel_search.ahk',
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            coord_mode=coord_mode,
+            color=color,
+            variation=variation,
+            options=options,
+        )
         resp = self.run_script(script)
         try:
             return ast.literal_eval(resp)

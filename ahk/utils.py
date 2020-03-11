@@ -18,7 +18,7 @@ ESCAPE_SEQUENCE_MAP = {
     '+': '{+}',
     '{': '{{}',
     '}': '{}}',
-    '#': '{#}'
+    '#': '{#}',
 }
 
 _TRANSLATION_TABLE = str.maketrans(ESCAPE_SEQUENCE_MAP)
@@ -27,8 +27,7 @@ _TRANSLATION_TABLE = str.maketrans(ESCAPE_SEQUENCE_MAP)
 def make_logger(name):
     logger = logging.getLogger(name)
     handler = logging.NullHandler()
-    formatter = logging.Formatter(
-        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger

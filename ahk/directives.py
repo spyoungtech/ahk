@@ -6,6 +6,7 @@ class DirectiveMeta(type):
     Overrides __str__ so directives with no arguments can be used without instantiation
     Overrides __hash__ to make objects 'unique' based upon a hash of the str representation
     """
+
     def __str__(cls):
         return f"#{cls.__name__}"
 

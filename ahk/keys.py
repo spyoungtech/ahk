@@ -31,8 +31,7 @@ class Key:
 
     def __mul__(self, n):
         if not isinstance(n, int):
-            raise TypeError(
-                f"Unsupported operand type(s) for *: '{self.__class__.__name__}' and '{type(n)}'")
+            raise TypeError(f"Unsupported operand type(s) for *: '{self.__class__.__name__}' and '{type(n)}'")
         return '{' + f'{self.name} {n}' + '}'
 
     def __eq__(self, other):
@@ -61,7 +60,6 @@ SYMBOLS = {
     'Control': '^',
     'LControl': '<^',
     'RControl': '>^',
-
 }
 
 
@@ -69,8 +67,7 @@ class KeyCombo:
     def __init__(self, *modifiers):
         self._s = None
         self.modifiers = list(modifiers)
-        assert all([isinstance(key, KeyModifier)
-                    for key in self.modifiers]), 'Keys must be modifiers'
+        assert all([isinstance(key, KeyModifier) for key in self.modifiers]), 'Keys must be modifiers'
 
     def __str__(self):
         s = ''.join(mod.symbol for mod in self.modifiers)
@@ -92,8 +89,7 @@ class KeyCombo:
             self._s = str(other)
             return self
         else:
-            raise TypeError(
-                f"unsupported operand type(s) for +: '{self.__class__.__name__}' and '{type(other)}'")
+            raise TypeError(f"unsupported operand type(s) for +: '{self.__class__.__name__}' and '{type(other)}'")
 
     def __repr__(self):
         key_modifiers = ', '.join(repr(mod) for mod in self.modifiers)
@@ -121,6 +117,7 @@ class KEYS:
     KEYS constants
     REF: https://autohotkey.com/docs/KeyList.htm
     """
+
     CAPS_LOCK = Key('CapsLock')
     CapsLock = CAPS_LOCK
     SCROLL_LOCK = Key('ScrollLock')

@@ -98,7 +98,7 @@ class Window(object):
         'ex_style': 'ExStyle',
         'region': 'Region',
         'transparent': 'Transparent',
-        'transcolor': 'TransColor'
+        'transcolor': 'TransColor',
     }
 
     _get_subcommands = {
@@ -115,7 +115,7 @@ class Window(object):
         'controls_hwnd': 'ControlListHwnd',
         'transparent': 'Transparent',
         'trans_color': 'TransColor',
-        'style': 'Style',   # This will probably get a property later
+        'style': 'Style',  # This will probably get a property later
         'ex_style': 'ExStyle',  # This will probably get a property later
     }
 
@@ -136,9 +136,7 @@ class Window(object):
 
     @classmethod
     def from_pid(cls, engine: ScriptEngine, pid, **kwargs):
-        script = engine.render_template('window/get.ahk',
-                                        subcommand="ID",
-                                        title=f'ahk_pid {pid}')
+        script = engine.render_template('window/get.ahk', subcommand="ID", title=f'ahk_pid {pid}')
         ahk_id = engine.run_script(script)
         return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
@@ -152,11 +150,7 @@ class Window(object):
         if not sub:
             raise ValueError(f'No such subcommand {subcommand}')
 
-        script = self._render_template(
-            'window/get.ahk',
-            subcommand=sub,
-            title=f"ahk_id {self.id}",
-        )
+        script = self._render_template('window/get.ahk', subcommand=sub, title=f"ahk_id {self.id}",)
 
         return self.engine.run_script(script)
 
@@ -169,18 +163,12 @@ class Window(object):
             raise ValueError(f'No such subcommand {subcommand}')
 
         script = self._render_template(
-            'window/win_set.ahk',
-            subcommand=subcommand,
-            value=value,
-            title=f"ahk_id {self.id}"
+            'window/win_set.ahk', subcommand=subcommand, value=value, title=f"ahk_id {self.id}"
         )
         return self.engine.run_script(script)
 
     def _get_pos(self):
-        script = self._render_template(
-            'window/win_position.ahk',
-            title=f"ahk_id {self.id}"
-        )
+        script = self._render_template('window/win_position.ahk', title=f"ahk_id {self.id}")
         resp = self.engine.run_script(script)
         try:
             value = ast.literal_eval(resp)
@@ -227,11 +215,7 @@ class Window(object):
         self.move(height=new_height)
 
     def _base_property(self, command):
-        script = self._render_template(
-            "window/base_check.ahk",
-            command=command,
-            title=f"ahk_id {self.id}"
-        )
+        script = self._render_template("window/base_check.ahk", command=command, title=f"ahk_id {self.id}")
         resp = self.engine.run_script(script)
         return bool(ast.literal_eval(resp))
 
@@ -244,11 +228,7 @@ class Window(object):
         return self._base_property(command="WinExist")
 
     def _base_get_method(self, command):
-        script = self._render_template(
-            "window/base_get_command.ahk",
-            command=command,
-            title=f"ahk_id {self.id}"
-        )
+        script = self._render_template("window/base_get_command.ahk", command=command, title=f"ahk_id {self.id}")
         result = self.engine.run_script(script, decode=False)
         if self.encoding:
             return result.stdout.decode(encoding=self.encoding)
@@ -260,11 +240,7 @@ class Window(object):
 
     @title.setter
     def title(self, value):
-        script = self._render_template(
-            "window/win_set_title.ahk",
-            title=f"ahk_id {self.id}",
-            new_title=value
-        )
+        script = self._render_template("window/win_set_title.ahk", title=f"ahk_id {self.id}", new_title=value)
         return self.engine.run_script(script)
 
     @property
@@ -300,15 +276,11 @@ class Window(object):
         if isinstance(value, int) and 0 <= value <= 255:
             self.set("Transparent", value)
         else:
-            raise ValueError(
-                f'"{value}" not a valid option. Please use [0, 255] integer')
+            raise ValueError(f'"{value}" not a valid option. Please use [0, 255] integer')
 
     @property
     def always_on_top(self) -> bool:
-        script = self._render_template(
-            'window/win_is_always_on_top.ahk',
-            title=f"ahk_id {self.id}"
-        )
+        script = self._render_template('window/win_is_always_on_top.ahk', title=f"ahk_id {self.id}")
         resp = self.engine.run_script(script)
         return bool(ast.literal_eval(resp))
 
@@ -321,8 +293,7 @@ class Window(object):
         elif value in ('toggle', 'Toggle', -1):
             self.set('AlwaysOnTop', 'Toggle')
         else:
-            raise ValueError(
-                f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
+            raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
     def disable(self):
         self.set('Disable', '')
@@ -349,10 +320,7 @@ class Window(object):
 
     def _base_method(self, command, seconds_to_wait="", blocking=False):
         script = self._render_template(
-            "window/base_command.ahk",
-            command=command,
-            title=f"ahk_id {self.id}",
-            seconds_to_wait=seconds_to_wait
+            "window/base_command.ahk", command=command, title=f"ahk_id {self.id}", seconds_to_wait=seconds_to_wait
         )
 
         return self.engine.run_script(script, blocking=blocking)
@@ -398,9 +366,7 @@ class Window(object):
 
     def move(self, x='', y='', width=None, height=None):
         script = self._render_template(
-            'window/win_move.ahk',
-            title=f"ahk_id {self.id}",
-            x=x, y=y, width=width, height=height
+            'window/win_move.ahk', title=f"ahk_id {self.id}", x=x, y=y, width=width, height=height
         )
         self.engine.run_script(script)
 
@@ -413,9 +379,7 @@ class Window(object):
         if escape:
             keys = escape_sequence_replace(keys)
         script = self._render_template(
-            'window/win_send.ahk',
-            title=f"ahk_id {self.id}",
-            keys=keys, raw=raw, delay=delay, blocking=blocking
+            'window/win_send.ahk', title=f"ahk_id {self.id}", keys=keys, raw=raw, delay=delay, blocking=blocking
         )
         return self.engine.run_script(script, blocking=blocking)
 
@@ -429,7 +393,6 @@ class Window(object):
 
 
 class WindowMixin(ScriptEngine):
-
     def __init__(self, *args, **kwargs):
         self.window_encoding = kwargs.pop('window_encoding', None)
         super().__init__(*args, **kwargs)
@@ -442,14 +405,13 @@ class WindowMixin(ScriptEngine):
             title=title,
             text=text,
             exclude_text=exclude_text,
-            exclude_title=exclude_title
+            exclude_title=exclude_title,
         )
         ahk_id = self.run_script(script)
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     def win_set(self, subcommand, *args, blocking=True):
-        script = self.render_template(
-            'window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
+        script = self.render_template('window/set.ahk', subcommand=subcommand, *args, blocking=blocking)
         self.run_script(script, blocking=blocking)
 
     @property
@@ -485,6 +447,7 @@ class WindowMixin(ScriptEngine):
                     if result is False:
                         return False
                 return True
+
         for window in filter(func, self.windows()):
             yield window
 
@@ -533,12 +496,7 @@ class WindowMixin(ScriptEngine):
             Window -- Window object
         """
         script = self.render_template(
-            "window/run.ahk",
-            command="Run",
-            target=target,
-            working_dir=working_dir,
-            options=options,
-            wait=True
+            "window/run.ahk", command="Run", target=target, working_dir=working_dir, options=options, wait=True
         )
         ahk_id = self.run_script(script)
         return self.find_window_by_id(ahk_id)
@@ -557,12 +515,7 @@ class WindowMixin(ScriptEngine):
             {str} -- AHK pid value
         """
         script = self.render_template(
-            "window/run.ahk",
-            command="Run",
-            target=target,
-            working_dir=working_dir,
-            options=options,
-            wait=False
+            "window/run.ahk", command="Run", target=target, working_dir=working_dir, options=options, wait=False
         )
 
         return self.run_script(script)
