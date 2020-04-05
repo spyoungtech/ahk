@@ -18,6 +18,7 @@ class Control:
     def click(self):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlClick.htm
+
         :return:
         """
         raise NotImplementedError
@@ -25,6 +26,7 @@ class Control:
     def focus(self):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlFocus.htm
+
         :return:
         """
         raise NotImplementedError
@@ -32,6 +34,7 @@ class Control:
     def get(self, key):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlGet.htm
+
         :param key:
         :return:
         """
@@ -44,6 +47,7 @@ class Control:
     def position(self):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlGetPos.htm
+
         :return:
         """
         raise NotImplementedError
@@ -52,6 +56,7 @@ class Control:
     def text(self):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlGetText.htm
+
         :return:
         """
         raise NotImplementedError
@@ -60,6 +65,7 @@ class Control:
     def text(self, new_text):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlSetText.htm
+
         :param new_text:
         :return:
         """
@@ -68,6 +74,7 @@ class Control:
     def move(self):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlMove.htm
+
         :return:
         """
         raise NotImplementedError
@@ -75,6 +82,7 @@ class Control:
     def send(self, raw=False):
         """
         REF: https://www.autohotkey.com/docs/commands/ControlSend.htm
+
         :param raw:
         :return:
         """
@@ -325,9 +333,19 @@ class Window(object):
                 f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
     def disable(self):
+        """
+        Distable the window
+        
+        :return: 
+        """
         self.set('Disable', '')
 
     def enable(self):
+        """
+        Enable the window
+        
+        :return: 
+        """
         self.set('Enable', '')
 
     def redraw(self):
@@ -341,6 +359,11 @@ class Window(object):
         self.set('Bottom', '')
 
     def to_top(self):
+        """
+        Bring the window to the foreground (above other windows)
+        
+        :return: 
+        """
         self.set('Top', '')
 
     def _render_template(self, *args, **kwargs):
@@ -358,45 +381,126 @@ class Window(object):
         return self.engine.run_script(script, blocking=blocking)
 
     def activate(self):
+        """
+        Activate the window.
+
+        See also: `WinActivate`_
+
+        .. _WinActivate: https://www.autohotkey.com/docs/commands/WinActivate.htm
+
+        :return:
+        """
         self._base_method("WinActivate")
 
     def activate_buttom(self):
+        """
+        Calls `WinActivateBottom`_ on the window
+
+        .. _WinActivateBottom: https://www.autohotkey.com/docs/commands/WinActivateBottom.htm
+
+        :return:
+        """
         self._base_method("WinActivateBottom")
 
     def close(self, seconds_to_wait=""):
+        """
+        Closes the Window. See also: `WinClose`_
+
+        .. _WinClose: https://www.autohotkey.com/docs/commands/WinClose.htm
+
+        :param seconds_to_wait:
+        :return:
+        """
         self._base_method("WinClose", seconds_to_wait=seconds_to_wait)
 
     def hide(self):
+        """
+        Hides the window. See also: `WinHide`_
+
+        .. _WinHide: https://www.autohotkey.com/docs/commands/WinHide.htm
+        
+        
+        :return:
+        """
         self._base_method("WinHide")
 
     def kill(self, seconds_to_wait=""):
         self._base_method("WinKill", seconds_to_wait=seconds_to_wait)
 
     def maximize(self):
+        """
+        maximize the window
+        
+        :return: 
+        """
         self._base_method("WinMaximize")
 
     def minimize(self):
+        """
+        minimize the window
+        
+        :return: 
+        """
         self._base_method("WinMinimize")
 
     def restore(self):
+        """
+        restore the window
+        
+        :return: 
+        """
         self._base_method("WinRestore")
 
     def show(self):
+        """
+        show the window
+        
+        :return: 
+        """
         self._base_method("WinShow")
 
     def wait(self, seconds_to_wait=""):
+        """
+        
+        :param seconds_to_wait: 
+        :return: 
+        """
         self._base_method("WinWait", seconds_to_wait=seconds_to_wait, blocking=True)
 
     def wait_active(self, seconds_to_wait=""):
+        """
+        
+        :param seconds_to_wait: 
+        :return: 
+        """
         self._base_method("WinWaitActive", seconds_to_wait=seconds_to_wait, blocking=True)
 
     def wait_not_active(self, seconds_to_wait=""):
+        """
+        
+        :param seconds_to_wait: 
+        :return: 
+        """
         self._base_method("WinWaitNotActive", seconds_to_wait=seconds_to_wait, blocking=True)
 
     def wait_close(self, seconds_to_wait=""):
+        """
+        
+        :param seconds_to_wait: 
+        :return: 
+        """
         self._base_method("WinWaitClose", seconds_to_wait=seconds_to_wait, blocking=True)
 
     def move(self, x='', y='', width=None, height=None):
+        """
+        Move the window to a position and/or change its geometry
+
+        :param x: 
+        :param y: 
+        :param width: 
+        :param height: 
+        :return: 
+        """
         script = self._render_template(
             'window/win_move.ahk',
             title=f"ahk_id {self.id}",
@@ -463,6 +567,7 @@ class WindowMixin(ScriptEngine):
     def windows(self):
         """
         Returns a list of windows
+
         :return:
         """
         windowze = []
@@ -472,6 +577,15 @@ class WindowMixin(ScriptEngine):
         return windowze
 
     def find_windows(self, func=None, **kwargs):
+        """
+        Find all matching windows
+        
+        :param func: a callable to filter windows
+        :param bool exact: if False (the default) partial matches are found. If True, only exact matches are returned
+        :param kwargs: keywords of attributes of the window (has no effect if ``func`` is provided)
+        
+        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects. 
+        """
         if func is None:
             exact = kwargs.pop('exact', False)
 
@@ -488,29 +602,75 @@ class WindowMixin(ScriptEngine):
             yield window
 
     def find_window(self, func=None, **kwargs):
+        """
+        Like ``find_windows`` but only returns the first found window
+        
+        
+        :param func: 
+        :param kwargs: 
+        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
+        """
         with suppress(StopIteration):
             return next(self.find_windows(func=func, **kwargs))
 
     def find_windows_by_title(self, title, exact=False):
+        """
+        Equivalent to ``find_windows(title=title)```
+        
+        Note that ``title`` is a ``bytes`` object
+        
+        :param bytes title: 
+        :param exact: 
+        :return: 
+        """
         for window in self.find_windows(title=title, exact=exact):
             yield window
 
     def find_window_by_title(self, *args, **kwargs):
+        """
+        Like ``find_windows_by_title`` but only returns the first result.
+        
+        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
+        """
         with suppress(StopIteration):
             return next(self.find_windows_by_title(*args, **kwargs))
 
     def find_windows_by_text(self, text, exact=False):
+        """
+        
+        :param text: 
+        :param exact: 
+        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects. 
+        """
         for window in self.find_windows(text=text, exact=exact):
             yield window
 
     def find_window_by_text(self, *args, **kwargs):
+        """
+        
+        :param args: 
+        :param kwargs: 
+        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found 
+        """
         with suppress(StopIteration):
             return next(self.find_windows_by_text(*args, **kwargs))
 
     def find_windows_by_class(self, class_name, exact=False):
+        """
+        
+        :param class_name: 
+        :param exact: 
+        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects. 
+        """
         for window in self.find_windows(class_name=class_name, exact=exact):
             yield window
 
     def find_window_by_class(self, *args, **kwargs):
+        """
+        
+        :param args: 
+        :param kwargs: 
+        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found 
+        """
         with suppress(StopIteration):
             return next(self.find_windows_by_class(*args, **kwargs))
