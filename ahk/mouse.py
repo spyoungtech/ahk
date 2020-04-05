@@ -19,9 +19,11 @@ _BUTTONS = {
     'wheelright': 'WR',
 }
 
+
 def resolve_button(button):
     """
     Resolve a string of a button name to a canonical name used for AHK script
+
     :param button:
     :type button: str
     :return:
@@ -42,6 +44,12 @@ class MouseMixin(ScriptEngine):
     Provides mouse functionality for the AHK class
     """
     def __init__(self, mouse_speed=2, mode=None, **kwargs):
+        """
+
+        :param mouse_speed: default mouse speed
+        :param mode:
+        :param kwargs:
+        """
         if mode is None:
             mode = 'Screen'
         self.mode = mode
