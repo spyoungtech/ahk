@@ -3,8 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to ahk's documentation!
-===============================
+ahk Python wrapper documentation
+================================
+
+`GitHub`_
+
+.. _GitHub: https://github.com/spyoungtech/ahk
 
 .. toctree::
    :maxdepth: 3
@@ -12,6 +16,7 @@ Welcome to ahk's documentation!
 
    quickstart
    api/index
+   README
 
 
 

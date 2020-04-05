@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx_autodoc_typehints',
     'sphinx.ext.viewcode',
+    'm2r',
 ]
 
 autodoc_default_options = {
@@ -54,8 +55,7 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ['.rst', '.md']
 
 # The master toctree document.
 master_doc = 'index'
@@ -157,7 +157,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'ahk', 'ahk Documentation',
-     author, 'ahk', 'One line description of project.',
+     author, 'ahk', 'Python wrapper for AHK.',
      'Miscellaneous'),
 ]
 
