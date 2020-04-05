@@ -1,3 +1,7 @@
+"""
+Contains directive classes
+"""
+
 from types import SimpleNamespace
 
 
