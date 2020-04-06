@@ -3,7 +3,7 @@ from io import open
 test_requirements = ['behave', 'behave-classy', 'pytest']
 extras = {'test': test_requirements}
 
-with open('README.md', encoding='utf-8') as f:
+with open('docs/README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
