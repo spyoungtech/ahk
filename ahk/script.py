@@ -65,7 +65,7 @@ def _resolve_executable_path(executable_path: str = ''):
 
 class ScriptEngine(object):
 
-    def __init__(self, executable_path: str = "", **kwargs):
+    def __init__(self, executable_path: str = "", directives=None, **kwargs):
         """
         This class is typically not used directly. AHK components inherit from this class
         and the arguments for this class should usually be passed in to :py:class:`~ahk.AHK`.
@@ -81,7 +81,7 @@ class ScriptEngine(object):
         :raises ExecutableNotFound: if AHK executable cannot be found or the specified file does not exist
         """
         self.executable_path = _resolve_executable_path(executable_path)
-
+        self._directives = directives
         templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
         self.env = Environment(loader=FileSystemLoader(templates_path),
                                autoescape=False, trim_blocks=True)
@@ -91,7 +91,7 @@ class ScriptEngine(object):
         Renders a given jinja template and returns a string of script text
 
         :param template_name: the name of the jinja template to render
-        :param directives: additional AHK directives to add to the resulting script
+        :param directives: additional AHK directives to add to all scripts
         :param blocking: whether the template should be rendered to block (use #Persistent directive)
         :param kwargs: keywords passed to template rendering
         :return: An AutoHotkey script as a string
@@ -111,6 +111,9 @@ class ScriptEngine(object):
             directives.add(Persistent)
         elif Persistent in directives:
             directives.remove(Persistent)
+        if self._directives:
+            for directive in self._directives:
+                directives.add(directive)
 
         kwargs['directives'] = directives
         template = self.env.get_template(template_name)
