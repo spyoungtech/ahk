@@ -30,5 +30,8 @@ setup(
     ],
     tests_require=test_requirements,
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
+    entry_points={
+        'console_scripts': ['console_spy = ahk.console_spy:_main']
+    }
 )
