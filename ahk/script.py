@@ -78,6 +78,8 @@ class ScriptEngine(object):
 
             If environment variable not present, tries to look for 'AutoHotkey.exe' or 'AutoHotkeyA32.exe' with shutil.which
 
+        :param directives: additional AHK directives to add to all rendered scripts
+
         :raises ExecutableNotFound: if AHK executable cannot be found or the specified file does not exist
         """
         self.executable_path = _resolve_executable_path(executable_path)
@@ -91,7 +93,7 @@ class ScriptEngine(object):
         Renders a given jinja template and returns a string of script text
 
         :param template_name: the name of the jinja template to render
-        :param directives: additional AHK directives to add to all scripts
+        :param directives: additional AHK directives to add to the resulting script
         :param blocking: whether the template should be rendered to block (use #Persistent directive)
         :param kwargs: keywords passed to template rendering
         :return: An AutoHotkey script as a string
