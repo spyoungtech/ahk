@@ -17,6 +17,7 @@ ahk Python wrapper documentation
    quickstart
    api/index
    README
+   console_spy
 
 
 

@@ -35,7 +35,8 @@ print(ahk.mouse_position)  #  (150, 150)
 
 # Examples
 
-Non-exhaustive examples of some of the functions available with this package. Full documentation coming soon!
+Non-exhaustive examples of some of the functions available with this package.  
+For complete list of methods, check out the API docs in the [full documentation](https://ahk.readthedocs.io/en/latest)
 
 ## Mouse
 
