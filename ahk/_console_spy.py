@@ -12,5 +12,9 @@ def _console_spy(*args, **kwargs):
         color = ahk.pixel_get_color(*position)
         print(f'Mouse Position: {position} Pixel Color: {color} Window Title: {window.title}                ', end='\r')
 
+
 def _main():
-    _console_spy()
+    try:
+        _console_spy()
+    except KeyboardInterrupt:
+        print('Exiting.')
