@@ -1,9 +1,7 @@
 {% extends "base.ahk" %}
 {% block body %}
-if WinActive("ahk_id {{ win.id }}") {
+if {{ command }}("{{ title }}")
     FileAppend, 1, *
-    ExitApp
-}
-FileAppend, 0, *
-ExitApp
+else
+    FileAppend, 0, *
 {% endblock body %}

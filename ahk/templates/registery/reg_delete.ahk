@@ -1,4 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinSet, {{subcommand}}, {{value}}, {{ title }}
+RegDelete, {{ key_name }}, {{ value_name }}
 {% endblock body %}

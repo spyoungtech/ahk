@@ -1,4 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinSet, {{subcommand}}, {{value}}, {{ title }}
+WinSetTitle, {{ title }}, {{ text }}, {{ new_title }}
 {% endblock body %}

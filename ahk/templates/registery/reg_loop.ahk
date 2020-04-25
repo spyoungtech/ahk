@@ -1,4 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-WinSet, {{subcommand}}, {{value}}, {{ title }}
+Loop, {{ reg }}, {{ key_name }}, {{ mode }}
 {% endblock body %}

@@ -3,12 +3,12 @@ from io import open
 test_requirements = ['behave', 'behave-classy', 'pytest']
 extras = {'test': test_requirements}
 
-with open('README.md', encoding='utf-8') as f:
+with open('docs/README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
     name='ahk',
-    version='0.6.1',
+    version='0.8.1',
     url='https://github.com/spyoungtech/ahk',
     description='A Python wrapper for AHK',
     long_description=long_description,
