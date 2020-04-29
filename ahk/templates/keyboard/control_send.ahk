@@ -2,5 +2,5 @@
 {% block body %}
 {% if delay %}SetKeyDelay, {{ delay }}{% endif %}
 
-ControlSend,, {{ s }}, AHK_ID {{ hwnd }}
+ControlSend{% if raw %}Raw{% endif %},, {{ s }}, AHK_ID {{ hwnd }}
 {% endblock body %}

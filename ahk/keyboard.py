@@ -121,17 +121,18 @@ class KeyboardMixin(ScriptEngine):
         s = escape_sequence_replace(s)
         self.send_input(s, blocking=blocking)
 
-    def control_send(self, s, hwnd, delay=None, blocking=True):
+    def control_send(self, s, hwnd, raw=False, delay=None, blocking=True):
         """
         https://autohotkey.com/docs/commands/ControlSend.htm
 
-        :param s:
-        :param hwnd:
-        :param delay:
+        :param s: the keys to send
+        :param hwnd: the AHK_ID of the window to send keys to
+        :param raw: if ``True``, makes the call ControlSendRaw
+        :param delay: the key delay to set before making the call
         :param blocking: if ``True``, waits until script finishes, else returns immediately.
         :return:
         """
-        script = self.render_template('keyboard/control_send.ahk', s=s, hwnd=hwnd, delay=delay, blocking=blocking)
+        script = self.render_template('keyboard/control_send.ahk', s=s, hwnd=hwnd, raw=raw, delay=delay)
         self.run_script(script, blocking=blocking)
 
     def send(self, s, raw=False, delay=None, blocking=True):
