@@ -1,6 +1,6 @@
 {% extends "base.ahk" %}
 {% block body %}
-{% if delay %}SetKeyDelay, {{ delay }}{% endif %}
+SetKeyDelay, {{ delay }}, {{ press_duration }}
 
 {% if raw %}ControlSendRaw{% else %}ControlSend{% endif %}, , {{ keys }}, {{ title }}
 {% endblock body %}

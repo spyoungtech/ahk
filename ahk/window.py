@@ -508,7 +508,7 @@ class Window(object):
         )
         self.engine.run_script(script)
 
-    def send(self, keys, delay=None, raw=False, blocking=False, escape=False):
+    def send(self, keys, delay=10, press_duration=-1, raw=False, blocking=False, escape=False):
         """
         Send keystrokes directly to the window.
         Uses ControlSend
@@ -519,7 +519,20 @@ class Window(object):
         script = self._render_template(
             'window/win_send.ahk',
             title=f"ahk_id {self.id}",
-            keys=keys, raw=raw, delay=delay, blocking=blocking
+            keys=keys, raw=raw, delay=delay,
+            press_duration=press_duration, blocking=blocking
+        )
+        return self.engine.run_script(script, blocking=blocking)
+
+    def click(self, x, y, blocking=False):
+        """
+        Click at an x/y location on the screen.
+        Uses ControlClick
+        https://autohotkey.com/docs/commands/ControlClick.htm
+        """
+        script = self._render_template(
+            'window/win_click.ahk',
+            x=x, y=y, hwnd=f"ahk_id {self.id}"
         )
         return self.engine.run_script(script, blocking=blocking)
 
