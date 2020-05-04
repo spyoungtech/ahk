@@ -524,18 +524,6 @@ class Window(object):
         )
         return self.engine.run_script(script, blocking=blocking)
 
-    def click(self, x, y, blocking=False):
-        """
-        Click at an x/y location on the screen.
-        Uses ControlClick
-        https://autohotkey.com/docs/commands/ControlClick.htm
-        """
-        script = self._render_template(
-            'window/win_click.ahk',
-            x=x, y=y, hwnd=f"ahk_id {self.id}"
-        )
-        return self.engine.run_script(script, blocking=blocking)
-
     def __eq__(self, other):
         if not isinstance(other, Window):
             return False
