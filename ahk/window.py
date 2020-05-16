@@ -508,7 +508,7 @@ class Window(object):
         )
         self.engine.run_script(script)
 
-    def send(self, keys, delay=10, press_duration=-1, raw=False, blocking=False, escape=False):
+    def send(self, keys, delay=10, raw=False, blocking=False, escape=False, press_duration=-1):
         """
         Send keystrokes directly to the window.
         Uses ControlSend
