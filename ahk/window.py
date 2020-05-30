@@ -392,7 +392,7 @@ class Window(object):
         """
         self._base_method("WinActivate")
 
-    def activate_buttom(self):
+    def activate_bottom(self):
         """
         Calls `WinActivateBottom`_ on the window
 
