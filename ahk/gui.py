@@ -18,7 +18,7 @@ class GUIMixin(ScriptEngine):
 
         :param text: Tooltip text
         :type text: str
-        :param ms: Wait time (ms), defaults to 1000
+        :param ms: Wait time (s), defaults to 1000
         :type ms: int, optional
         :param x: X coordinate relative to active window, defaults to ""
         :type x: str, optional
@@ -36,6 +36,24 @@ class GUIMixin(ScriptEngine):
         self.run_script(script)
 
     def show_traytip(self, title: str, text: str, second=1.0, type_id=1, slient=False, large_icon=False):
+        """Show TrayTip (Windows 10 toast notification)
+
+        https://www.autohotkey.com/docs/commands/TrayTip.htm
+
+        :param title: Title of notification
+        :type title: str
+        :param text: Content of notification
+        :type text: str
+        :param second: Wait time (s) to be disappeared, defaults to 1.0
+        :type second: float, optional
+        :param type_id: Notification type `TRAYTIP_<type>`, defaults to 1
+        :type type_id: int, optional
+        :param slient: Shows toast without sound, defaults to False
+        :type slient: bool, optional
+        :param large_icon: Shows toast with large icon, defaults to False
+        :type large_icon: bool, optional
+        """
+
         option = type_id + (16 if slient else 0) + (32 if large_icon else 0)
         script = self.render_template("gui/traytip.ahk", title=title, text=text, second=second, option=option)
         self.run_script(script)
