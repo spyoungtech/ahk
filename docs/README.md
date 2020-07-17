@@ -172,6 +172,18 @@ ahk.sound_get(device_number=1, component_type='MASTER', control_type='VOLUME') #
 ahk.sound_set(50, device_number=1, component_type='MASTER', control_type='VOLUME') # Set sound device property
 ```
 
+## GUI
+
+```python
+from ahk import AHK
+
+ahk = AHK()
+ahk.show_tooltip("hello4", second=2, x=10, y=10)                              # ToolTip
+ahk.show_info_traytip("Info", "It's also info", slient=False, blocking=True)  # Default info traytip
+ahk.show_warning_traytip("Warning", "It's warning")                           # Warning traytip
+ahk.show_error_traytip("Error", "It's error")                                 # Error trytip
+```
+
 ## non-blocking modes
 
 For some functions, you can also opt for a non-blocking interface, so you can do other stuff while AHK scripts run.
@@ -387,4 +399,3 @@ These are some similar projects that are commonly used for automation with Pytho
 * [keyboard](https://github.com/boppreh/keyboard) - Pure Python cross-platform keyboard hooks/control and hotkeys!
 * [mouse](https://github.com/boppreh/mouse) - From the creators of `keyboard`, Pure Python *mouse* control!
 * [pynput](https://github.com/moses-palmer/pynput) - Keyboard and mouse control
-
