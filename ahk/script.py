@@ -14,9 +14,11 @@ import os
 import subprocess
 import warnings
 from shutil import which
-from ahk.utils import make_logger
-from ahk.directives import Persistent
+
 from jinja2 import Environment, FileSystemLoader
+
+from ahk.directives import Persistent
+from ahk.utils import make_logger
 
 logger = make_logger(__name__)
 
@@ -31,12 +33,10 @@ DEFAULT_EXECUTABLE_PATH = r"C:\Program Files\AutoHotkey\AutoHotkey.exe"
 
 def _resolve_executable_path(executable_path: str = ''):
     if not executable_path:
-        executable_path = os.environ.get('AHK_PATH') or which(
-            'AutoHotkey.exe') or which('AutoHotkeyA32.exe')
+        executable_path = os.environ.get('AHK_PATH') or which('AutoHotkey.exe') or which('AutoHotkeyA32.exe')
 
-    if not executable_path:
-        if os.path.exists(DEFAULT_EXECUTABLE_PATH):
-            executable_path = DEFAULT_EXECUTABLE_PATH
+    if not executable_path and os.path.exists(DEFAULT_EXECUTABLE_PATH):
+        executable_path = DEFAULT_EXECUTABLE_PATH
 
     if not executable_path:
         raise ExecutableNotFoundError(
@@ -46,8 +46,7 @@ def _resolve_executable_path(executable_path: str = ''):
         )
 
     if not os.path.exists(executable_path):
-        raise ExecutableNotFoundError(
-            f"executable_path does not seems to exist: '{executable_path}' not found")
+        raise ExecutableNotFoundError(f"executable_path does not seems to exist: '{executable_path}' not found")
 
     if os.path.isdir(executable_path):
         raise ExecutableNotFoundError(
@@ -64,7 +63,6 @@ def _resolve_executable_path(executable_path: str = ''):
 
 
 class ScriptEngine(object):
-
     def __init__(self, executable_path: str = "", **kwargs):
         """
         This class is typically not used directly. AHK components inherit from this class
@@ -83,8 +81,7 @@ class ScriptEngine(object):
         self.executable_path = _resolve_executable_path(executable_path)
 
         templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
-        self.env = Environment(loader=FileSystemLoader(templates_path),
-                               autoescape=False, trim_blocks=True)
+        self.env = Environment(loader=FileSystemLoader(templates_path), autoescape=False, trim_blocks=True)
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         """
@@ -122,8 +119,9 @@ class ScriptEngine(object):
         decode = kwargs.pop('decode', False)
         script_bytes = bytes(script_text, 'utf-8')
         if blocking:
-            result = subprocess.run(runargs, input=script_bytes,
-                                    stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
+            result = subprocess.run(
+                runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs
+            )
             if decode:
                 logger.debug('Stdout: %s', repr(result.stdout))
                 logger.debug('Stderr: %s', repr(result.stderr))
@@ -131,8 +129,9 @@ class ScriptEngine(object):
             else:
                 return result
         else:
-            proc = subprocess.Popen(runargs, stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+            proc = subprocess.Popen(
+                runargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+            )
             try:
                 proc.communicate(script_bytes, timeout=0)
             except subprocess.TimeoutExpired:
