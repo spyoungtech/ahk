@@ -70,7 +70,8 @@ class KeyboardMixin(ScriptEngine):
         :param script: The script to execute when the hotkey is activated (AutoHotkey code as a string)
         :return: an :py:class:`~ahk.keyboard.Hotkey` instance
         """
-        return Hotkey(engine=self, *args, **kwargs)
+        engine = kwargs.pop('engine', self)
+        return Hotkey(engine, *args, **kwargs)
 
     def key_state(self, key_name, mode=None) -> bool:
         """
