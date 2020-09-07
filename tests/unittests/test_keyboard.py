@@ -54,6 +54,21 @@ class TestKeyboard(TestCase):
         self.ahk.type('Hello, World!')
         assert b'Hello, World!' in self.notepad.text
 
+    def test_type_escapes_equals(self):
+        '''
+        https://github.com/spyoungtech/ahk/issues/96
+        '''
+        self.notepad.activate()
+        self.ahk.type('=foo')
+        assert b'=foo' in self.notepad.text
+
+    def test_sendraw_equals(self):
+        '''
+        https://github.com/spyoungtech/ahk/issues/96
+        '''
+        self.notepad.activate()
+        self.ahk.send_raw('=foo')
+        assert b'=foo' in self.notepad.text
 
 def a_down():
     time.sleep(0.5)
