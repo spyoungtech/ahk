@@ -120,26 +120,26 @@ class RegisteryMixin(ScriptEngine):
         import warnings
         warnings.warn(
             'read() has been renamed and will be removed in a future version. use reg_read() instead',
-            warnings.DeprecationWarning, stacklevel=2)
+            DeprecationWarning, stacklevel=2)
         return self.reg_read(*args, **kwargs)
 
     def write(self, *args, **kwargs):
         import warnings
         warnings.warn(
             'write() has been renamed and will be removed in a future version. use reg_write() instead',
-            warnings.DeprecationWarning, stacklevel=2)
+            DeprecationWarning, stacklevel=2)
         return self.reg_write(*args, **kwargs)
 
     def set_view(self, *args, **kwargs):
         import warnings
         warnings.warn(
             'set_view() has been renamed and will be removed in a future version. use reg_set_view() instead',
-            warnings.DeprecationWarning, stacklevel=2)
+            DeprecationWarning, stacklevel=2)
         return self.reg_set_view(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         import warnings
         warnings.warn(
             'delete() has been renamed and will be removed in a future version. use reg_delete() instead',
-            warnings.DeprecationWarning, stacklevel=2)
+            DeprecationWarning, stacklevel=2)
         return self.reg_delete(*args, **kwargs)
