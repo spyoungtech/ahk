@@ -1,17 +1,15 @@
 from collections import deque
-from ahk.mouse import MouseMixin
-from ahk.window import Window, WindowMixin
-from ahk.script import ScriptEngine
-from ahk.screen import ScreenMixin
+
 from ahk.keyboard import KeyboardMixin
-from ahk.sound import SoundMixin
+from ahk.mouse import MouseMixin
 from ahk.registery import RegisteryMixin
+from ahk.screen import ScreenMixin
+from ahk.sound import SoundMixin
+from ahk.window import WindowMixin
+from ahk.gui import GUIMixin
 
 
-class AHK(
-    WindowMixin, MouseMixin, KeyboardMixin,
-    ScreenMixin, SoundMixin, RegisteryMixin
-):
+class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, RegisteryMixin, GUIMixin):
     """
     Inherits its methods from the following classes:
 
@@ -21,7 +19,9 @@ class AHK(
     | :py:class:`ahk.screen.ScreenMixin`
     | :py:class:`ahk.sound.SoundMixin`
     | :py:class:`ahk.registery.RegisteryMixin`
+    | :py:class:`ahk.gui.GUIMixin`
     """
+
     pass
 
 
@@ -29,6 +29,7 @@ class ActionChain(AHK):
     """
     Reusable action chain to execute various actions in order
     """
+
     def __init__(self, *args, **kwargs):
         self._actions = deque()
         super().__init__(*args, **kwargs)
@@ -53,5 +54,5 @@ class ActionChain(AHK):
         :return:
         """
         n = n * 1000  # convert to milliseconds
-        script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent', })
+        script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent',})
         self.run_script(script)
