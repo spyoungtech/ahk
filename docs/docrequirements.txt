@@ -1,5 +1,5 @@
-sphinx
+sphinx<3
 sphinx-rtd-theme
-sphinx-autodoc-typehints
+sphinx-autodoc-typehints<1.11
 m2r
 jinja2
