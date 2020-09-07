@@ -18,7 +18,8 @@ ESCAPE_SEQUENCE_MAP = {
     '+': '{+}',
     '{': '{{}',
     '}': '{}}',
-    '#': '{#}'
+    '#': '{#}',
+    '=': '{=}'
 }
 
 _TRANSLATION_TABLE = str.maketrans(ESCAPE_SEQUENCE_MAP)
