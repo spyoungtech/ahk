@@ -17,7 +17,7 @@ class RegisteryMixin(ScriptEngine):
         )
         return self.run_script(script)
 
-    def read(self, key_name: str, value_name="") -> str:
+    def reg_read(self, key_name: str, value_name="") -> str:
         """Read registery
 
             Reference:
@@ -38,7 +38,7 @@ class RegisteryMixin(ScriptEngine):
             value_name=value_name
         )
 
-    def delete(self, key_name: str, value_name="") -> None:
+    def reg_delete(self, key_name: str, value_name="") -> None:
         """Delete registery
 
             Reference:
@@ -56,7 +56,7 @@ class RegisteryMixin(ScriptEngine):
             value_name=value_name
         )
 
-    def write(self, value_type: str, key_name: str, value_name="") -> None:
+    def reg_write(self, value_type: str, key_name: str, value_name="") -> None:
         """Write registery
 
             Reference:
@@ -76,7 +76,7 @@ class RegisteryMixin(ScriptEngine):
             value_name=value_name
         )
 
-    def set_view(self, reg_view: int) -> None:
+    def reg_set_view(self, reg_view: int) -> None:
         """Set registery view
 
             Reference:
@@ -94,7 +94,7 @@ class RegisteryMixin(ScriptEngine):
             reg_view=reg_view,
         )
 
-    def loop(self, reg: str, key_name: str, mode=""):
+    def reg_loop(self, reg: str, key_name: str, mode=""):
         """Loop registery
 
         Reference:
@@ -115,3 +115,31 @@ class RegisteryMixin(ScriptEngine):
             key_name=key_name,
             mode=mode
         )
+
+    def read(self, *args, **kwargs):
+        import warnings
+        warnings.warn(
+            'read() has been renamed and will be removed in a future version. use reg_read() instead',
+            warnings.DeprecationWarning, stacklevel=2)
+        return self.reg_read(*args, **kwargs)
+
+    def write(self, *args, **kwargs):
+        import warnings
+        warnings.warn(
+            'write() has been renamed and will be removed in a future version. use reg_write() instead',
+            warnings.DeprecationWarning, stacklevel=2)
+        return self.reg_write(*args, **kwargs)
+
+    def set_view(self, *args, **kwargs):
+        import warnings
+        warnings.warn(
+            'set_view() has been renamed and will be removed in a future version. use reg_set_view() instead',
+            warnings.DeprecationWarning, stacklevel=2)
+        return self.reg_set_view(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        import warnings
+        warnings.warn(
+            'delete() has been renamed and will be removed in a future version. use reg_delete() instead',
+            warnings.DeprecationWarning, stacklevel=2)
+        return self.reg_delete(*args, **kwargs)
