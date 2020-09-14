@@ -21,7 +21,7 @@ class Hotkey:
 
     @property
     def running(self):
-        return hasattr(self, '_proc')
+        return hasattr(self, "_proc")
 
     def _start(self, script):
         try:
@@ -35,8 +35,10 @@ class Hotkey:
         Starts an AutoHotkey process with the hotkey script
         """
         if self.running:
-            raise RuntimeError('Hotkey is already running')
-        script = self.engine.render_template('hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
+            raise RuntimeError("Hotkey is already running")
+        script = self.engine.render_template(
+            "hotkey.ahk", blocking=False, script=self.script, hotkey=self.hotkey
+        )
         self._gen = self._start(script)
         proc = next(self._gen)
         self._proc = proc
@@ -52,7 +54,7 @@ class Hotkey:
         Stops the process if it is running
         """
         if not self.running:
-            raise RuntimeError('Hotkey is not running')
+            raise RuntimeError("Hotkey is not running")
         try:
             next(self._gen)
         except StopIteration:
@@ -70,7 +72,7 @@ class KeyboardMixin(ScriptEngine):
         :param script: The script to execute when the hotkey is activated (AutoHotkey code as a string)
         :return: an :py:class:`~ahk.keyboard.Hotkey` instance
         """
-        engine = kwargs.pop('engine', self)
+        engine = kwargs.pop("engine", self)
         return Hotkey(engine, *args, **kwargs)
 
     def key_state(self, key_name, mode=None) -> bool:
@@ -83,11 +85,18 @@ class KeyboardMixin(ScriptEngine):
         :param mode: see AHK docs
         :return: True if pressed down, else False
         """
-        script = self.render_template('keyboard/key_state.ahk', key_name=key_name, mode=mode, directives=(InstallMouseHook, InstallKeybdHook))
+        script = self.render_template(
+            "keyboard/key_state.ahk",
+            key_name=key_name,
+            mode=mode,
+            directives=(InstallMouseHook, InstallKeybdHook),
+        )
         result = ast.literal_eval(self.run_script(script))
         return bool(result)
 
-    def key_wait(self, key_name, timeout: int=None, logical_state=False, released=False):
+    def key_wait(
+        self, key_name, timeout: int = None, logical_state=False, released=False
+    ):
         """
         Wait for key to be pressed or released (default is pressed; specify ``released=True`` to wait for key release).
 
@@ -100,17 +109,19 @@ class KeyboardMixin(ScriptEngine):
         :return: None
         :raises TimeoutError: if the key was not pressed (or released, if specified) within timeout
         """
-        options = ''
+        options = ""
         if not released:
-            options += 'D'
+            options += "D"
         if logical_state:
-            options += 'L'
+            options += "L"
         if timeout:
-            options += f'T{timeout}'
-        script = self.render_template('keyboard/key_wait.ahk', key_name=key_name, options=options)
+            options += f"T{timeout}"
+        script = self.render_template(
+            "keyboard/key_wait.ahk", key_name=key_name, options=options
+        )
         result = self.run_script(script)
         if result == "1":
-            raise TimeoutError(f'timed out waiting for {key_name}')
+            raise TimeoutError(f"timed out waiting for {key_name}")
 
     def type(self, s, blocking=True):
         """
@@ -132,7 +143,9 @@ class KeyboardMixin(ScriptEngine):
         :param blocking: if ``True``, waits until script finishes, else returns immediately.
         :return:
         """
-        script = self.render_template('keyboard/send.ahk', s=s, raw=raw, delay=delay, blocking=blocking)
+        script = self.render_template(
+            "keyboard/send.ahk", s=s, raw=raw, delay=delay, blocking=blocking
+        )
         self.run_script(script, blocking=blocking)
 
     def send_raw(self, s, delay=None):
@@ -154,10 +167,12 @@ class KeyboardMixin(ScriptEngine):
         :return:
         """
         if len(s) > 5000:
-            warnings.warn('String length greater than allowed. Characters beyond 5000 may not be sent. '
-                          'See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.')
+            warnings.warn(
+                "String length greater than allowed. Characters beyond 5000 may not be sent. "
+                "See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details."
+            )
 
-        script = self.render_template('keyboard/send_input.ahk', s=s, blocking=blocking)
+        script = self.render_template("keyboard/send_input.ahk", s=s, blocking=blocking)
         self.run_script(script, blocking=blocking)
 
     def send_play(self, s):
@@ -168,7 +183,7 @@ class KeyboardMixin(ScriptEngine):
         :param s:
         :return:
         """
-        script = self.render_template('keyboard/send_play.ahk', s=s)
+        script = self.render_template("keyboard/send_play.ahk", s=s)
         self.run_script(script)
 
     def send_event(self, s, delay=None):
@@ -179,7 +194,7 @@ class KeyboardMixin(ScriptEngine):
         :param delay:
         :return:
         """
-        script = self.render_template('keyboard/send_event.ahk', s=s, delay=delay)
+        script = self.render_template("keyboard/send_event.ahk", s=s, delay=delay)
         self.run_script(script)
 
     def key_press(self, key, release=True, blocking=True):
@@ -223,3 +238,24 @@ class KeyboardMixin(ScriptEngine):
         Alias for :meth:~`KeyboardMixin.key_release`
         """
         return self.key_release(key, blocking=blocking)
+
+    def set_capslock_state(self, state):
+        """
+        Sets capslock state
+
+        :param state:
+        :type state: str
+        :return:
+        """
+
+        if isinstance(state, str):
+            state = state.lower()
+
+        if isinstance(state, bool):
+            if state:
+                state = "on"
+            else:
+                state = "off"
+
+        script = self.render_template("keyboard/set_capslock_state.ahk", state=state)
+        self.run_script(script)
