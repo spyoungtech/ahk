@@ -251,7 +251,7 @@ class KeyboardMixin(ScriptEngine):
         if isinstance(state, str):
             state = state.lower()
 
-        if isinstance(state, bool):
+        elif isinstance(state, bool):
             if state:
                 state = "on"
             else:

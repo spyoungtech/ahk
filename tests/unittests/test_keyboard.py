@@ -73,8 +73,8 @@ class TestKeyboard(TestCase):
         assert b"=foo" in self.notepad.text
 
     def test_set_capslock_state(self):
-        self.set_capslock_state("on")
-        assert self.key_state("CapsLock", "T")
+        self.ahk.set_capslock_state("on")
+        assert self.ahk.key_state("CapsLock", "T")
 
 
 def a_down():
