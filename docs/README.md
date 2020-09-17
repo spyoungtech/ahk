@@ -218,7 +218,19 @@ You should see an output something like
 0.831 (100, 101)
 0.873 (100, 100)
 ```
+## Add directives
 
+You can add directives that will be added to all generated scripts. 
+For example, to prevent the AHK trayicon from appearing, you can add the NoTrayIcon directive.
+
+```python
+from ahk import AHK
+from ahk.directives import NoTrayIcon
+
+ahk = AHK(directives=[NoTrayIcon]) 
+```
+
+By default, some directives are automatically added to ensure functionality and are merged with any user-provided directives.
 
 ## Run arbitrary AutoHotkey scripts
 
