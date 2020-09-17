@@ -17,7 +17,7 @@ from shutil import which
 from ahk.utils import make_logger
 from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
-
+from typing import Set
 logger = make_logger(__name__)
 
 
@@ -65,7 +65,7 @@ def _resolve_executable_path(executable_path: str = ''):
 
 class ScriptEngine(object):
 
-    def __init__(self, executable_path: str = "", **kwargs):
+    def __init__(self, executable_path: str = "", directives: Set = None, **kwargs):
         """
         This class is typically not used directly. AHK components inherit from this class
         and the arguments for this class should usually be passed in to :py:class:`~ahk.AHK`.
@@ -77,7 +77,7 @@ class ScriptEngine(object):
               * :py:data:`~ahk.script.DEFAULT_EXECUTABLE_PATH` if the file exists
 
             If environment variable not present, tries to look for 'AutoHotkey.exe' or 'AutoHotkeyA32.exe' with shutil.which
-
+        :param directives: a set of directives to apply to all generated AHK scripts
         :raises ExecutableNotFound: if AHK executable cannot be found or the specified file does not exist
         """
         self.executable_path = _resolve_executable_path(executable_path)
@@ -85,6 +85,9 @@ class ScriptEngine(object):
         templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
         self.env = Environment(loader=FileSystemLoader(templates_path),
                                autoescape=False, trim_blocks=True)
+        if directives is None:
+            directives = set()
+        self._directives = set(directives)
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         """
@@ -111,6 +114,8 @@ class ScriptEngine(object):
             directives.add(Persistent)
         elif Persistent in directives:
             directives.remove(Persistent)
+        if self._directives:
+            directives.update(self._directives)
 
         kwargs['directives'] = directives
         template = self.env.get_template(template_name)
