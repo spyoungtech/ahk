@@ -1,4 +1,4 @@
 {% extends "base.ahk" %}
 {% block body %}
-SetCapsLockState, {{state}}
+{% if state %}SetCapsLockState, {{state}}{% else %}SetCapsLockState % !GetKeyState("CapsLock", "T"){% endif %}
 {% endblock body %}

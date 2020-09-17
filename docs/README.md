@@ -70,6 +70,7 @@ ahk.key_down('Control')  # Press down (but do not release) Control key
 ahk.key_up('Control')  # Release the key
 ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be pressed. NOTE: This throws 
                               # a TimeoutError if the key isn't pressed within the timeout window
+ahk.set_capslock_state("on")  # Turn CapsLock on
 ```
 
 ## Windows

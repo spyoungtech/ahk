@@ -239,17 +239,21 @@ class KeyboardMixin(ScriptEngine):
         """
         return self.key_release(key, blocking=blocking)
 
-    def set_capslock_state(self, state):
+    def set_capslock_state(self, state=None):
         """
+        https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm
+
         Sets capslock state
 
-        :param state:
+        :param state: the desired state ("on" or "off"). Can also be True/False. If omitted, toggles capslock state.
         :type state: str
         :return:
         """
 
         if isinstance(state, str):
             state = state.lower()
+            if state not in ("on", "off", "alwayson", 'alwaysoff'):
+                raise ValueError(f'state value must be one of "On"|"Off"|"AlwaysOn"|"AlwaysOff" - not {repr(state)}')
 
         elif isinstance(state, bool):
             if state:
