@@ -108,7 +108,7 @@ win.send('hello')  # Send keys directly to the window (does not need focus!)
 win.move(x=200, y=300, width=500, height=800)
 
 win.activate()           # Give the window focus
-win.activate_buttom()    # Give the window focus
+win.activate_bottom()    # Give the window focus
 win.close()              # Close the window
 win.hide()               # Hide the windwow
 win.kill()               # Kill the window 
