@@ -7,7 +7,7 @@ A Python wrapper around AHK.
 [![version](https://img.shields.io/pypi/v/ahk.svg?colorB=blue)](https://pypi.org/project/ahk/) 
 [![pyversion](https://img.shields.io/pypi/pyversions/ahk.svg?)](https://pypi.org/project/ahk/) 
 [![Coverage](https://coveralls.io/repos/github/spyoungtech/ahk/badge.svg?branch=master)](https://coveralls.io/github/spyoungtech/ahk?branch=master)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/ahk)
+[![Downloads](https://pepy.tech/badge/ahk)](https://pepy.tech/project/ahk)
 
 # Installation
 
