@@ -955,7 +955,7 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
         return await self._base_get_method("WinGetTitle")
 
     async def get_title(self):
-        await self._base_get_method("WinGetTitle")
+        return await self._base_get_method("WinGetTitle")
 
     async def set_title(self, value):
         script = self._set_title(value)
@@ -994,10 +994,10 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
         return await self.get("MinMax") == self.MAXIMIZED
 
     async def is_minimized(self):
-        return await self._base_get_method("MinMax") == self.MINIMIZED
+        return await self.get("MinMax") == self.MINIMIZED
 
     async def is_maximized(self):
-        return await self._base_get_method("MinMax") == self.MAXIMIZED
+        return await self.get("MinMax") == self.MAXIMIZED
 
     @property
     async def non_max_non_min(self):
@@ -1085,7 +1085,7 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
         script = self._send(keys, delay=delay, raw=raw, blocking=blocking, escape=escape, press_duration=press_duration)
         return await self.engine.a_run_script(script, blocking=blocking)
 
-    async def _base_method(self, command, seconds_to_wait="", blocking=False):
+    async def _base_method(self, command, seconds_to_wait="", blocking=True):
         script = self._base_method_(command, seconds_to_wait=seconds_to_wait)
         return await self.engine.a_run_script(script, blocking=blocking)
 

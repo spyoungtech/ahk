@@ -88,7 +88,7 @@ def press_a():
     ahk.key_press("a")
 
 #
-class TestKeys(TestCase):
+class TestKeysAsync(TestCase):
     def setUp(self):
         self.ahk = AsyncAHK()
         self._normal_ahk = AHK()
