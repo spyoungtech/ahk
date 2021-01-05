@@ -814,7 +814,7 @@ class WindowMixin(ScriptEngine):
             return next(self.find_windows_by_class(*args, **kwargs))
 
 
-class AsyncWindow(Window):
+class AsyncWindow(Window, metaclass=AsyncifyMeta):
     # these methods are converted to async compatible versions automatically
     _asyncifiable = ['disable',
                     'enable',
@@ -1084,9 +1084,6 @@ class AsyncWindow(Window):
     async def send(self, keys, delay=10, raw=False, blocking=True, escape=False, press_duration=-1):
         script = self._send(keys, delay=delay, raw=raw, blocking=blocking, escape=escape, press_duration=press_duration)
         return await self.engine.a_run_script(script, blocking=blocking)
-
-    async def activate(self):
-        return await self._base_method("WinActivate")
 
     async def _base_method(self, command, seconds_to_wait="", blocking=False):
         script = self._base_method_(command, seconds_to_wait=seconds_to_wait)

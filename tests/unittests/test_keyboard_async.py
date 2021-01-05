@@ -31,6 +31,7 @@ class TestKeyboard(TestCase):
     def tearDown(self):
         self.p.terminate()
         time.sleep(0.2)
+        asyncio.run(asyncio.sleep(0.2))
 
     async def a_window_send(self):
         notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
