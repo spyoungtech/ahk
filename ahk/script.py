@@ -10,6 +10,7 @@ executable with ``subprocess``.
 
 
 """
+import asyncio
 import os
 import subprocess
 import warnings
@@ -143,6 +144,50 @@ class ScriptEngine(object):
             except subprocess.TimeoutExpired:
                 pass  # for now, this seems needed to avoid blocking and use stdin
             return proc
+
+    async def _a_run_script(self, script_text, **kwargs):
+        blocking = kwargs.pop('blocking', True)
+        if blocking is not True:
+            warnings.warn("blocking=False will probably result in problems", stacklevel=2)
+        runargs = [self.executable_path, '/ErrorStdOut', '*']
+        proc = await asyncio.subprocess.create_subprocess_exec(*runargs,
+                                                               stdin=asyncio.subprocess.PIPE,
+                                                               stdout=asyncio.subprocess.PIPE,
+                                                               stderr=asyncio.subprocess.PIPE)
+        script_bytes = bytes(script_text, 'utf-8')
+        if not blocking:
+            proc.stdin.write(script_bytes)
+            await proc.stdin.drain()
+            return proc
+
+        stdout, stderr = await proc.communicate(script_bytes)
+        if kwargs.get('decode', False):
+            return stdout.decode()
+        return stdout
+
+
+    async def a_run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
+        """
+        async version of ``run_script``
+
+        :param script_text: a string containing AutoHotkey code
+        :param decode: If ``True``, attempt to decode the stdout of the completed process.
+            If ``False``, returns the completed process. Only has effect when ``blocking=True``
+        :param blocking: If ``True``, script must finish before returning.
+            If ``False``, function returns a ``asyncio.process`` object immediately without blocking
+        :param runkwargs: keyword arguments passed to ``subprocess.Popen`` or ``subprocess.run``
+        :return: | A string of the decoded stdout if ``blocking`` and ``decode`` are True.
+                 | A bytes object of stdout if ``blocking`` is True and ``decode`` is False.
+                 | ``asyncio.subprocess.Process`` object if ``blocking`` is False.
+
+        """
+        logger.debug('Running script text: %s', script_text)
+        try:
+            result = await self._a_run_script(script_text, decode=decode, blocking=blocking, **runkwargs)
+        except Exception as e:
+            logger.fatal('Error running temp script: %s', e)
+            raise
+        return result
 
     def run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
         """

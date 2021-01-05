@@ -5,7 +5,7 @@ from ahk.mouse import MouseMixin, AsyncMouseMixin
 from ahk.registery import RegisteryMixin#, AsyncRegisteryMixin
 from ahk.screen import ScreenMixin#, AsyncScreenMixin
 from ahk.sound import SoundMixin#, AsyncSoundMixin
-from ahk.window import WindowMixin#, AsyncWindowMixin
+from ahk.window import WindowMixin, AsyncWindowMixin
 from ahk.gui import GUIMixin#, AsyncGUIMixin
 
 
@@ -29,6 +29,7 @@ class AsyncAHK(
     #AsyncWindowMixin,
     AsyncMouseMixin,
     AsyncKeyboardMixin,
+    AsyncWindowMixin
     #AsyncScreenMixin,
     #AsyncSoundMixin,
     #AsyncRegisteryMixin,
