@@ -37,7 +37,7 @@ cache:
 deploy_script:
   - ps: |
       if ($env:APPVEYOR_REPO_TAG -eq "true") {
-        py -3.7 -m venv deploy_venv
+        py -3.8 -m venv deploy_venv
         .\deploy_venv\Scripts\activate.ps1
         python -m pip install --upgrade pip
         pip install --upgrade wheel
