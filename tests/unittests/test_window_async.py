@@ -112,3 +112,4 @@ class TestWindowAsync(TestCase):
 #
     def tearDown(self):
         self.p.terminate()
+        asyncio.run(asyncio.sleep(0.5))
