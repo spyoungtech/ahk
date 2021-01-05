@@ -1,4 +1,6 @@
 import logging
+import functools
+from asyncio import coroutine
 
 ESCAPE_SEQUENCE_MAP = {
     '\n': '`n',
@@ -47,3 +49,29 @@ def escape_sequence_replace(s):
     """
     return s.translate(_TRANSLATION_TABLE)
 
+def asyncify(cls, sync_method):
+    @functools.wraps(sync_method)
+    async def async_method(self, *args, **kwargs):
+        self_sync_method = getattr(super(cls, self), sync_method.__name__)
+        coro = self_sync_method(*args, **kwargs)
+        return await coro
+    return async_method
+
+class AsyncifyMeta(type):
+    def __new__(cls, *args, **kwargs):
+        asyncifyable = getattr(cls, '_asyncifyable', None)
+        if not asyncifyable:
+            return cls
+
+        for name in asyncifyable:
+            obj = getattr(cls, name)
+            if not callable(obj) or isinstance(obj, type) or isinstance(obj, property):
+                raise ValueError(f'{repr(obj)} object is not asyncifyable)')
+            setattr(cls, f'{name}', asyncify(cls, obj))
+        return super().__new__(cls, *args, **kwargs)
+
+async def async_filter(async_pred, iterable):
+    for item in iterable:
+        should_yield = await async_pred(item)
+        if should_yield:
+            yield item
