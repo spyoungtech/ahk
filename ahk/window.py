@@ -672,7 +672,7 @@ class WindowMixin(ScriptEngine):
         return script
 
     def win_get(self, title='', text='', exclude_title='', exclude_text='', encoding=None):
-        script = self._win_get(title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text, encoding=encoding)
+        script = self._win_get(title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text)
         encoding = encoding or self.window_encoding
         ahk_id = self.run_script(script)
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
@@ -1092,8 +1092,8 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
 
 class AsyncWindowMixin(WindowMixin):
     async def win_get(self, *args, **kwargs):
+        encoding = kwargs.pop('encoding', self.window_encoding)
         script = self._win_get(*args, **kwargs)
-        encoding = kwargs.get('encoding', self.window_encoding)
         ahk_id = await self.a_run_script(script)
         return AsyncWindow(engine=self, ahk_id=ahk_id, encoding=encoding)
 
