@@ -1,12 +1,12 @@
 from collections import deque
 
-from ahk.keyboard import KeyboardMixin
-from ahk.mouse import MouseMixin
-from ahk.registery import RegisteryMixin
-from ahk.screen import ScreenMixin
-from ahk.sound import SoundMixin
-from ahk.window import WindowMixin
-from ahk.gui import GUIMixin
+from ahk.keyboard import KeyboardMixin, AsyncKeyboardMixin
+from ahk.mouse import MouseMixin, AsyncMouseMixin
+from ahk.registery import RegisteryMixin#, AsyncRegisteryMixin
+from ahk.screen import ScreenMixin#, AsyncScreenMixin
+from ahk.sound import SoundMixin#, AsyncSoundMixin
+from ahk.window import WindowMixin#, AsyncWindowMixin
+from ahk.gui import GUIMixin#, AsyncGUIMixin
 
 
 class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, RegisteryMixin, GUIMixin):
@@ -23,6 +23,18 @@ class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, Regis
     """
 
     pass
+
+#
+class AsyncAHK(
+    #AsyncWindowMixin,
+    AsyncMouseMixin,
+    AsyncKeyboardMixin,
+    #AsyncScreenMixin,
+    #AsyncSoundMixin,
+    #AsyncRegisteryMixin,
+    #AsyncGUIMixin
+):
+    ...
 
 
 class ActionChain(AHK):
