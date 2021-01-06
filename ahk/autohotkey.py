@@ -2,14 +2,14 @@ from collections import deque
 
 from ahk.keyboard import KeyboardMixin, AsyncKeyboardMixin
 from ahk.mouse import MouseMixin, AsyncMouseMixin
-from ahk.registery import RegisteryMixin#, AsyncRegisteryMixin
+from ahk.registry import RegistryMixin, AsyncRegistryMixin
 from ahk.screen import ScreenMixin, AsyncScreenMixin
-from ahk.sound import SoundMixin#, AsyncSoundMixin
+from ahk.sound import SoundMixin, AsyncSoundMixin
 from ahk.window import WindowMixin, AsyncWindowMixin
-from ahk.gui import GUIMixin#, AsyncGUIMixin
+from ahk.gui import GUIMixin, AsyncGUIMixin
 
 
-class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, RegisteryMixin, GUIMixin):
+class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, RegistryMixin, GUIMixin):
     """
     Inherits its methods from the following classes:
 
@@ -30,9 +30,9 @@ class AsyncAHK(
     AsyncKeyboardMixin,
     AsyncWindowMixin,
     AsyncScreenMixin,
-    #AsyncSoundMixin,
-    #AsyncRegisteryMixin,
-    #AsyncGUIMixin
+    AsyncSoundMixin,
+    AsyncRegistryMixin,
+    AsyncGUIMixin
 ):
     ...
 
