@@ -1,7 +1,7 @@
 import ast
 import warnings
 
-from ahk.script import ScriptEngine
+from ahk.script import ScriptEngine, AsyncScriptEngine
 from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
@@ -142,7 +142,7 @@ class KeyboardMixin(ScriptEngine):
         :param blocking: if ``True``, waits until script finishes, else returns immediately.
         """
         s = escape_sequence_replace(s)
-        self.send_input(s, blocking=blocking)
+        return self.send_input(s, blocking=blocking) or None
 
     def _send(self, s, raw=False, delay=None, blocking=True):
         script = self.render_template(
@@ -161,7 +161,7 @@ class KeyboardMixin(ScriptEngine):
         :return:
         """
         script = self._send(s, raw=raw, delay=delay, blocking=blocking)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
     def send_raw(self, s, delay=None):
         """
@@ -192,7 +192,7 @@ class KeyboardMixin(ScriptEngine):
 
     def send_input(self, s, blocking=True):
         script = self._send_input(s, blocking=blocking)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
     def _send_play(self, s):
         script = self.render_template("keyboard/send_play.ahk", s=s)
@@ -207,7 +207,7 @@ class KeyboardMixin(ScriptEngine):
         :return:
         """
         script = self._send_play(s)
-        self.run_script(script)
+        return self.run_script(script) or None
 
     def _send_event(self, s, delay=None):
         script = self.render_template("keyboard/send_event.ahk", s=s, delay=delay)
@@ -223,7 +223,7 @@ class KeyboardMixin(ScriptEngine):
         :return:
         """
         script = self._send_event(s, delay=delay)
-        self.run_script(script)
+        return self.run_script(script) or None
 
     def key_press(self, key, release=True, blocking=True):
         """
@@ -294,13 +294,13 @@ class KeyboardMixin(ScriptEngine):
         :return:
         """
         script = self._set_capslock_state(state)
-        self.run_script(script)
+        return self.run_script(script) or None
 
 
-class AsyncKeyboardMixin(KeyboardMixin):
-    async def send_input(self, s, blocking=True):
-        script = self._send_input(s, blocking=blocking)
-        return await self.a_run_script(script, blocking=blocking) or None
+class AsyncKeyboardMixin(AsyncScriptEngine, KeyboardMixin):
+    # async def send_input(self, s, blocking=True):
+    #     script = self._send_input(s, blocking=blocking)
+    #     return await self.a_run_script(script, blocking=blocking) or None
 
 
     async def key_state(self, key_name, mode=None) -> bool:
@@ -318,43 +318,7 @@ class AsyncKeyboardMixin(KeyboardMixin):
         if result == "1":
             raise TimeoutError(f"timed out waiting for {key_name}")
 
-    async def type(self, s, blocking=True):
-        s = escape_sequence_replace(s)
-        await self.send_input(s, blocking=blocking)
-
-    async def send(self, s, raw=False, delay=None, blocking=True):
-        script = self._send(s, raw=raw, delay=delay, blocking=blocking)
-        await self.a_run_script(script, blocking=blocking)
-
-    async def send_raw(self, s, delay=None):
-        return await self.send(s, raw=True, delay=delay)
-
-    async def send_play(self, s):
-        script = self._send_play(s)
-        await self.a_run_script(script)
-
-    async def send_event(self, s, delay=None):
-        script = self._send_event(s, delay=delay)
-        await self.a_run_script(script)
-
     async def key_press(self, key, release=True, blocking=True):
         await self.key_down(key, blocking=blocking)
         if release:
             await self.key_up(key, blocking=blocking)
-
-    async def key_release(self, key, blocking=True):
-        if isinstance(key, str):
-            key = Key(key_name=key)
-        return await self.send_input(key.UP, blocking=blocking)
-
-    async def key_down(self, key, blocking=True):
-        if isinstance(key, str):
-            key = Key(key_name=key)
-        await self.send_input(key.DOWN, blocking=blocking)
-
-    async def key_up(self, key, blocking=True):
-        await self.key_release(key, blocking=blocking)
-
-    async def set_capslock_state(self, state=None):
-        script = self._set_capslock_state(state)
-        await self.a_run_script(script)

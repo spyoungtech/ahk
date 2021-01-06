@@ -6,13 +6,13 @@ import time
 from itertools import product
 from unittest import TestCase
 
-from ahk import AHK
-from ahk.keys import ALT, CTRL, KEYS
-
 project_root = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
 )
 sys.path.insert(0, project_root)
+
+from ahk import AHK
+from ahk.keys import ALT, CTRL, KEYS
 
 
 class TestKeyboard(TestCase):
@@ -106,8 +106,9 @@ class TestKeys(TestCase):
             self.thread.join(timeout=3)
         if self.ahk.key_state("a"):
             self.ahk.key_up("a")
-        if self.ahk.key_down("Control"):
+        if self.ahk.key_state("Control"):
             self.ahk.key_up("Control")
+        self.ahk.set_capslock_state('off')
 
         notepad = self.ahk.find_window(title=b"Untitled - Notepad")
         if notepad:

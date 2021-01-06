@@ -1,6 +1,6 @@
 import subprocess
 import time
-from unittest import TestCase
+from unittest import IsolatedAsyncioTestCase
 import asyncio
 import os
 import sys
@@ -12,7 +12,7 @@ from ahk import AHK, AsyncAHK
 from ahk.window import AsyncWindow
 
 
-class TestWindowAsync(TestCase):
+class TestWindowAsync(IsolatedAsyncioTestCase):
     win: AsyncWindow
     def setUp(self):
         self.ahk = AsyncAHK()
@@ -24,10 +24,11 @@ class TestWindowAsync(TestCase):
     async def a_transparent(self):
         self.assertEqual(await self.win.get_transparency(), 255)
 
-        self.win.transparent = 220
+        await self.win.set_transparency(220)
         self.assertEqual(await self.win.get_transparency(), 220)
 
         self.win.transparent = 255
+        await asyncio.sleep(0.5)
         self.assertEqual(await self.win.transparent, 255)
 
 
@@ -46,16 +47,13 @@ class TestWindowAsync(TestCase):
         await asyncio.sleep(1)
         self.assertFalse(await self.win.always_on_top)
 
-    async def a_close(self):
+    async def test_close(self):
         await self.win.close()
         await asyncio.sleep(0.2)
         self.assertFalse(await self.win.exists())
         self.assertFalse(await self.win.exist)
 
-    def test_close(self):
-        asyncio.run(self.a_close())
-
-    async def a_show_hide(self):
+    async def test_show_hide(self):
         await self.win.hide()
         await asyncio.sleep(0.5)
         self.assertFalse(await self.win.exist)
@@ -64,18 +62,12 @@ class TestWindowAsync(TestCase):
         await asyncio.sleep(0.5)
         self.assertTrue(await self.win.exist)
 
-    def test_show_hide(self):
-        asyncio.run(self.a_show_hide())
-
-    async def a_kill(self):
+    async def test_kill(self):
         await self.win.kill()
         await asyncio.sleep(0.5)
         self.assertFalse(await self.win.exist)
 
-    def test_kill(self):
-        asyncio.run(self.a_kill())
-
-    async def a_max_min(self):
+    async def test_max_min(self):
         self.assertTrue(await self.win.non_max_non_min)
         self.assertFalse(await self.win.is_minmax())
 
@@ -93,10 +85,8 @@ class TestWindowAsync(TestCase):
         await asyncio.sleep(0.5)
         self.assertTrue(await self.win.maximized)
         self.assertTrue(await self.win.is_maximized())
-    def test_max_min(self):
-        asyncio.run(self.a_max_min())
 #
-    async def a_names(self):
+    async def test_names(self):
         self.assertEqual(await self.win.class_name, b'Notepad')
         self.assertEqual(await self.win.get_class_name(), b'Notepad')
 
@@ -106,10 +96,12 @@ class TestWindowAsync(TestCase):
         self.assertEqual(await self.win.text, b'')
         self.assertEqual(await self.win.get_text(), b'')
 
+    async def test_title_setter(self):
+        starting_title = await self.win.title
 
-    def test_names(self):
-        asyncio.run(self.a_names())
-#
+        await self.win.set_title("new title")
+        assert await self.win.get_title() != starting_title
+
     def tearDown(self):
         self.p.terminate()
         asyncio.run(asyncio.sleep(0.5))

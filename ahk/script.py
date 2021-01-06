@@ -219,3 +219,6 @@ class ScriptEngine(object):
             logger.fatal('Error running temp script: %s', e)
             raise
         return result
+
+class AsyncScriptEngine(ScriptEngine):
+    run_script = ScriptEngine.a_run_script

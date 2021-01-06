@@ -4,7 +4,7 @@ import collections
 from contextlib import suppress
 import warnings
 from types import CoroutineType
-from ahk.script import ScriptEngine
+from ahk.script import ScriptEngine, AsyncScriptEngine
 from ahk.utils import escape_sequence_replace, make_logger, AsyncifyMeta, async_filter
 
 logger = make_logger(__name__)
@@ -195,20 +195,19 @@ class Window(object):
         script = self._set(subcommand, value)
         return self.engine.run_script(script)
 
-    def _get_pos(self):
+    def _get_pos(self, info=None):
         script = self._render_template(
             'window/win_position.ahk',
-            title=f"ahk_id {self.id}"
+            title=f"ahk_id {self.id}",
+            pos_info=info
         )
         return script
 
-    def get_pos(self):
+    def get_pos(self, info=None):
         """
-        Same as ``rect``
-
         :return:
         """
-        script = self._get_pos()
+        script = self._get_pos(info=info)
         resp = self.engine.run_script(script)
         try:
             value = ast.literal_eval(resp)
@@ -227,18 +226,19 @@ class Window(object):
 
     @property
     def position(self):
-        x, y, _, _ = self.get_pos()
-
-        return x, y
+        return self.get_pos('position')
 
     @position.setter
     def position(self, new_position):
+        self.set_position(new_position)
+
+    def set_position(self, new_position):
         x, y = new_position
-        self.move(x, y)
+        return self.move(x, y)
 
     @property
     def width(self):
-        _, _, width, _ = self.get_pos()
+        width = self.get_pos('width')
         return width
 
     @width.setter
@@ -247,7 +247,7 @@ class Window(object):
 
     @property
     def height(self):
-        _, _, _, height = self.get_pos()
+        height = self.get_pos('height')
         return height
 
     @height.setter
@@ -269,17 +269,17 @@ class Window(object):
 
     @property
     def active(self):
-        return self._base_property(command="WinActive")
+        return self.is_active()
 
     def is_active(self):
-        return self.active
+        return self._base_property(command="WinActive")
 
     @property
     def exist(self):
-        return self._base_property(command="WinExist")
+        return self.exists()
 
     def exists(self):
-        return self.exist
+        return self._base_property(command="WinExist")
 
     def _base_get_method_(self, command):
         script = self._render_template(
@@ -297,10 +297,10 @@ class Window(object):
 
     @property
     def title(self):
-        return self._base_get_method("WinGetTitle")
+        return self.get_title()
 
     def get_title(self):
-        return self.title
+        return self._base_get_method("WinGetTitle")
 
     def _set_title(self, value):
         script = self._render_template(
@@ -312,34 +312,34 @@ class Window(object):
 
     @title.setter
     def title(self, value):
-        script = self._set_title(value)
-        return self.engine.run_script(script)
+        self.set_title(value)
 
     def set_title(self, value):
         script = self._set_title(value)
-        self.engine.run_script(script)
+        return self.engine.run_script(script) or None
 
     @property
     def class_name(self):
-        return self._base_get_method("WinGetClass")
+        return self.get_class_name()
+
 
     @property
     def text(self):
-        return self._base_get_method("WinGetText")
+        return self.get_text()
 
     @property
     def minimized(self):
-        return self.get("MinMax") == self.MINIMIZED
+        return self.is_minimized()
 
     @property
     def maximized(self):
-        return self.get("MinMax") == self.MAXIMIZED
+        return self.is_maximized()
 
     def is_minimized(self):
-        return self.minimized
+        return self.get("MinMax") == self.MINIMIZED
 
     def is_maximized(self):
-        return self.maximized
+        return self.get("MinMax") == self.MAXIMIZED
 
     @property
     def non_max_non_min(self):
@@ -349,32 +349,33 @@ class Window(object):
         return self.get("MinMax") != self.NON_MIN_NON_MAX
 
     def get_class_name(self):
-        return self.class_name
+        return self._base_get_method("WinGetClass")
 
     def get_text(self):
-        return self.text
+        return self._base_get_method("WinGetText")
 
     @property
     def transparent(self) -> int:
+        return self.get_transparency()
+
+    def get_transparency(self) -> int:
         result = self.get("Transparent")
         if result:
             return int(result)
         else:
             return 255
 
-    def get_transparency(self) -> int:
-        return self.transparent
-
     @transparent.setter
     def transparent(self, value):
+        self.set_transparency(value)
+
+    def set_transparency(self, value):
         if isinstance(value, int) and 0 <= value <= 255:
-            self.set("Transparent", value)
+            return self.set("Transparent", value) or None
         else:
             raise ValueError(
-                f'"{value}" not a valid option. Please use [0, 255] integer')
-
-    def set_transparency(self, new_value):
-        self.transparent = new_value
+                f'"{value}" not a valid option. Please use [0, 255] integer'
+            )
 
     def _always_on_top(self):
         script = self._render_template(
@@ -385,27 +386,27 @@ class Window(object):
 
     @property
     def always_on_top(self) -> bool:
+        return self.is_always_on_top()
+
+    def is_always_on_top(self) -> bool:
         script = self._always_on_top()
         resp = self.engine.run_script(script)
         return bool(ast.literal_eval(resp))
 
-    def is_always_on_top(self) -> bool:
-        return self.always_on_top
-
     @always_on_top.setter
     def always_on_top(self, value):
+        self.set_always_on_top(value)
+
+    def set_always_on_top(self, value):
         if value in ('on', 'On', True, 1):
-            self.set('AlwaysOnTop', 'On')
+            return self.set('AlwaysOnTop', 'On') or None
         elif value in ('off', 'Off', False, 0):
-            self.set('AlwaysOnTop', 'Off')
+            return self.set('AlwaysOnTop', 'Off') or None
         elif value in ('toggle', 'Toggle', -1):
-            self.set('AlwaysOnTop', 'Toggle')
+            return self.set('AlwaysOnTop', 'Toggle') or None
         else:
             raise ValueError(
                 f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
-
-    def set_always_on_top(self, value):
-        self.always_on_top = value
 
     def disable(self):
         """
@@ -454,7 +455,7 @@ class Window(object):
         )
         return script
 
-    def _base_method(self, command, seconds_to_wait="", blocking=False):
+    def _base_method(self, command, seconds_to_wait="", blocking=True):
         script = self._base_method_(command, seconds_to_wait=seconds_to_wait)
         return self.engine.run_script(script, blocking=blocking)
 
@@ -685,7 +686,7 @@ class WindowMixin(ScriptEngine):
     def win_set(self, subcommand, *args, blocking=True):
         script = self.render_template(
             'window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
     @property
     def active_window(self):
@@ -814,27 +815,7 @@ class WindowMixin(ScriptEngine):
             return next(self.find_windows_by_class(*args, **kwargs))
 
 
-class AsyncWindow(Window, metaclass=AsyncifyMeta):
-    # these methods are converted to async compatible versions automatically
-    _asyncifiable = ['disable',
-                    'enable',
-                    'redraw',
-                    'to_bottom',
-                    'to_top',
-                    'activate',
-                    'activate_bottom',
-                    'close',
-                    'hide',
-                    'kill',
-                    'maximize',
-                    'minimize',
-                    'restore',
-                    'show',
-                    'wait',
-                    'wait_active',
-                    'wait_not_active',
-                    'wait_close',
-                    ]
+class AsyncWindow(Window):
 
     @classmethod
     async def from_mouse_position(cls, engine: ScriptEngine, **kwargs):
@@ -850,76 +831,41 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
         ahk_id = await engine.a_run_script(script)
         return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
-    def __getattr__(self, item):
-        if item in self._get_subcommands:
-            raise AttributeError(f"Unaccessable Attribute. Use get({item}) instead")
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
-
-
-    async def get(self, subcommand):
-        script = self._get(subcommand)
-        return await self.engine.a_run_script(script)
-
-    async def set(self, subcommand, value):
-        script = self._set(subcommand, value)
-        await self.engine.a_run_script(script)
-
-    async def get_pos(self):
-        script = self._get_pos()
+    # def __getattr__(self, item):
+    #     if item in self._get_subcommands:
+    #         raise AttributeError(f"Unaccessable Attribute. Use get({item}) instead")
+    #     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+    #
+    async def get_pos(self, info=None):
+        script = self._get_pos(info)
         resp = await self.engine.a_run_script(script)
         try:
             value = ast.literal_eval(resp)
             return value
         except SyntaxError:
             raise WindowNotFoundError('No window found')
-    @staticmethod
-    async def _loop():
-        return asyncio.get_event_loop()
 
-    @property
-    async def rect(self):
-        warnings.warn("rect property blocks event loop. Use get_rect() instead", stacklevel=2)
-        return await self.get_pos()
-
-    @rect.setter
+    @Window.rect.setter
     def rect(self, new_position):
         warnings.warn("rect setter only schedules coroutine. window may not change immediately. Use move() instead", stacklevel=2)
         x, y, width, height = new_position
         coro = self.move(x=x, y=y, width=width, height=height)
         asyncio.create_task(coro)
 
-    @property
-    async def position(self):
-        warnings.warn("position property blocks event loop. Use get_rect() instead", stacklevel=2)
-        x, y, _, _ = await self.get_pos()
-        return x, y
-
-    @position.setter
+    @Window.position.setter
     def position(self, new_position):
-        warnings.warn("position setter only schedules coroutine. window may not change immediately. use move() instead", stacklevel=2)
+        warnings.warn("position setter only schedules coroutine. window may not change immediately. use set_position() instead", stacklevel=2)
         x, y = new_position
         coro = self.move(x, y)
         asyncio.create_task(coro)
 
-    @property
-    async def width(self):
-        warnings.warn("width property blocks event loop. Use get_rect() instead", stacklevel=2)
-        _, _, width, _ = await self.get_pos()
-        return width
-
-    @width.setter
+    @Window.width.setter
     def width(self, new_width):
         warnings.warn("width setter only schedules coroutine. window may not change immediately. use move() instead", stacklevel=2)
         coro = self.move(width=new_width)
         asyncio.create_task(coro)
 
-    @property
-    async def height(self):
-        warnings.warn("height property blocks event loop. Use get_rect() instead", stacklevel=2)
-        _, _, _, height = await self.get_pos()
-        return height
-
-    @height.setter
+    @Window.height.setter
     def height(self, new_height):
         warnings.warn("height setter only schedules coroutine. window may not change immediately. use move() instead", stacklevel=2)
         coro = self.move(height=new_height)
@@ -930,18 +876,6 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
         resp = await self.engine.a_run_script(script)
         return bool(ast.literal_eval(resp))
 
-    @property
-    async def active(self):
-        warnings.warn("active property blocks event loop. Use is_active() instead", stacklevel=2)
-        return await self._base_property(command="WinActive")
-    @property
-    async def exist(self):
-        warnings.warn("exist property blocks event loop. Use exists() instead", stacklevel=2)
-        return await self._base_property(command="WinExist")
-
-    async def exists(self):
-        return await self._base_property('WinExist')
-
     async def _base_get_method(self, command):
         script = self._base_get_method_(command)
         result = await self.engine.a_run_script(script, decode=False)
@@ -949,49 +883,11 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
             return result.decode(encoding=self.encoding)
         return result
 
-    @property
-    async def title(self):
-        warnings.warn("title property blocks event loop. Use get_title() instead", stacklevel=2)
-        return await self._base_get_method("WinGetTitle")
-
-    async def get_title(self):
-        return await self._base_get_method("WinGetTitle")
-
-    async def set_title(self, value):
-        script = self._set_title(value)
-        await self.engine.a_run_script(script)
-
-    @title.setter
+    @Window.title.setter
     def title(self, new_title):
         warnings.warn("title setter only schedules coroutine. window may not change immediately. use set_title() instead", stacklevel=2)
         coro = self.set_title(new_title)
         asyncio.create_task(coro)
-
-    @property
-    async def class_name(self):
-        warnings.warn("class_name property blocks event loop. use get_class_name() instead.")
-        return await self._base_get_method("WinGetClass")
-
-    async def get_class_name(self):
-        return await self._base_get_method("WinGetClass")
-
-    @property
-    async def text(self):
-        warnings.warn("text property blocks event loop. use get_text() instead.")
-        return await self._base_get_method("WinGetText")
-
-    async def get_text(self):
-        return await self._base_get_method("WinGetText")
-
-    @property
-    async def minimized(self):
-        warnings.warn('property blocks event loop. use is_minimized() instead')
-        return await self.get("MinMax") == self.MINIMIZED
-
-    @property
-    async def maximized(self):
-        warnings.warn('property blocks event loop. use is_maximized() instead')
-        return await self.get("MinMax") == self.MAXIMIZED
 
     async def is_minimized(self):
         return await self.get("MinMax") == self.MINIMIZED
@@ -1040,19 +936,12 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
             raise ValueError(
                 f'"{value}" not a valid option. Please use [0, 255] integer')
 
-    @property
-    async def always_on_top(self) -> bool:
-        warnings.warn("always_on_top property blocks event loop. use is_always_on_top() instead")
+    async def is_always_on_top(self):
         script = self._always_on_top()
         resp = await self.engine.a_run_script(script)
         return bool(ast.literal_eval(resp))
 
-    async def is_always_on_top(self):
-        script = self._always_on_top()
-        resp = self.engine.run_script(script)
-        return bool(ast.literal_eval(resp))
-
-    @always_on_top.setter
+    @Window.always_on_top.setter
     def always_on_top(self, value):
         warnings.warn(f"always_on_top setter only schedules coroutine. changes may not happen immediately. use set_always_on_top({repr(value)}) instead")
         if value in ('on', 'On', True, 1):
@@ -1066,41 +955,13 @@ class AsyncWindow(Window, metaclass=AsyncifyMeta):
                 f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
         asyncio.create_task(coro)
 
-    async def set_always_on_top(self, value):
-        if value in ('on', 'On', True, 1):
-            await self.set('AlwaysOnTop', 'On')
-        elif value in ('off', 'Off', False, 0):
-            await self.set('AlwaysOnTop', 'Off')
-        elif value in ('toggle', 'Toggle', -1):
-            await self.set('AlwaysOnTop', 'Toggle')
-        else:
-            raise ValueError(
-                f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
-    async def move(self, x='', y='', width=None, height=None):
-        script = self._move(x=x, y=y, width=width, height=height)
-        return await self.engine.a_run_script(script)
-
-    async def send(self, keys, delay=10, raw=False, blocking=True, escape=False, press_duration=-1):
-        script = self._send(keys, delay=delay, raw=raw, blocking=blocking, escape=escape, press_duration=press_duration)
-        return await self.engine.a_run_script(script, blocking=blocking)
-
-    async def _base_method(self, command, seconds_to_wait="", blocking=True):
-        script = self._base_method_(command, seconds_to_wait=seconds_to_wait)
-        return await self.engine.a_run_script(script, blocking=blocking)
-
-
-class AsyncWindowMixin(WindowMixin):
+class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
     async def win_get(self, *args, **kwargs):
         encoding = kwargs.pop('encoding', self.window_encoding)
         script = self._win_get(*args, **kwargs)
         ahk_id = await self.a_run_script(script)
         return AsyncWindow(engine=self, ahk_id=ahk_id, encoding=encoding)
-
-    async def win_set(self, subcommand, *args, blocking=True):
-        script = self.render_template(
-            'window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
-        await self.a_run_script(script, blocking=blocking)
 
     @property
     def active_window(self):
@@ -1223,4 +1084,3 @@ class AsyncWindowMixin(WindowMixin):
         """
         async for window in self.find_windows_by_class(*args, **kwargs):
             return window
-

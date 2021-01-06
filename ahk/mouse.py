@@ -1,7 +1,8 @@
+import asyncio
 from collections import namedtuple
 from typing import Union
-
-from ahk.script import ScriptEngine
+import warnings
+from ahk.script import ScriptEngine, AsyncScriptEngine
 from ahk.utils import make_logger
 import ast
 
@@ -76,14 +77,17 @@ class MouseMixin(ScriptEngine):
 
     @property
     def mouse_position(self):
-        script = self._mouse_position()
-        response = self.run_script(script)
-        return ast.literal_eval(response)
+        return self.get_mouse_position()
 
     @mouse_position.setter
     def mouse_position(self, position):
         x, y = position
         self.mouse_move(x=x, y=y, speed=0, relative=False)
+
+    def get_mouse_position(self, mode=None):
+        script = self._mouse_position(mode=mode)
+        response = self.run_script(script)
+        return ast.literal_eval(response)
 
     def _mouse_move(self, x=None, y=None, speed=None, relative=False, mode=None, blocking=True):
         if x is None and y is None:
@@ -119,7 +123,7 @@ class MouseMixin(ScriptEngine):
         """
         blocking = kwargs.get('blocking', True)
         script = self._mouse_move(*args, **kwargs)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
     def _click(self, x=None, y=None, *, button=None, n=None, direction=None, relative=None, blocking=True, mode=None):
         if x or y:
@@ -154,7 +158,7 @@ class MouseMixin(ScriptEngine):
         """
         blocking = kwargs.get('blocking', True)
         script = self._click(*args, **kwargs)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
     def double_click(self, *args, **kwargs):
         """
@@ -166,7 +170,7 @@ class MouseMixin(ScriptEngine):
         """
         n = kwargs.get('n', 1)
         kwargs['n'] = n * 2
-        self.click(*args, **kwargs)
+        return self.click(*args, **kwargs) or None
 
     def right_click(self, *args, **kwargs):
         """
@@ -177,7 +181,7 @@ class MouseMixin(ScriptEngine):
         :return:
         """
         kwargs['button'] = 2
-        return self.click(*args, **kwargs)
+        return self.click(*args, **kwargs) or None
 
     def mouse_wheel(self, direction, *args, **kwargs):
         """
@@ -190,7 +194,7 @@ class MouseMixin(ScriptEngine):
         """
         assert direction in ('up', 'down')
         kwargs['button'] = f'Wheel{direction}'
-        self.click(*args, **kwargs)
+        return self.click(*args, **kwargs) or None
 
     def wheel_up(self, *args, **kwargs):
         """
@@ -200,7 +204,7 @@ class MouseMixin(ScriptEngine):
         :param kwargs:
         :return:
         """
-        self.mouse_wheel('up', *args, **kwargs)
+        return self.mouse_wheel('up', *args, **kwargs) or None
 
     def wheel_down(self, *args, **kwargs):
         """
@@ -210,7 +214,7 @@ class MouseMixin(ScriptEngine):
         :param kwargs:
         :return:
         """
-        self.mouse_wheel('down', *args, **kwargs)
+        return self.mouse_wheel('down', *args, **kwargs) or None
 
     def _mouse_drag(self, x, y=None, *, from_position=None, speed=None, button: Union[str, int] =1, relative=None, blocking=True, mode=None):
         if from_position is None:
@@ -264,46 +268,18 @@ class MouseMixin(ScriptEngine):
         """
         blocking = kwargs.get('blocking', True)
         script = self._mouse_drag(*args, **kwargs)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
 
-class AsyncMouseMixin(MouseMixin):
-    async def mouse_move(self, *args, **kwargs):
-        blocking = kwargs.get('blocking', True)
-        script = self._mouse_move(*args, **kwargs)
-        await self.a_run_script(script, blocking=blocking)
-
-    async def click(self, *args, **kwargs):
-        blocking = kwargs.get('blocking', True)
-        script = self._click(*args, **kwargs)
-        await self.a_run_script(script, blocking=blocking)
-
-    async def double_click(self, *args, **kwargs):
-        n = kwargs.get('n', 1)
-        kwargs['n'] = n * 2
-        await self.click(*args, **kwargs)
-
-    async def right_click(self, *args, **kwargs):
-        kwargs['button'] = 2
-        await self.click(*args, **kwargs)
-
-    async def mouse_wheel(self, direction, *args, **kwargs):
-        assert direction in ('up', 'down')
-        kwargs['button'] = f'Wheel{direction}'
-        await self.click(*args, **kwargs)
-
-    async def wheel_up(self, *args, **kwargs):
-        await self.mouse_wheel('up', *args, **kwargs)
-
-    async def wheel_down(self, *args, **kwargs):
-        await self.mouse_wheel('down', *args, **kwargs)
-
-    async def mouse_drag(self, *args, **kwargs):
-        blocking = kwargs.get('blocking', True)
-        script = self._mouse_drag(*args, **kwargs)
-        await self.a_run_script(script, blocking=blocking)
-
+class AsyncMouseMixin(AsyncScriptEngine, MouseMixin):
     async def get_mouse_position(self, mode=None):
         script = self._mouse_position(mode=mode)
-        return await self.a_run_script(script)
+        response = await self.a_run_script(script)
+        return ast.literal_eval(response)
 
+    @MouseMixin.mouse_position.setter
+    def mouse_position(self, position):
+        warnings.warn("mouse_position setter only schedules coroutine. use mouse_move() (with speed=0) instead")
+        x, y = position
+        coro = self.mouse_move(x=x, y=y, speed=0, relative=False)
+        asyncio.create_task(coro)
