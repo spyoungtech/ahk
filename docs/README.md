@@ -16,6 +16,8 @@ pip install ahk
 ```
 Requires Python 3.6+
 
+Async API requires Python 3.8+
+
 See also [Non-Python dependencies](#deps)  
 
 
@@ -270,12 +272,48 @@ print(result.stdout)  # b'Hello Data!'
 ```
 
 
-## Experimental features
+## Preview features
 
-Experimental features are things that are minimally functional, (even more) likely to have breaking changes, even 
-for minor releases. 
+Preview features are experimental features that are may not be fully functional. 
+These features are (even more) likely to have breaking changes without warning.
 
 Github issues are provided for convenience to collect feedback on these features.
+
+## Async API
+
+[GH-104]
+
+An async API is provided so functions can be called using `async`/`await`.
+
+For the most part, the async API is identical to that of the normal API, with a few exceptions.
+
+See full API documentation for more information.
+
+
+```python
+from ahk import AsyncAHK
+import asyncio
+ahk = AsyncAHK()
+
+async def main():
+    await ahk.mouse_move(100, 100)
+    x, y = await ahk.get_mouse_position()
+    print(x, y)
+
+asyncio.run(main())
+```
+
+While properties (like `.mouse_position` or `.title` for windows) can be `await`ed, 
+additional methods (like `get_mouse_position()` and `get_title()`) have been added for a more intuitive API.
+
+```python
+ahk = AsyncAHK()
+async def main():
+    pos = ahk.mouse_position  # BAD! Does not work!
+    pos = await ahk.mouse_position # OK. Works, but looks kind of weird 
+    pos = await ahk.get_mouse_position() # GOOD! 
+```
+
 
 
 ### Hotkeys
