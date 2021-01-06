@@ -26,7 +26,7 @@ class TestScreen(IsolatedAsyncioTestCase):
         time.sleep(2)
 
     async def asyncTearDown(self):
-        async for win in await self.ahk.windows():
+        for win in await self.ahk.windows():
             if win not in self.before_windows:
                 await win.close()
                 break
