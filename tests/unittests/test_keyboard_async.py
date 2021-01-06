@@ -59,19 +59,19 @@ class TestKeyboardAsync(TestCase):
 
 
 def a_down():
-    #time.sleep(0.5)
+    time.sleep(0.5)
     ahk = AHK()
     ahk.key_down("a")
 
 
 def release_a():
-    #time.sleep(0.5)
+    time.sleep(0.5)
     ahk = AHK()
     ahk.key_up("a")
 
 
 def press_a():
-    #time.sleep(0.5)
+    time.sleep(0.5)
     ahk = AHK()
     ahk.key_press("a")
 
