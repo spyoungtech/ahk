@@ -31,16 +31,16 @@ class TestScreen(IsolatedAsyncioTestCase):
                 await win.close()
                 break
 
-    def test_pixel_search(self):
+    async def test_pixel_search(self):
         result = await self.ahk.pixel_search(0xFF0000)
         self.assertIsNotNone(result)
 
-    def test_image_search(self):
+    async def test_image_search(self):
         self.im.save('testimage.png')
         position = await self.ahk.image_search('testimage.png')
         self.assertIsNotNone(position)
 
-    def test_pixel_get_color(self):
+    async def test_pixel_get_color(self):
         x, y = await self.ahk.pixel_search(0xFF0000)
         result = await self.ahk.pixel_get_color(x, y)
         self.assertIsNotNone(result)
