@@ -14,7 +14,7 @@ project_root = os.path.abspath(
 sys.path.insert(0, project_root)
 from ahk import AsyncAHK, AHK
 from ahk.keys import ALT, CTRL, KEYS
-a
+
 
 class TestKeyboardAsync(TestCase):
     def setUp(self):
