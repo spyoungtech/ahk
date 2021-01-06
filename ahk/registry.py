@@ -1,8 +1,8 @@
-from ahk.script import ScriptEngine
+from ahk.script import ScriptEngine, AsyncScriptEngine
 import os
 
 
-class RegisteryMixin(ScriptEngine):
+class RegistryMixin(ScriptEngine):
     def _render_template(self, template_name, *args, **kwargs):
         return self.render_template(os.path.join("registery", template_name))
 
@@ -25,7 +25,7 @@ class RegisteryMixin(ScriptEngine):
             Returns:
                 str -- Registery value
             """
-        self._run_template("reg_read.ahk", key_name=key_name, value_name=value_name)
+        return self._run_template("reg_read.ahk", key_name=key_name, value_name=value_name)
 
     def reg_delete(self, key_name: str, value_name="") -> None:
         """Delete registery
@@ -39,7 +39,7 @@ class RegisteryMixin(ScriptEngine):
             Keyword Arguments:
                 value_name {str} -- TODO (default: {""})
             """
-        self._run_template("reg_delete.ahk", key_name=key_name, value_name=value_name)
+        return self._render_template("reg_delete.ahk", key_name=key_name, value_name=value_name)
 
     def reg_write(self, value_type: str, key_name: str, value_name="") -> None:
         """Write registery
@@ -54,7 +54,7 @@ class RegisteryMixin(ScriptEngine):
             Keyword Arguments:
                 value_name {str} -- TODO (default: {""})
             """
-        self._run_template("reg_write.ahk", value_type=value_type, key_name=key_name, value_name=value_name)
+        return self._render_template("reg_write.ahk", value_type=value_type, key_name=key_name, value_name=value_name)
 
     def reg_set_view(self, reg_view: int) -> None:
         """Set registery view
@@ -69,7 +69,7 @@ class RegisteryMixin(ScriptEngine):
         if reg_view not in [32, 64, "32", "64"]:
             raise ValueError("No valid bit, please use 32 or 64")
 
-        self._run_template("reg_set_view.ahk", reg_view=reg_view)
+        return self._run_template("reg_set_view.ahk", reg_view=reg_view) or None
 
     def reg_loop(self, reg: str, key_name: str, mode=""):
         """Loop registery
@@ -86,7 +86,7 @@ class RegisteryMixin(ScriptEngine):
         """
         raise NotImplementedError
 
-        self._run_template("reg_loop.ahk", reg=reg, key_name=key_name, mode=mode)
+        return self._run_template("reg_loop.ahk", reg=reg, key_name=key_name, mode=mode) or None
 
     def read(self, *args, **kwargs):
         import warnings
@@ -127,3 +127,6 @@ class RegisteryMixin(ScriptEngine):
             stacklevel=2,
         )
         return self.reg_delete(*args, **kwargs)
+
+class AsyncRegistryMixin(AsyncScriptEngine, RegistryMixin):
+    pass
