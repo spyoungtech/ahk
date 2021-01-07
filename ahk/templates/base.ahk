@@ -10,5 +10,5 @@
 {% endblock body %}
 
 {% block exit %}
-ExitApp
+{% if not _daemon %}ExitApp{% endif %}
 {% endblock exit %}
