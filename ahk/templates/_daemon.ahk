@@ -54,10 +54,11 @@ Click(ByRef command) {
 }
 
 KeyWait(ByRef command) {
+    keyname := command[2]
     if (command.Length() = 2) {
-        KeyWait, command[2]
+        KeyWait, %keyname%
     } else {
-        KeyWait, command[2], command[3]
+        KeyWait, %keyname%, command[3]
     }
     return %ErrorLevel%
 }

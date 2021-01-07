@@ -61,7 +61,33 @@ Click(ByRef command) {
 
 }
 
+KeyWait(ByRef command) {
+    keyname := command[2]
+    if (command.Length() = 2) {
+        KeyWait, %keyname%
+    } else {
+        KeyWait, %keyname%, command[3]
+    }
+    return %ErrorLevel%
+}
 
+SetKeyDelay(ByRef command) {
+    SetKeyDelay, command[2]
+}
+
+Join(sep, params*) {
+    for index,param in params
+        str .= param . sep
+    return SubStr(str, 1, -StrLen(sep))
+}
+
+Send(ByRef command) {
+    Send % Join(",", command*)
+}
+
+SendRaw(ByRef command) {
+    SendRaw % Join("," command*)
+}
 
 stdin  := FileOpen("*", "r `n")  ; Requires [v1.1.17+]
 
