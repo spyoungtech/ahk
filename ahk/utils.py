@@ -49,28 +49,6 @@ def escape_sequence_replace(s):
     """
     return s.translate(_TRANSLATION_TABLE)
 
-def asyncify(sync_method):
-    cls = sync_method.__class__
-    @functools.wraps(sync_method)
-    async def async_method(self, *args, **kwargs):
-        self_sync_method = getattr(super(self.__class__, self), sync_method.__name__)
-        coro = self_sync_method(*args, **kwargs)
-        return await coro
-    return async_method
-
-class AsyncifyMeta(type):
-    def __new__(typ, *args, **kwargs):
-        cls = super().__new__(typ, *args, **kwargs)
-        asyncifyable = getattr(cls, '_asyncifyable', None)
-        if not asyncifyable:
-            return cls
-
-        for name in asyncifyable:
-            obj = getattr(cls, name)
-            if not callable(obj) or isinstance(obj, type) or isinstance(obj, property):
-                raise ValueError(f'{repr(obj)} object is not asyncifyable)')
-            setattr(cls, f'{name}', asyncify(obj))
-        return cls
 
 async def async_filter(async_pred, iterable):
     for item in iterable:
