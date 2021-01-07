@@ -1,3 +1,4 @@
+#SingleInstance Force
 #NoEnv
 
 
@@ -64,11 +65,12 @@ Click(ByRef command) {
 KeyWait(ByRef command) {
     keyname := command[2]
     if (command.Length() = 2) {
-        KeyWait, %keyname%
+        KeyWait,% keyname
     } else {
-        KeyWait, %keyname%, command[3]
+        options := command[3]
+        KeyWait,% keyname,% options
     }
-    return %ErrorLevel%
+    return ErrorLevel
 }
 
 SetKeyDelay(ByRef command) {

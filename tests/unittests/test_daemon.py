@@ -21,6 +21,3 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
         x, y = await self.ahk.mouse_position
         await self.ahk.mouse_move(10, 10, relative=True)
         assert await self.ahk.mouse_position == (x+10, y+10)
-
-
-

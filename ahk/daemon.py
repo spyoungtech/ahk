@@ -19,7 +19,7 @@ class AHKDaemon(AsyncAHK):
         with open(self._template, 'w') as f:
             f.write(template.render())
 
-    async def run(self):
+    async def _run(self):
         if self._is_running:
             raise RuntimeError("Already running")
         self._is_running = True
@@ -30,7 +30,7 @@ class AHKDaemon(AsyncAHK):
                                                                stderr=asyncio.subprocess.PIPE)
         self.proc = proc
 
-    async def get_command(self):
+    async def _get_command(self):
         return await self.queue.get()
 
     async def worker(self):
@@ -62,7 +62,7 @@ class AHKDaemon(AsyncAHK):
     async def start(self):
         self._gen = self._start()
         self._gen.send(None)
-        await self.run()
+        await self._run()
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         print(template_name)
