@@ -5,7 +5,7 @@ from contextlib import suppress
 import warnings
 from types import CoroutineType
 from ahk.script import ScriptEngine, AsyncScriptEngine
-from ahk.utils import escape_sequence_replace, make_logger, AsyncifyMeta, async_filter
+from ahk.utils import escape_sequence_replace, make_logger, async_filter
 
 logger = make_logger(__name__)
 
