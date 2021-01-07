@@ -83,12 +83,30 @@ Join(sep, params*) {
     return SubStr(str, 1, -StrLen(sep))
 }
 
+Unescape(HayStack) {
+    ReplacedStr := StrReplace(Haystack, "``n" , "`n")
+    return ReplacedStr
+}
+
 Send(ByRef command) {
-    Send % Join(",", command*)
+    command.RemoveAt(1)
+    s := Join(",", command*)
+    str := Unescape(s)
+    Send,% str
 }
 
 SendRaw(ByRef command) {
-    SendRaw % Join("," command*)
+    command.RemoveAt(1)
+    s := Join(",", command*)
+    str := Unescape(s)
+    SendRaw,% str
+}
+
+SendInput(ByRef command) {
+    command.RemoveAt(1)
+    s := Join(",", command*)
+    str := Unescape(s)
+    SendInput,% str
 }
 
 stdin  := FileOpen("*", "r `n")  ; Requires [v1.1.17+]

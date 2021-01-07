@@ -2,6 +2,9 @@ import os
 import asyncio
 from ahk.autohotkey import AsyncAHK
 
+def escape(s):
+    return s.replace('\n', '`n')
+
 class AHKDaemon(AsyncAHK):
     proc: asyncio.subprocess.Process
     _template_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
@@ -65,11 +68,10 @@ class AHKDaemon(AsyncAHK):
         await self._run()
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
-        print(template_name)
         name = template_name.split('/')[-1]
-        print(self._template_overrides)
         if name in self._template_overrides:
             template_name = f'daemon/{name}'
+        print(template_name)
         blocking = False
         directives = None
         kwargs['_daemon'] = True
@@ -95,5 +97,10 @@ class AHKDaemon(AsyncAHK):
         if decode:
             return res.decode('utf-8')
         return res
+
+    async def type(self, s, *args, **kwargs):
+        kwargs['raw'] = True
+        s = escape(s)
+        await self.send(s, *args, **kwargs)
 
     run_script = a_run_script
