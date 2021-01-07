@@ -16,9 +16,9 @@ pip install ahk
 ```
 Requires Python 3.6+
 
-Async API requires Python 3.8+
+[Async API](#async-api) requires Python 3.8+
 
-See also [Non-Python dependencies](#deps)  
+See also [Non-Python dependencies](#non-python-dependencies)  
 
 
 # Usage
