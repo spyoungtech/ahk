@@ -16,7 +16,9 @@ pip install ahk
 ```
 Requires Python 3.6+
 
-See also [Non-Python dependencies](#deps)  
+[Async API](#async-api) requires Python 3.8+
+
+See also [Non-Python dependencies](#non-python-dependencies)  
 
 
 # Usage
@@ -270,12 +272,57 @@ print(result.stdout)  # b'Hello Data!'
 ```
 
 
-## Experimental features
+## Preview features
 
-Experimental features are things that are minimally functional, (even more) likely to have breaking changes, even 
-for minor releases. 
+Preview features are experimental features that are may not be fully functional. 
+These features are (even more) likely to have breaking changes without warning.
 
 Github issues are provided for convenience to collect feedback on these features.
+
+## Async API
+
+An async API is provided so functions can be called using `async`/`await`. 
+All the same methods from the synchronous API are available in the async API.
+
+```python
+from ahk import AsyncAHK
+import asyncio
+ahk = AsyncAHK()
+
+async def main():
+    await ahk.mouse_move(100, 100)
+    x, y = await ahk.get_mouse_position()
+    print(x, y)
+
+asyncio.run(main())
+```
+For the most part, the async API is identical to that of the normal API, with a few exceptions:
+
+While properties (like `.mouse_position` or `.title` for windows) can be `await`ed, 
+additional methods (like `get_mouse_position()` and `get_title()`) have been added for a more intuitive API.
+
+Property setters have different (probably undesired) behavior 
+in the async API. Instead, you should use a comparable method. If you _do_ use the property setters, the invocation is created using `asyncio.create_task()`, which means 
+that the task won't run until control is yielded back to the event loop. For now, this will also raise a warning to the same.  
+
+
+Lastly, while it's possible to pass `blocking=True` in the async API, this sometimes will cause problems. 
+
+```python
+ahk = AsyncAHK()
+async def main():
+    pos = ahk.mouse_position  # BAD! Does not work!
+    pos = await ahk.mouse_position # OK. Works, but looks kind of weird 
+    pos = await ahk.get_mouse_position() # GOOD! 
+    
+    # BAD: You probably don't want to do this
+    ahk.mouse_position = (100, 100) # won't do anything right away. Raises warning
+    print(await ahk.get_mouse_position()) # probably won't be 100,100
+    
+    # GOOD: Instead, do this:
+    await ahk.mouse_move(100, 100, speed=0)
+    assert await ahk.get_mouse_position() == (100, 100)
+```
 
 
 ### Hotkeys
@@ -285,7 +332,8 @@ Github issues are provided for convenience to collect feedback on these features
 Hotkeys now have a primitive implementation. You give it a hotkey (a string the same as in an ahk script, without the `::`) 
 and the body of an AHK script to execute as a response to the hotkey.
 
-
+Right now, only AHK code is supported as callbacks for hotkeys. 
+Support for Python callbacks via the Async API is planned.
 
 ```python
 from ahk import AHK, Hotkey

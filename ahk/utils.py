@@ -1,4 +1,6 @@
 import logging
+import functools
+from asyncio import coroutine
 
 ESCAPE_SEQUENCE_MAP = {
     '\n': '`n',
@@ -47,3 +49,9 @@ def escape_sequence_replace(s):
     """
     return s.translate(_TRANSLATION_TABLE)
 
+
+async def async_filter(async_pred, iterable):
+    for item in iterable:
+        should_yield = await async_pred(item)
+        if should_yield:
+            yield item

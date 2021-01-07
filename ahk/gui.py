@@ -1,4 +1,4 @@
-from ahk.script import ScriptEngine
+from ahk.script import ScriptEngine, AsyncScriptEngine
 
 
 class GUIMixin(ScriptEngine):
@@ -28,13 +28,12 @@ class GUIMixin(ScriptEngine):
         :type id: str, optional
         :raises ValueError: ID must be between [1, 20]
         """
-
         if id and not (1 <= int(id) <= 20):
             raise ValueError("ID value must be between [1, 20]")
 
         encoded_text = "% " + "".join([f"Chr({hex(ord(char))})" for char in text])
         script = self.render_template("gui/tooltip.ahk", text=encoded_text, second=second, x=x, y=y, id=id)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
     def _show_traytip(
         self, title: str, text: str, second=1.0, type_id=1, slient=False, large_icon=False, blocking=True
@@ -63,7 +62,7 @@ class GUIMixin(ScriptEngine):
         script = self.render_template(
             "gui/traytip.ahk", title=encoded_title, text=encoded_text, second=second, option=option
         )
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
     def show_info_traytip(self, title: str, text: str, second=1.0, slient=False, large_icon=False, blocking=True):
         """Show TrayTip with info icon (Windows 10 toast notification)
@@ -124,3 +123,7 @@ class GUIMixin(ScriptEngine):
         :type blocked: bool, optional
         """
         return self._show_traytip(title, text, second, self.TRAYTIP_ERROR, slient, large_icon, blocking)
+
+
+class AsyncGUIMixin(AsyncScriptEngine, GUIMixin):
+    pass

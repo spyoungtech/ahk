@@ -1,5 +1,8 @@
+import asyncio
 from collections import namedtuple
-from ahk.script import ScriptEngine
+from typing import Union
+import warnings
+from ahk.script import ScriptEngine, AsyncScriptEngine
 from ahk.utils import make_logger
 import ast
 
@@ -74,14 +77,17 @@ class MouseMixin(ScriptEngine):
 
     @property
     def mouse_position(self):
-        script = self._mouse_position()
-        response = self.run_script(script)
-        return ast.literal_eval(response)
+        return self.get_mouse_position()
 
     @mouse_position.setter
     def mouse_position(self, position):
         x, y = position
         self.mouse_move(x=x, y=y, speed=0, relative=False)
+
+    def get_mouse_position(self, mode=None):
+        script = self._mouse_position(mode=mode)
+        response = self.run_script(script)
+        return ast.literal_eval(response)
 
     def _mouse_move(self, x=None, y=None, speed=None, relative=False, mode=None, blocking=True):
         if x is None and y is None:
@@ -117,14 +123,26 @@ class MouseMixin(ScriptEngine):
         """
         blocking = kwargs.get('blocking', True)
         script = self._mouse_move(*args, **kwargs)
-        self.run_script(script, blocking=blocking)
+        return self.run_script(script, blocking=blocking) or None
 
-    def _click(self, *args, mode=None, blocking=True):
+    def _click(self, x=None, y=None, *, button=None, n=None, direction=None, relative=None, blocking=True, mode=None):
+        if x or y:
+            if y is None and not isinstance(x, int) and len(x) == 2:
+                #  alow position to be specified by a two-sequence
+                x, y = x
+            assert x is not None and y is not None, 'If provided, position must be specified by x AND y'
+
+        button = resolve_button(button)
+
+        if relative:
+            relative = 'Rel'
+        args = [arg for arg in (x, y, button, n, direction, relative) if arg is not None]
         if mode is None:
             mode = self.mode
-        return self.render_template('mouse/click.ahk', args=args, mode=mode, blocking=blocking)
+        script = self.render_template('mouse/click.ahk', args=args, mode=mode, blocking=blocking)
+        return script
 
-    def click(self, x=None, y=None, *, button=None, n=None, direction=None, relative=None, blocking=True, mode=None):
+    def click(self, *args, **kwargs):
         """
         Click mouse button at a specified position. REF: https://www.autohotkey.com/docs/commands/Click.htm
 
@@ -138,19 +156,9 @@ class MouseMixin(ScriptEngine):
         :param mode:
         :return:
         """
-        if x or y:
-            if y is None and not isinstance(x, int) and len(x) == 2:
-                #  alow position to be specified by a two-sequence
-                x, y = x
-            assert x is not None and y is not None, 'If provided, position must be specified by x AND y'
-
-        button = resolve_button(button)
-
-        if relative:
-            relative = 'Rel'
-        args = [arg for arg in (x, y, button, n, direction, relative) if arg is not None]
-        script = self._click(*args, blocking=blocking, mode=mode)
-        self.run_script(script, blocking=blocking)
+        blocking = kwargs.get('blocking', True)
+        script = self._click(*args, **kwargs)
+        return self.run_script(script, blocking=blocking) or None
 
     def double_click(self, *args, **kwargs):
         """
@@ -162,7 +170,7 @@ class MouseMixin(ScriptEngine):
         """
         n = kwargs.get('n', 1)
         kwargs['n'] = n * 2
-        self.click(*args, **kwargs)
+        return self.click(*args, **kwargs) or None
 
     def right_click(self, *args, **kwargs):
         """
@@ -173,7 +181,7 @@ class MouseMixin(ScriptEngine):
         :return:
         """
         kwargs['button'] = 2
-        self.click(*args, **kwargs)
+        return self.click(*args, **kwargs) or None
 
     def mouse_wheel(self, direction, *args, **kwargs):
         """
@@ -186,7 +194,7 @@ class MouseMixin(ScriptEngine):
         """
         assert direction in ('up', 'down')
         kwargs['button'] = f'Wheel{direction}'
-        self.click(*args, **kwargs)
+        return self.click(*args, **kwargs) or None
 
     def wheel_up(self, *args, **kwargs):
         """
@@ -196,7 +204,7 @@ class MouseMixin(ScriptEngine):
         :param kwargs:
         :return:
         """
-        self.mouse_wheel('up', *args, **kwargs)
+        return self.mouse_wheel('up', *args, **kwargs) or None
 
     def wheel_down(self, *args, **kwargs):
         """
@@ -206,22 +214,9 @@ class MouseMixin(ScriptEngine):
         :param kwargs:
         :return:
         """
-        self.mouse_wheel('down', *args, **kwargs)
+        return self.mouse_wheel('down', *args, **kwargs) or None
 
-    def mouse_drag(self, x, y=None, *, from_position=None, speed=None, button=1, relative=None, blocking=True, mode=None):
-        """
-        Click and drag the mouse
-
-        :param x:
-        :param y:
-        :param from_position: (x,y) tuple of an optional starting position. Current position is used if omitted
-        :param speed:
-        :param button: The button the click and drag; defaults to left mouse button
-        :param relative: click and drag to a relative position rather than an absolute position
-        :param blocking:
-        :param mode:
-        :return:
-        """
+    def _mouse_drag(self, x, y=None, *, from_position=None, speed=None, button: Union[str, int] =1, relative=None, blocking=True, mode=None):
         if from_position is None:
             x1, y1 = self.mouse_position
         else:
@@ -255,4 +250,36 @@ class MouseMixin(ScriptEngine):
                                       blocking=blocking,
                                       mode=mode)
 
-        self.run_script(script, blocking=blocking)
+        return script
+
+    def mouse_drag(self, *args, **kwargs):
+        """
+        Click and drag the mouse
+
+        :param x:
+        :param y:
+        :param from_position: (x,y) tuple of an optional starting position. Current position is used if omitted
+        :param speed:
+        :param button: The button the click and drag; defaults to left mouse button
+        :param relative: click and drag to a relative position rather than an absolute position
+        :param blocking:
+        :param mode:
+        :return:
+        """
+        blocking = kwargs.get('blocking', True)
+        script = self._mouse_drag(*args, **kwargs)
+        return self.run_script(script, blocking=blocking) or None
+
+
+class AsyncMouseMixin(AsyncScriptEngine, MouseMixin):
+    async def get_mouse_position(self, mode=None):
+        script = self._mouse_position(mode=mode)
+        response = await self.a_run_script(script)
+        return ast.literal_eval(response)
+
+    @MouseMixin.mouse_position.setter
+    def mouse_position(self, position):
+        warnings.warn("mouse_position setter only schedules coroutine. use mouse_move() (with speed=0) instead")
+        x, y = position
+        coro = self.mouse_move(x=x, y=y, speed=0, relative=False)
+        asyncio.create_task(coro)
