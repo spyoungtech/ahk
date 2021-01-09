@@ -413,6 +413,11 @@ WinSet(ByRef command) {
     WinSet,% command[2], command[3], command[4]
 }
 
+WinSetTitle(ByRef command) {
+    newtitle := command[4]
+    WinSetTitle,% command[2],, %newtitle%
+}
+
 WinIsAlwaysOnTop(ByRef command) {
     WinGet, ExStyle, ExStyle, 
     if (ExStyle & 0x8)  ; 0x8 is WS_EX_TOPMOST.
