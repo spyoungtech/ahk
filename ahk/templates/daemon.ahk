@@ -109,6 +109,39 @@ SendInput(ByRef command) {
     SendInput,% str
 }
 
+
+SendEvent(ByRef command) {
+    command.RemoveAt(1)
+    s := Join(",", command*)
+    str := Unescape(s)
+    SendEvent,% str
+}
+
+SendPlay(ByRef command) {
+    command.RemoveAt(1)
+    s := Join(",", command*)
+    str := Unescape(s)
+    SendPlay,% str
+}
+
+SetCapsLockState(ByRef command) {
+    if (command.Length() = 1) {
+        SetCapsLockState % !GetKeyState("CapsLock", "T")
+    } else {
+        state := command[2]
+        SetCapsLockState, %state%
+    }
+}
+
+HideTrayTip(ByRef command) {
+    TrayTip ; Attempt to hide it the normal way.
+    if SubStr(A_OSVersion,1,3) = "10." {
+        Menu Tray, NoIcon
+        Sleep 200 ; It may be necessary to adjust this sleep.
+        Menu Tray, Icon
+    }
+}
+
 stdin  := FileOpen("*", "r `n")  ; Requires [v1.1.17+]
 
 Loop {
