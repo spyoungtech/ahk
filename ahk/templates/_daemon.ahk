@@ -43,7 +43,7 @@ CoordMode(ByRef command) {
 
 
 Click(ByRef command) {
-    if command.Length() = 1 {
+    if (command.Length() = 1) {
           Click
     } {% for i in range(2, 8) %} else if (command.Length() = {{ i }}) {
           Click{% for index in range(2, i+1) %}, command[{{index}}]{% endfor %}
@@ -52,6 +52,29 @@ Click(ByRef command) {
 
     return
 
+}
+
+MouseClickDrag(ByRef command) {
+    if (command.Length() = 6 {
+        MouseclickDrag,command[2],command[3],command[4],command[5],command[6]
+    } else if (command.Length() = 7 {
+        MouseclickDrag,command[2],command[3],command[4],command[5],command[6],command[7]
+    } else if (command.Length() = 8 {
+        MouseclickDrag,command[2],command[3],command[4],command[5],command[6],command[7],command[8]
+    }
+}
+
+RegRead(ByRef command) {
+    RegRead, output, command[3], command[4]
+    return %output%
+}
+
+SetRegView(ByRef command) {
+    SetRegView, command[2]
+}
+
+RegWrite(ByRef command) {
+    RegWrite, command[2], command[3], command[4]
 }
 
 KeyWait(ByRef command) {
