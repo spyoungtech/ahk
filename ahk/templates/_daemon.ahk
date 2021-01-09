@@ -396,13 +396,15 @@ FromMouse(ByRef command) {
 }
 
 WinGet(ByRef command) {
-
     WinGet, output,% command[3], command[4], command[5], command[6], command[7]
     return output
 }
 
 WinSet(ByRef command) {
-    WinSet,% command[2], command[3], command[4]
+    title := command[4]
+    value := command[3]
+
+    WinSet,% command[2], %value%, %title%
 }
 
 WinSetTitle(ByRef command) {
