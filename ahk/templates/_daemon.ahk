@@ -1,6 +1,33 @@
 #SingleInstance Force
 #NoEnv
 
+ImageSearch(ByRef command) {
+    imagepath := command[8]
+    ImageSearch, xpos, ypos, command[4], command[5], command[6], command[7], %imagepath%
+    s .= Format("({}, {})", xpos, ypos)
+    return s
+}
+
+PixelGetColor(ByRef command) {
+    if (command.Length() = 4) {
+    PixelGetColor,color,command[3],command[4]
+    } else {
+        options := command[5]
+        PixelGetColor,color,command[3],command[4], %options%
+    }
+    return color
+}
+
+PixelSearch(ByRef command) {
+    if (command.Length() = 9) {
+        PixelSearch, xpos, ypos, command[4], command[5], command[6], command[7], command[8], command[9]
+    } else {
+        options := command[10]
+        PixelSearch, xpos, ypos, command[4], command[5], command[6], command[7], command[8], command[9], %options%
+    }
+    s .= Format("({}, {})", xpos, ypos)
+    return s
+}
 
 
 MouseGetPos(ByRef command) {
@@ -68,7 +95,7 @@ MouseClickDrag(ByRef command) {
 RegRead(ByRef command) {
     keyname := command[3]
     RegRead, output, %keyname%, command[4]
-    return %output%
+    return output
 }
 
 SetRegView(ByRef command) {
