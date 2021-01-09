@@ -55,26 +55,37 @@ Click(ByRef command) {
 }
 
 MouseClickDrag(ByRef command) {
-    if (command.Length() = 6 {
-        MouseclickDrag,command[2],command[3],command[4],command[5],command[6]
-    } else if (command.Length() = 7 {
-        MouseclickDrag,command[2],command[3],command[4],command[5],command[6],command[7]
-    } else if (command.Length() = 8 {
-        MouseclickDrag,command[2],command[3],command[4],command[5],command[6],command[7],command[8]
+    button := command[2]
+    if (command.Length() = 6) {
+        MouseClickDrag,%button%,command[3],command[4],command[5],command[6]
+    } else if (command.Length() = 7) {
+        MouseClickDrag,%button%,command[3],command[4],command[5],command[6],command[7]
+    } else if (command.Length() = 8) {
+        MouseClickDrag,%button%,command[3],command[4],command[5],command[6],command[7],R
     }
 }
 
 RegRead(ByRef command) {
-    RegRead, output, command[3], command[4]
+    keyname := command[3]
+    RegRead, output, %keyname%, command[4]
     return %output%
 }
 
 SetRegView(ByRef command) {
-    SetRegView, command[2]
+    view := command[2]
+    SetRegView, %view%
 }
 
 RegWrite(ByRef command) {
-    RegWrite, command[2], command[3], command[4]
+    valuetype := command[2]
+    keyname := command[3]
+
+    RegWrite, %valuetype%, %keyname%, command[4]
+}
+
+RegDelete(ByRef command) {
+    keyname := command[2]
+    RegDelete, %keyname%, command[3]
 }
 
 KeyWait(ByRef command) {

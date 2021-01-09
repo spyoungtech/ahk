@@ -43,7 +43,7 @@ CoordMode(ByRef command) {
 
 
 Click(ByRef command) {
-    if command.Length() = 1 {
+    if (command.Length() = 1) {
           Click
     }  else if (command.Length() = 2) {
           Click, command[2]
@@ -60,6 +60,40 @@ Click(ByRef command) {
     }
     return
 
+}
+
+MouseClickDrag(ByRef command) {
+    button := command[2]
+    if (command.Length() = 6) {
+        MouseClickDrag,%button%,command[3],command[4],command[5],command[6]
+    } else if (command.Length() = 7) {
+        MouseClickDrag,%button%,command[3],command[4],command[5],command[6],command[7]
+    } else if (command.Length() = 8) {
+        MouseClickDrag,%button%,command[3],command[4],command[5],command[6],command[7],R
+    }
+}
+
+RegRead(ByRef command) {
+    keyname := command[3]
+    RegRead, output, %keyname%, command[4]
+    return %output%
+}
+
+SetRegView(ByRef command) {
+    view := command[2]
+    SetRegView, %view%
+}
+
+RegWrite(ByRef command) {
+    valuetype := command[2]
+    keyname := command[3]
+
+    RegWrite, %valuetype%, %keyname%, command[4]
+}
+
+RegDelete(ByRef command) {
+    keyname := command[2]
+    RegDelete, %keyname%, command[3]
 }
 
 KeyWait(ByRef command) {
