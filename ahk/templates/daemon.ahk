@@ -203,6 +203,274 @@ HideTrayTip(ByRef command) {
     }
 }
 
+WinGetTitle(ByRef command) {
+    title := command[3]
+    WinGetTitle, text, %title%
+    return text
+}
+WinGetClass(ByRef command) {
+    title := command[3]
+    WinGetClass, text, %title%
+    return text
+}
+WinGetText(ByRef command) {
+    title := command[3]
+    WinGetText, text, %title%
+    return text
+}
+
+WinActivate(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinActivate, %title%
+    } else {
+        secondstowait = command[3]
+        WinActivate, %title%, %secondstowait%
+    }
+}
+
+WinActivateBottom(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinActivateBottom, %title%
+    } else {
+        secondstowait = command[3]
+        WinActivateBottom, %title%, %secondstowait%
+    }
+}
+
+WinClose(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinClose, %title%
+    } else {
+        secondstowait = command[3]
+        WinClose, %title%, %secondstowait%
+    }
+}
+
+WinHide(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinHide, %title%
+    } else {
+        secondstowait = command[3]
+        WinHide, %title%, %secondstowait%
+    }
+}
+
+WinKill(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinKill, %title%
+    } else {
+        secondstowait = command[3]
+        WinKill, %title%, %secondstowait%
+    }
+}
+
+WinMaximize(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinMaximize, %title%
+    } else {
+        secondstowait = command[3]
+        WinMaximize, %title%, %secondstowait%
+    }
+}
+
+WinMinimize(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinMinimize, %title%
+    } else {
+        secondstowait = command[3]
+        WinMinimize, %title%, %secondstowait%
+    }
+}
+
+WinRestore(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinRestore, %title%
+    } else {
+        secondstowait = command[3]
+        WinRestore, %title%, %secondstowait%
+    }
+}
+
+WinShow(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinShow, %title%
+    } else {
+        secondstowait = command[3]
+        WinShow, %title%, %secondstowait%
+    }
+}
+
+WinWait(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinWait, %title%
+    } else {
+        secondstowait = command[3]
+        WinWait, %title%, %secondstowait%
+    }
+}
+
+WinWaitActive(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinWaitActive, %title%
+    } else {
+        secondstowait = command[3]
+        WinWaitActive, %title%, %secondstowait%
+    }
+}
+
+WinWaitNotActive(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinWaitNotActive, %title%
+    } else {
+        secondstowait = command[3]
+        WinWaitNotActive, %title%, %secondstowait%
+    }
+}
+
+WinWaitClose(ByRef command) {
+    title = command[2]
+    if (command.Length() = 2) {
+        WinWaitClose, %title%
+    } else {
+        secondstowait = command[3]
+        WinWaitClose, %title%, %secondstowait%
+    }
+}
+
+
+WindowList(ByRef command) {
+    WinGet windows, List
+    Loop %windows%
+    {
+        id := windows%A_Index%
+        r .= id . "`,"
+    }
+    return r
+}
+
+WinSend(ByRef command) {
+    title := command[2]
+    command.RemoveAt(1)
+    command.RemoveAt(1)
+    str := Join(",", command*)
+    keys := Unescape(str)
+    ControlSendRaw,,% keys, %title%
+}
+
+ControlSend(ByRef command) {
+    ctrl := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    command.RemoveAt(1)
+    command.RemoveAt(1)
+    command.RemoveAt(1)
+    command.RemoveAt(1)
+    command.RemoveAt(1)
+    command.RemoveAt(1)
+    str := Join(",", command*)
+    keys := Unescape(str)
+    ControlSend, %ctrl%,% keys, %title%, %text%, %extitle%, %extext%
+}
+
+
+BaseCheck(ByRef command) {
+    kommand := command[2]
+    title := command[3]
+    if %kommand%(title) {
+        return 1
+    }
+    else {
+        return 0
+    }
+}
+
+FromMouse(ByRef command) {
+    MouseGetPos,,, MouseWin
+    return MouseWin
+}
+
+WinGet(ByRef command) {
+
+    WinGet, output,% command[3], command[4], command[5], command[6], command[7]
+    return output
+}
+
+WinSet(ByRef command) {
+    WinSet,% command[2], command[3], command[4]
+}
+
+WinIsAlwaysOnTop(ByRef command) {
+    WinGet, ExStyle, ExStyle, 
+    if (ExStyle & 0x8)  ; 0x8 is WS_EX_TOPMOST.
+        return 1
+    else
+        return 0
+}
+
+WinClick(ByRef command) {
+    x := command[2]
+    y := command[3]
+    hwnd := command[4]
+    button := command[5]
+    n := command[6]
+    if (command.Length() = 6) {
+        ControlClick,x%x% y%y%,%hwnd%,,%button%,%n%
+    } else {
+        options := command[6]
+        ControlClick, x%x% y%y%, %hwnd%,,%button%, %n%, options
+    }
+}
+
+AHKWinMove(ByRef command) {
+    title := command [2]
+    x := command[3]
+    y := command[4]
+    if (command.Length()) = 4 {
+        WinMove,%title%,,%x%,%y%
+    } else if (command.Length() = 5) {
+        a := command[5]
+        WinMove,%title%,,%x%,%y%,%a%
+    } else if (command.Length() = 6) {
+        a := command[5]
+        b := command[6]
+        WinMove,%title%,,%x%,%y%,%a%,%b%
+    }
+}
+
+AHKWinGetPos(ByRef command) {
+    title := command[2]
+    WinGetPos, x, y, width, height, %title%
+    if (command.Length() = 3) {
+        pos_info := command[3]
+        if (pos_info = "position") {
+            s .= Format("({}, {})", x, y)
+        } else if (pos_info = "height") {
+            s .= Format("({})", height)
+        } else if (pos_info = "width") {
+            s .= Format("({})", width)
+        }
+    } else {
+        s .= Format("({}, {}, {}, {})", x, y, width, height)
+    }
+    return s
+}
+
+
+
 stdin  := FileOpen("*", "r `n")  ; Requires [v1.1.17+]
 
 Loop {

@@ -589,11 +589,11 @@ class Window(object):
         :return: 
         """
         script = self._move(x=x, y=y, width=width, height=height)
-        self.engine.run_script(script)
+        return self.engine.run_script(script) or None
 
     def _send(self, keys, delay=10, raw=False, blocking=False, escape=False, press_duration=-1):
         if escape:
-            keys = escape_sequence_replace(keys)
+            keys = self.engine.escape_sequence_replace(keys)
         script = self._render_template(
             'window/win_send.ahk',
             title=f"ahk_id {self.id}",
@@ -701,7 +701,7 @@ class WindowMixin(ScriptEngine):
     def _all_window_ids(self):
         script = self._all_window_ids_()
         result = self.run_script(script)
-        return result.split('\n')[:-1]  # last one is always an empty string
+        return result.split(',')[:-1]  # last one is always an empty string
 
     def windows(self):
         """
@@ -971,7 +971,7 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
     async def _all_window_ids(self):
         script = self._all_window_ids_()
         result = await self.a_run_script(script)
-        return result.split('\n')[:-1]  # last one is always an empty string
+        return result.split(',')[:-1]  # last one is always an empty string
 
     async def windows(self):
         """
@@ -1043,7 +1043,7 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
         """
 
-        async for window in self.find_windows_by_title():
+        async for window in self.find_windows_by_title(title=title):
             return window
 
     async def find_windows_by_text(self, text, exact=False):

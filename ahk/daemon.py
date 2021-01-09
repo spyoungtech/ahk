@@ -3,7 +3,8 @@ import asyncio
 from ahk.autohotkey import AsyncAHK
 
 def escape(s):
-    return s.replace('\n', '`n')
+    s = s.replace('\n', '`n')
+    return s
 
 class AHKDaemon(AsyncAHK):
     proc: asyncio.subprocess.Process
@@ -112,5 +113,9 @@ class AHKDaemon(AsyncAHK):
     async def hide_traytip(self):
         await self.run_script("HideTrayTip")
 
+    @staticmethod
+    def escape_sequence_replace(s):
+        s = escape(s)
+        return s
 
     run_script = a_run_script
