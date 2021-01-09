@@ -220,7 +220,7 @@ WinGetText(ByRef command) {
 }
 
 WinActivate(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinActivate, %title%
     } else {
@@ -230,7 +230,7 @@ WinActivate(ByRef command) {
 }
 
 WinActivateBottom(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinActivateBottom, %title%
     } else {
@@ -240,9 +240,9 @@ WinActivateBottom(ByRef command) {
 }
 
 WinClose(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
-        WinClose, %title%
+        WinClose,% title
     } else {
         secondstowait = command[3]
         WinClose, %title%, %secondstowait%
@@ -250,7 +250,7 @@ WinClose(ByRef command) {
 }
 
 WinHide(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinHide, %title%
     } else {
@@ -260,7 +260,7 @@ WinHide(ByRef command) {
 }
 
 WinKill(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinKill, %title%
     } else {
@@ -270,7 +270,7 @@ WinKill(ByRef command) {
 }
 
 WinMaximize(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinMaximize, %title%
     } else {
@@ -280,7 +280,7 @@ WinMaximize(ByRef command) {
 }
 
 WinMinimize(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinMinimize, %title%
     } else {
@@ -290,7 +290,7 @@ WinMinimize(ByRef command) {
 }
 
 WinRestore(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinRestore, %title%
     } else {
@@ -300,7 +300,7 @@ WinRestore(ByRef command) {
 }
 
 WinShow(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinShow, %title%
     } else {
@@ -310,7 +310,7 @@ WinShow(ByRef command) {
 }
 
 WinWait(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinWait, %title%
     } else {
@@ -320,7 +320,7 @@ WinWait(ByRef command) {
 }
 
 WinWaitActive(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinWaitActive, %title%
     } else {
@@ -330,7 +330,7 @@ WinWaitActive(ByRef command) {
 }
 
 WinWaitNotActive(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinWaitNotActive, %title%
     } else {
@@ -340,7 +340,7 @@ WinWaitNotActive(ByRef command) {
 }
 
 WinWaitClose(ByRef command) {
-    title = command[2]
+    title := command[2]
     if (command.Length() = 2) {
         WinWaitClose, %title%
     } else {
@@ -404,13 +404,19 @@ FromMouse(ByRef command) {
 }
 
 WinGet(ByRef command) {
-
-    WinGet, output,% command[3], command[4], command[5], command[6], command[7]
+    title := command[4]
+    text := command[5]
+    extitle := command[6]
+    extext := command[7]
+    WinGet, output,% command[3], %title%, %text%, %extitle%, %extext%
     return output
 }
 
 WinSet(ByRef command) {
-    WinSet,% command[2], command[3], command[4]
+    title := command[4]
+    value := command[3]
+
+    WinSet,% command[2], %value%, %title%
 }
 
 WinSetTitle(ByRef command) {
