@@ -103,4 +103,14 @@ class AHKDaemon(AsyncAHK):
         s = escape(s)
         await self.send(s, *args, **kwargs)
 
+    def show_tooltip(self, text: str, second=None, x="", y="", id="", blocking=True):
+        return super().show_tooltip(text, second=second, x=x, y=y, id=id, blocking=blocking)
+
+    def hide_tooltip(self, id):
+        return super().show_tooltip(text='', second='', x='', y='', id=id)
+
+    async def hide_traytip(self):
+        await self.run_script("HideTrayTip")
+
+
     run_script = a_run_script
