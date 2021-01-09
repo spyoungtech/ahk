@@ -1,1 +1,1 @@
-WinIsAlwaysOnTop
+WinIsAlwaysOnTop,{{ title }}
