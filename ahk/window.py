@@ -897,7 +897,6 @@ class AsyncWindow(Window):
 
     @property
     async def non_max_non_min(self):
-        warnings.warn('property blocks event loop. use is_minmax() instead')
         return await self.get("MinMax") == self.NON_MIN_NON_MAX
 
     async def is_minmax(self):
@@ -905,7 +904,6 @@ class AsyncWindow(Window):
 
     @property
     async def transparent(self) -> int:
-        warnings.warn('property blocks event loop. use get_transparency() instead')
         result = await self.get("Transparent")
         if result:
             return int(result)
@@ -962,11 +960,6 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         script = self._win_get(*args, **kwargs)
         ahk_id = await self.a_run_script(script)
         return AsyncWindow(engine=self, ahk_id=ahk_id, encoding=encoding)
-
-    @property
-    def active_window(self):
-        warnings.warn("active_window property blocks event loop. use get_active_window() instead")
-        return self.win_get(title='A')
 
     async def _all_window_ids(self):
         script = self._all_window_ids_()
