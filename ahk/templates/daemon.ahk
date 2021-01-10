@@ -1,29 +1,50 @@
-#SingleInstance Force
 #NoEnv
 
 ImageSearch(ByRef command) {
     imagepath := command[8]
-    ImageSearch, xpos, ypos, command[4], command[5], command[6], command[7], %imagepath%
+    x1 := command[4]
+    y1 := command[5]
+    x2 := command[6]
+    y2 := command[7]
+    if (x2 = "A_ScreenWidth") {
+        x2 := A_ScreenWidth
+    }
+    if (y2 = "A_ScreenHeight") {
+        y2 := A_ScreenHeight
+    }
+    ImageSearch, xpos, ypos,% x1,% y1,% x2,% y2, %imagepath%
     s .= Format("({}, {})", xpos, ypos)
     return s
 }
 
 PixelGetColor(ByRef command) {
+    x := command[3]
+    y := command[4]
     if (command.Length() = 4) {
-    PixelGetColor,color,command[3],command[4]
+    PixelGetColor,color,% x,% y
     } else {
         options := command[5]
-        PixelGetColor,color,command[3],command[4], %options%
+        PixelGetColor,color,% x,% y, %options%
     }
     return color
 }
 
 PixelSearch(ByRef command) {
+    x1 := command[4]
+    y1 := command[5]
+    x2 := command[6]
+    y2 := command[7]
+    if (x2 = "A_ScreenWidth") {
+        x2 := A_ScreenWidth
+    }
+    if (y2 = "A_ScreenHeight") {
+        y2 := A_ScreenHeight
+    }
     if (command.Length() = 9) {
-        PixelSearch, xpos, ypos, command[4], command[5], command[6], command[7], command[8], command[9]
+        PixelSearch, xpos, ypos,% x1,% y1,% x2,% y2, command[8], command[9]
     } else {
         options := command[10]
-        PixelSearch, xpos, ypos, command[4], command[5], command[6], command[7], command[8], command[9], %options%
+        PixelSearch, xpos, ypos,% x1,% y1,% x2,% y2, command[8], command[9], %options%
     }
     s .= Format("({}, {})", xpos, ypos)
     return s

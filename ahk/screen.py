@@ -37,7 +37,7 @@ class ScreenMixin(ScriptEngine):
         if lower_bound:
             x2, y2 = lower_bound
         else:
-            x2, y2 = ('%A_ScreenWidth%', '%A_ScreenHeight%')
+            x2, y2 = ('A_ScreenWidth', 'A_ScreenHeight')
         script = self.render_template(
             'screen/image_search.ahk',
             x1=x1,
@@ -162,7 +162,7 @@ class ScreenMixin(ScriptEngine):
         if lower_bound:
             x2, y2 = lower_bound
         else:
-            x2, y2 = ('%A_ScreenWidth%', '%A_ScreenHeight%')
+            x2, y2 = ('A_ScreenWidth', 'A_ScreenHeight')
 
         script = self.render_template(
             'screen/pixel_search.ahk',

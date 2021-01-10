@@ -4,15 +4,15 @@ import time
 import sys
 import os
 from unittest import IsolatedAsyncioTestCase
-
+from itertools import product
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk.daemon import AHKDaemon
 from ahk.window import AsyncWindow
+from PIL import Image
 
-
-class TestMouseAsync(IsolatedAsyncioTestCase):
+class TestMouseDaemon(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.ahk = AHKDaemon()
         await self.ahk.start()
@@ -26,7 +26,7 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
         assert await self.ahk.mouse_position == (x+10, y+10)
 
 
-class TestWindowAsync(IsolatedAsyncioTestCase):
+class TestWindowDaemon(IsolatedAsyncioTestCase):
     win: AsyncWindow
     async def asyncSetUp(self):
         self.ahk = AHKDaemon()
@@ -115,3 +115,42 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         self.ahk.stop()
         self.p.terminate()
         await asyncio.sleep(0.5)
+
+
+class TestScreenDaemon(IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        """
+        Record all open windows
+        :return:
+        """
+        self.ahk = AHKDaemon()
+        await self.ahk.start()
+        self.before_windows = await self.ahk.windows()
+        im = Image.new('RGB', (20, 20))
+        for coord in product(range(20), range(20)):
+            im.putpixel(coord, (255, 0, 0))
+        self.im = im
+        im.show()
+        time.sleep(2)
+
+    async def asyncTearDown(self):
+        for win in await self.ahk.windows():
+            if win not in self.before_windows:
+                await win.close()
+                break
+        self.ahk.stop()
+
+    async def test_pixel_search(self):
+        result = await self.ahk.pixel_search(0xFF0000)
+        self.assertIsNotNone(result)
+
+    async def test_image_search(self):
+        self.im.save('testimage.png')
+        position = await self.ahk.image_search('testimage.png')
+        self.assertIsNotNone(position)
+
+    async def test_pixel_get_color(self):
+        x, y = await self.ahk.pixel_search(0xFF0000)
+        result = await self.ahk.pixel_get_color(x, y)
+        self.assertIsNotNone(result)
+        self.assertEqual(int(result, 16), 0xFF0000)
