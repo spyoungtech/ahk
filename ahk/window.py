@@ -602,7 +602,7 @@ class Window(object):
         )
         return script
 
-    def send(self, keys, delay=10, raw=False, blocking=False, escape=False, press_duration=-1):
+    def send(self, keys, delay=10, raw=False, blocking=True, escape=False, press_duration=-1):
         """
         Send keystrokes directly to the window.
         Uses ControlSend
