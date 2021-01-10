@@ -8,13 +8,13 @@ from itertools import product
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
-from ahk.daemon import AHKDaemon
+from ahk.daemon import AsyncAHKDaemon
 from ahk.window import AsyncWindow, WindowNotFoundError
 from PIL import Image
 
 class TestMouseDaemon(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
-        self.ahk = AHKDaemon()
+        self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
 
     def tearDown(self) -> None:
@@ -29,7 +29,7 @@ class TestMouseDaemon(IsolatedAsyncioTestCase):
 class TestWindowDaemon(IsolatedAsyncioTestCase):
     win: AsyncWindow
     async def asyncSetUp(self):
-        self.ahk = AHKDaemon()
+        self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
         self.p = subprocess.Popen('notepad')
         time.sleep(1)
@@ -123,7 +123,7 @@ class TestScreenDaemon(IsolatedAsyncioTestCase):
         Record all open windows
         :return:
         """
-        self.ahk = AHKDaemon()
+        self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
         self.before_windows = await self.ahk.windows()
         im = Image.new('RGB', (20, 20))
@@ -158,7 +158,7 @@ class TestScreenDaemon(IsolatedAsyncioTestCase):
 
 class TestWinGetDaemon(IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.ahk = AHKDaemon()
+        self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
         self.p = subprocess.Popen('notepad')
         time.sleep(1)
@@ -201,7 +201,7 @@ class TestKeyboardDaemon(IsolatedAsyncioTestCase):
         Record all open windows
         :return:
         """
-        self.ahk = AHKDaemon()
+        self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
         self.p = subprocess.Popen("notepad")
         time.sleep(1)
