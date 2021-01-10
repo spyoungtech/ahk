@@ -72,7 +72,6 @@ class AHKDaemon(AsyncAHK):
         name = template_name.split('/')[-1]
         if name in self._template_overrides:
             template_name = f'daemon/{name}'
-        print(template_name)
         blocking = False
         directives = None
         kwargs['_daemon'] = True
@@ -85,16 +84,14 @@ class AHKDaemon(AsyncAHK):
         async with self.run_lock:
             for line in script_text.split('\n'):
                 line = line.strip()
-                if not line:
+                if not line or line.startswith("FileAppend"):
                     continue
-                print(line)
                 self.queue.put_nowait(line.encode('utf-8'))
             await self.queue.join()
             res = []
             while not self.result_queue.empty():
                 res.append(self.result_queue.get_nowait())
         res = b'\n'.join(i for i in res if i)
-        print(res)
         if decode:
             return res.decode('utf-8')
         return res
