@@ -194,3 +194,43 @@ class TestWinGetDaemon(IsolatedAsyncioTestCase):
         assert isinstance(await self.win.pid, str)
 
 
+
+class TestKeyboardDaemon(IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        """
+        Record all open windows
+        :return:
+        """
+        self.ahk = AHKDaemon()
+        await self.ahk.start()
+        self.p = subprocess.Popen("notepad")
+        time.sleep(1)
+
+    async def asyncTearDown(self):
+        self.p.terminate()
+        self.ahk.stop()
+        await asyncio.sleep(0.5)
+
+    async def test_window_send(self):
+        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        await notepad.send("hello world")
+        await asyncio.sleep(1)
+        self.assertIn(b'hello world', await notepad.get_text())
+
+    async def test_send(self):
+        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        await notepad.activate()
+        await self.ahk.send('hello world')
+        self.assertIn(b'hello world', await notepad.get_text())
+
+    async def test_send_input(self):
+        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        await self.ahk.send_input("Hello World")
+        await asyncio.sleep(0.5)
+        assert b"Hello World" in await notepad.get_text()
+
+    async def test_type(self):
+        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        await notepad.activate()
+        await self.ahk.type("Hello, World!")
+        assert b"Hello, World!" in await notepad.get_text()
