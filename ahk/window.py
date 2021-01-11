@@ -836,11 +836,11 @@ class AsyncWindow(Window):
         ahk_id = await engine.a_run_script(script)
         return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
-    # def __getattr__(self, item):
-    #     if item in self._get_subcommands:
-    #         raise AttributeError(f"Unaccessable Attribute. Use get({item}) instead")
-    #     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
-    #
+    def __getattr__(self, item):
+        if item in self._get_subcommands:
+            raise AttributeError(f"Unaccessable Attribute. Use get({item}) instead")
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
     async def get_pos(self, info=None):
         script = self._get_pos(info)
         resp = await self.engine.a_run_script(script)
