@@ -12,7 +12,7 @@ from ahk.daemon import AsyncAHKDaemon
 from ahk.window import AsyncWindow, WindowNotFoundError
 from PIL import Image
 
-class TestMouseDaemon(IsolatedAsyncioTestCase):
+class TestMouseDaemonAsync(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
@@ -26,7 +26,7 @@ class TestMouseDaemon(IsolatedAsyncioTestCase):
         assert await self.ahk.mouse_position == (x+10, y+10)
 
 
-class TestWindowDaemon(IsolatedAsyncioTestCase):
+class TestWindowDaemonAsync(IsolatedAsyncioTestCase):
     win: AsyncWindow
     async def asyncSetUp(self):
         self.ahk = AsyncAHKDaemon()
@@ -117,7 +117,7 @@ class TestWindowDaemon(IsolatedAsyncioTestCase):
         await asyncio.sleep(0.5)
 
 
-class TestScreenDaemon(IsolatedAsyncioTestCase):
+class TestScreenDaemonAsync(IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         """
         Record all open windows
@@ -156,7 +156,7 @@ class TestScreenDaemon(IsolatedAsyncioTestCase):
         self.assertEqual(int(result, 16), 0xFF0000)
 
 
-class TestWinGetDaemon(IsolatedAsyncioTestCase):
+class TestWinGetDaemonAsync(IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
@@ -195,7 +195,7 @@ class TestWinGetDaemon(IsolatedAsyncioTestCase):
 
 
 
-class TestKeyboardDaemon(IsolatedAsyncioTestCase):
+class TestKeyboardDaemonAsync(IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
         """
         Record all open windows
