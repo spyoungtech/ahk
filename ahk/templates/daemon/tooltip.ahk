@@ -1,1 +1,1 @@
-ToolTip, {{ text }}, {{ x }}, {{ y }}, {{ id }}
+ToolTip, {{ text }},{{ x }},{{ y }},{{ id }}

@@ -1,1 +1,1 @@
-TrayTip {{ title }}, {{ text }}, {{ second }}, {{ option }}
+TrayTip,{{ title }},{{ text }},{{ second }},{{ option }}
