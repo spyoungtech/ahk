@@ -1,0 +1,1 @@
+AHKWinMove,{{ title }},{{ x }},{{ y }}{% if width %},{{ width }}{% endif %}{% if height %},{{ height }}{% endif %}

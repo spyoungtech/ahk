@@ -1,5 +1,5 @@
 {% extends "base.ahk" %}
 {% block body %}
 
-SendInput {{ s }}
+SendInput,{{ s }}
 {% endblock body %}

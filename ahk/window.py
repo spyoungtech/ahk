@@ -292,7 +292,12 @@ class Window(object):
         script = self._base_get_method_(command)
         result = self.engine.run_script(script, decode=False)
         if self.encoding:
-            return result.stdout.decode(encoding=self.encoding)
+            if isinstance(result, bytes):
+                return result.decode(encoding=self.encoding)
+            else:
+                return result.stdout.decode(encoding=self.encoding)
+        if isinstance(result, bytes):
+            return result
         return result.stdout
 
     @property
@@ -589,11 +594,11 @@ class Window(object):
         :return: 
         """
         script = self._move(x=x, y=y, width=width, height=height)
-        self.engine.run_script(script)
+        return self.engine.run_script(script) or None
 
     def _send(self, keys, delay=10, raw=False, blocking=False, escape=False, press_duration=-1):
         if escape:
-            keys = escape_sequence_replace(keys)
+            keys = self.engine.escape_sequence_replace(keys)
         script = self._render_template(
             'window/win_send.ahk',
             title=f"ahk_id {self.id}",
@@ -602,7 +607,7 @@ class Window(object):
         )
         return script
 
-    def send(self, keys, delay=10, raw=False, blocking=False, escape=False, press_duration=-1):
+    def send(self, keys, delay=10, raw=False, blocking=True, escape=False, press_duration=-1):
         """
         Send keystrokes directly to the window.
         Uses ControlSend
@@ -701,7 +706,7 @@ class WindowMixin(ScriptEngine):
     def _all_window_ids(self):
         script = self._all_window_ids_()
         result = self.run_script(script)
-        return result.split('\n')[:-1]  # last one is always an empty string
+        return result.split(',')[:-1]  # last one is always an empty string
 
     def windows(self):
         """
@@ -897,7 +902,6 @@ class AsyncWindow(Window):
 
     @property
     async def non_max_non_min(self):
-        warnings.warn('property blocks event loop. use is_minmax() instead')
         return await self.get("MinMax") == self.NON_MIN_NON_MAX
 
     async def is_minmax(self):
@@ -905,7 +909,6 @@ class AsyncWindow(Window):
 
     @property
     async def transparent(self) -> int:
-        warnings.warn('property blocks event loop. use get_transparency() instead')
         result = await self.get("Transparent")
         if result:
             return int(result)
@@ -963,15 +966,10 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         ahk_id = await self.a_run_script(script)
         return AsyncWindow(engine=self, ahk_id=ahk_id, encoding=encoding)
 
-    @property
-    def active_window(self):
-        warnings.warn("active_window property blocks event loop. use get_active_window() instead")
-        return self.win_get(title='A')
-
     async def _all_window_ids(self):
         script = self._all_window_ids_()
         result = await self.a_run_script(script)
-        return result.split('\n')[:-1]  # last one is always an empty string
+        return result.split(',')[:-1]  # last one is always an empty string
 
     async def windows(self):
         """
@@ -1043,7 +1041,7 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
         """
 
-        async for window in self.find_windows_by_title():
+        async for window in self.find_windows_by_title(title=title):
             return window
 
     async def find_windows_by_text(self, text, exact=False):

@@ -15,7 +15,7 @@ import os
 import subprocess
 import warnings
 from shutil import which
-from ahk.utils import make_logger
+from ahk.utils import make_logger, escape_sequence_replace
 from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
 from typing import Set
@@ -89,6 +89,10 @@ class ScriptEngine(object):
         if directives is None:
             directives = set()
         self._directives = set(directives)
+
+    @staticmethod
+    def escape_sequence_replace(*args, **kwargs):
+        return escape_sequence_replace(*args, **kwargs)
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         """

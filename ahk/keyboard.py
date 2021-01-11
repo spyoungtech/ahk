@@ -2,7 +2,6 @@ import ast
 import warnings
 
 from ahk.script import ScriptEngine, AsyncScriptEngine
-from ahk.utils import escape_sequence_replace
 from ahk.keys import Key
 from ahk.directives import InstallKeybdHook, InstallMouseHook
 
@@ -141,7 +140,7 @@ class KeyboardMixin(ScriptEngine):
         :param s: the string to type
         :param blocking: if ``True``, waits until script finishes, else returns immediately.
         """
-        s = escape_sequence_replace(s)
+        s = self.escape_sequence_replace(s)
         return self.send_input(s, blocking=blocking) or None
 
     def _send(self, s, raw=False, delay=None, blocking=True):
