@@ -30,8 +30,7 @@ class TestKeyboardDaemon(TestCase):
         self.notepad = self.ahk.find_window(title=b"Untitled - Notepad")
 
     def tearDown(self):
-        if self.ahk.key_state("CapsLock", "T"):
-            self.ahk.set_capslock_state("off")
+        self.ahk.set_capslock_state('off')
         self.ahk.stop()
         self.p.terminate()
         time.sleep(0.2)
