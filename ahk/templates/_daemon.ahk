@@ -237,7 +237,7 @@ WinActivate(ByRef command) {
     if (command.Length() = 2) {
         WinActivate, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinActivate, %title%, %secondstowait%
     }
 }
@@ -247,7 +247,7 @@ WinActivateBottom(ByRef command) {
     if (command.Length() = 2) {
         WinActivateBottom, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinActivateBottom, %title%, %secondstowait%
     }
 }
@@ -257,7 +257,7 @@ WinClose(ByRef command) {
     if (command.Length() = 2) {
         WinClose,% title
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinClose, %title%, %secondstowait%
     }
 }
@@ -267,7 +267,7 @@ WinHide(ByRef command) {
     if (command.Length() = 2) {
         WinHide, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinHide, %title%, %secondstowait%
     }
 }
@@ -277,7 +277,7 @@ WinKill(ByRef command) {
     if (command.Length() = 2) {
         WinKill, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinKill, %title%, %secondstowait%
     }
 }
@@ -287,7 +287,7 @@ WinMaximize(ByRef command) {
     if (command.Length() = 2) {
         WinMaximize, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinMaximize, %title%, %secondstowait%
     }
 }
@@ -297,7 +297,7 @@ WinMinimize(ByRef command) {
     if (command.Length() = 2) {
         WinMinimize, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinMinimize, %title%, %secondstowait%
     }
 }
@@ -307,7 +307,7 @@ WinRestore(ByRef command) {
     if (command.Length() = 2) {
         WinRestore, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinRestore, %title%, %secondstowait%
     }
 }
@@ -317,7 +317,7 @@ WinShow(ByRef command) {
     if (command.Length() = 2) {
         WinShow, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinShow, %title%, %secondstowait%
     }
 }
@@ -337,7 +337,7 @@ WinWaitActive(ByRef command) {
     if (command.Length() = 2) {
         WinWaitActive, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinWaitActive, %title%, %secondstowait%
     }
 }
@@ -357,7 +357,7 @@ WinWaitClose(ByRef command) {
     if (command.Length() = 2) {
         WinWaitClose, %title%
     } else {
-        secondstowait = command[3]
+        secondstowait := command[3]
         WinWaitClose, %title%, %secondstowait%
     }
 }
