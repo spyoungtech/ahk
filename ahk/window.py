@@ -153,10 +153,10 @@ class Window(object):
         ahk_id = engine.run_script(script)
         return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
-    def __getattr__(self, attr):
-        if attr.lower() in self._get_subcommands:
-            return self.get(attr)
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attr}'")
+    # def __getattr__(self, attr):
+    #     if attr.lower() in self._get_subcommands:
+    #         return self.get(attr)
+    #     raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{attr}'")
 
     def _get(self, subcommand):
         sub = self._get_subcommands.get(subcommand)
@@ -292,7 +292,12 @@ class Window(object):
         script = self._base_get_method_(command)
         result = self.engine.run_script(script, decode=False)
         if self.encoding:
-            return result.stdout.decode(encoding=self.encoding)
+            if isinstance(result, bytes):
+                return result.decode(encoding=self.encoding)
+            else:
+                return result.stdout.decode(encoding=self.encoding)
+        if isinstance(result, bytes):
+            return result
         return result.stdout
 
     @property
