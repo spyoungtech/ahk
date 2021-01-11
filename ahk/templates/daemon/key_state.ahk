@@ -1,1 +1,1 @@
-AHKKeyState, {{ key_name }}{% if mode %}, {{ mode }}{% endif %}
+AHKKeyState,{{ key_name }}{% if mode %},{{ mode }}{% endif %}
