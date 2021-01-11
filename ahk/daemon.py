@@ -1,5 +1,6 @@
 import os
 import asyncio
+import warnings
 from ahk.autohotkey import AsyncAHK, AHK
 import subprocess
 import threading
@@ -91,8 +92,10 @@ class AHKDaemon(AHK):
         return super().render_template(template_name, directives=directives, blocking=blocking, **kwargs)
 
     def run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
+        if not blocking:
+            warnings.warn("blocking=False in daemon mode is not supported", stacklevel=3)
         if not self._is_running:
-            raise RuntimeError("Not running! Must call .run() first!")
+            raise RuntimeError("Not running! Must call .start() first!")
         script_text = script_text.replace('#NoEnv', '', 1)
         with self.run_lock:
             for line in script_text.split('\n'):
@@ -203,7 +206,7 @@ class AsyncAHKDaemon(AsyncAHK):
 
     async def a_run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
         if not self._is_running:
-            raise RuntimeError("Not running! Must call .run() first!")
+            raise RuntimeError("Not running! Must await .start() first!")
         script_text = script_text.replace('#NoEnv', '', 1)
         async with self.run_lock:
             for line in script_text.split('\n'):
