@@ -21,8 +21,9 @@ class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, Regis
     | :py:class:`ahk.registery.RegisteryMixin`
     | :py:class:`ahk.gui.GUIMixin`
     """
-
-    pass
+    
+    transpile_only = False
+    
 
 #
 class AsyncAHK(

@@ -16,7 +16,7 @@ import subprocess
 import warnings
 from shutil import which
 from ahk.utils import make_logger
-from ahk.directives import Persistent
+from ahk.directives import Persistent, TranspileOnly
 from jinja2 import Environment, FileSystemLoader
 from typing import Set
 logger = make_logger(__name__)
@@ -212,6 +212,12 @@ class ScriptEngine(object):
         >>> ahk.run_script('FileAppend, Hello World, *', blocking=False)
         <subprocess.Popen at 0x18a599cde10>
         """
+        
+        if TranspileOnly in self._directives:
+            print(script_text)
+            return None
+        
+		
         logger.debug('Running script text: %s', script_text)
         try:
             result = self._run_script(script_text, decode=decode, blocking=blocking, **runkwargs)
