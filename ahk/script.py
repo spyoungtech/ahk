@@ -117,6 +117,9 @@ class ScriptEngine(object):
             directives.remove(Persistent)
         if self._directives:
             directives.update(self._directives)
+        
+        if TranspileOnly in directives:
+            directives.remove(TranspileOnly)
 
         kwargs['directives'] = directives
         template = self.env.get_template(template_name)
