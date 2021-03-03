@@ -22,7 +22,7 @@ class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, Regis
     | :py:class:`ahk.gui.GUIMixin`
     """
     
-    transpile_only = False
+    pass
     
 
 #
