@@ -90,6 +90,8 @@ class ScriptEngine(object):
             directives = set()
         self._directives = set(directives)
 
+        self.transpile = "transpile" in kwargs and kwargs["transpile"]
+
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         """
         Renders a given jinja template and returns a string of script text
@@ -118,9 +120,6 @@ class ScriptEngine(object):
         if self._directives:
             directives.update(self._directives)
         
-        if TranspileOnly in directives:
-            directives.remove(TranspileOnly)
-
         kwargs['directives'] = directives
         template = self.env.get_template(template_name)
         return template.render(**kwargs)
@@ -216,7 +215,7 @@ class ScriptEngine(object):
         <subprocess.Popen at 0x18a599cde10>
         """
         
-        if TranspileOnly in self._directives:
+        if self.transpile:
             print(script_text)
             return None
         
