@@ -151,8 +151,6 @@ class Persistent(Directive):
 class SingleInstance(Directive):
     pass
 
-class TranspileOnly(Directive):
-    pass
 
 class UseHook(Directive):
     pass

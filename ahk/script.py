@@ -16,7 +16,7 @@ import subprocess
 import warnings
 from shutil import which
 from ahk.utils import make_logger
-from ahk.directives import Persistent, TranspileOnly
+from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
 from typing import Set
 logger = make_logger(__name__)
