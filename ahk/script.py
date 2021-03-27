@@ -90,6 +90,8 @@ class ScriptEngine(object):
             directives = set()
         self._directives = set(directives)
 
+        self.transpile = "transpile" in kwargs and kwargs["transpile"]
+
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         """
         Renders a given jinja template and returns a string of script text
@@ -117,7 +119,7 @@ class ScriptEngine(object):
             directives.remove(Persistent)
         if self._directives:
             directives.update(self._directives)
-
+        
         kwargs['directives'] = directives
         template = self.env.get_template(template_name)
         return template.render(**kwargs)
@@ -212,6 +214,12 @@ class ScriptEngine(object):
         >>> ahk.run_script('FileAppend, Hello World, *', blocking=False)
         <subprocess.Popen at 0x18a599cde10>
         """
+        
+        if self.transpile:
+            print(script_text)
+            return None
+        
+		
         logger.debug('Running script text: %s', script_text)
         try:
             result = self._run_script(script_text, decode=decode, blocking=blocking, **runkwargs)
