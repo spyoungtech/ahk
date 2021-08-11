@@ -234,3 +234,16 @@ class TestKeyboardDaemonAsync(IsolatedAsyncioTestCase):
         await notepad.activate()
         await self.ahk.type("Hello, World!")
         assert b"Hello, World!" in await notepad.get_text()
+
+    async def test_multi_line_response(self):
+        """
+        Test that responses with multi-line strings are not truncated
+        Not really a 'keyboard' test, but whatever
+        """
+        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        await notepad.activate()
+        await self.ahk.type('Hello\nWorld!')
+        text = await notepad.get_text()
+        assert b'Hello' in text
+        assert b'World!' in text
+
