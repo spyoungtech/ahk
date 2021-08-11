@@ -76,6 +76,17 @@ class TestKeyboardDaemon(TestCase):
         self.ahk.set_capslock_state("on")
         assert self.ahk.key_state("CapsLock", "T")
 
+    def test_multi_line_response(self):
+        """
+        Test that responses with multi-line strings are not truncated
+        Not really a 'keyboard' test, but whatever
+        """
+        self.notepad.activate()
+        self.ahk.type('Hello\nWorld!')
+        assert b'Hello\r\n' in self.notepad.text
+        assert b'World!' in self.notepad.text
+
+
 class TestMouseDaemon(TestCase):
     def setUp(self) -> None:
         self.ahk = AHKDaemon()
