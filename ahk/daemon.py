@@ -52,7 +52,8 @@ class AHKDaemon(AHK):
                 break
             self.proc.stdin.write(command + b'\n')
             self.proc.stdin.flush()
-            res = self.proc.stdout.readline()
+            num_lines = int(self.proc.stdout.readline().strip())
+            res = b''.join(self.proc.stdout.readline() for _ in range(num_lines + 1))
             self.result_queue.put_nowait(res[:-1])
             self.queue.task_done()
 
@@ -170,7 +171,12 @@ class AsyncAHKDaemon(AsyncAHK):
             command = await self.queue.get()
             self.proc.stdin.write(command + b'\n')
             await self.proc.stdin.drain()
-            res = await self.proc.stdout.readline()
+            num_lines = int(await self.proc.stdout.readline())
+            lines = []
+            for _ in range(num_lines + 1):
+                line = await self.proc.stdout.readline()
+                lines.append(line)
+            res = b''.join(lines)
             self.result_queue.put_nowait(res[:-1])
             self.queue.task_done()
 

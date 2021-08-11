@@ -83,7 +83,7 @@ class TestKeyboardDaemon(TestCase):
         """
         self.notepad.activate()
         self.ahk.type('Hello\nWorld!')
-        assert b'Hello' in self.notepad.text
+        assert b'Hello\r\n' in self.notepad.text
         assert b'World!' in self.notepad.text
 
 

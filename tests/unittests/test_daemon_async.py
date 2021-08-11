@@ -244,6 +244,6 @@ class TestKeyboardDaemonAsync(IsolatedAsyncioTestCase):
         await notepad.activate()
         await self.ahk.type('Hello\nWorld!')
         text = await notepad.get_text()
-        assert b'Hello' in text
+        assert b'Hello\r\n' in text
         assert b'World!' in text
 

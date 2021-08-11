@@ -495,7 +495,12 @@ AHKWinGetPos(ByRef command) {
     return s
 }
 
-
+CountNewlines(ByRef s) {
+    newline := "`n"
+    StringReplace, s, s, %newline%, %newline%, UseErrorLevel
+    count := ErrorLevel
+    return count
+}
 
 stdin  := FileOpen("*", "r `n")  ; Requires [v1.1.17+]
 
@@ -504,6 +509,8 @@ Loop {
         commandArray := StrSplit(query, ",")
         func := commandArray[1]
         response := %func%(commandArray)
+        newline_count := CountNewlines(response)
+        FileAppend, %newline_count%`n, *
         FileAppend, %response%`n, *
 }
 
