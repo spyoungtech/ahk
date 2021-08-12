@@ -93,6 +93,11 @@ class TestWindow(TestCase):
         self.win.rect = (x+10, y+10, width+10, height+10)
         assert self.win.rect == (x+10, y+10, width+10, height+10)
 
+    def test_title_change(self):
+        self.win.title = 'foo'
+        assert self.win.title == b'foo'
+
+
     def tearDown(self):
         self.p.terminate()
 
