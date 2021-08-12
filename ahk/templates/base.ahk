@@ -1,5 +1,5 @@
 {% block directives %}
-{% if not _daemon %}#NoEnv{% endif %}
+#NoEnv
 {% for directive in directives %}
 {{ directive }}
 {% endfor %}
