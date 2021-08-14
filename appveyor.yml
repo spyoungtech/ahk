@@ -1,7 +1,6 @@
 version: '0.1.{build}'
 
 environment:
-  AHK_PATH: C:\ahk\AutoHotkey.exe
   AHK_DEBUG: true
 
 install:
