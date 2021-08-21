@@ -300,6 +300,8 @@ For the most part, the AHK Daemon works just like the regular `AHK` class, with 
 does not allow you to run arbitrary AutoHotkey scripts and does not yet support Hotkeys. However, you can always use 
 the normal `AHK` class alongside the daemon for these needs.
 
+`AsyncAHKDaemon` is also available for asyncio support.
+
 In the future, AHKDaemon may become the default implementation.
 
 
@@ -446,13 +448,13 @@ will be added.
 
 To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). It's expected to be on PATH by default.
 
-A convenient way to do this is to install the `binary` extra (requires version 0.12 or higher of this package)
+A convenient way to do this is to install the `binary` extra (requires version 0.13 or higher of this package)
 
 ```
 pip install "ahk[binary]"
 ```
 
-For versions < 0.12 you can install the ahk-binary package directly:
+For versions < 0.13 you can install the ahk-binary package directly:
 
 ```
 pip install "ahk-binary<2"
