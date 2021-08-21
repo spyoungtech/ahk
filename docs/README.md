@@ -332,7 +332,7 @@ in the async API. Instead, you should use a comparable method. If you _do_ use t
 that the task won't run until control is yielded back to the event loop. For now, this will also raise a warning to the same.  
 
 
-Lastly, while it's possible to pass `blocking=True` in the async API, this sometimes will cause problems. 
+Lastly, while it's possible to pass `blocking=False` in the async API, this sometimes will cause problems with certain functions. For now, a warning is raised in this case. 
 
 ```python
 ahk = AsyncAHK()
