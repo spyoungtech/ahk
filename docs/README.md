@@ -279,6 +279,30 @@ These features are (even more) likely to have breaking changes without warning.
 
 Github issues are provided for convenience to collect feedback on these features.
 
+
+## AHKDaemon
+
+Normally, `AHK` works by creating a new subprocess for every command invocation. Because processes are expensive 
+to create in Windows, this can lead to performance issues for some use-cases. `AHKDaemon` allows all AHK commands to be 
+carried out in a single process, as opposed to running each command in a new subprocess, improving performance.
+
+Some other details change in Daemon mode, such as persistence of state (e.g. changes to CoordMode).
+
+
+```python
+from ahk.daemon import AHKDaemon
+daemon = AHKDaemon()
+daemon.start()
+daemon.mouse_move(100, 100)
+```
+
+For the most part, the AHK Daemon works just like the regular `AHK` class, with a few caveats. Most notably, AHKDaemon 
+does not allow you to run arbitrary AutoHotkey scripts and does not yet support Hotkeys. However, you can always use 
+the normal `AHK` class alongside the daemon for these needs.
+
+In the future, AHKDaemon may become the default implementation.
+
+
 ## Async API
 
 An async API is provided so functions can be called using `async`/`await`. 
@@ -420,9 +444,25 @@ will be added.
 
 ## Non-Python dependencies
 
-To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). 
+To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). It's expected to be on PATH by default.
 
-It's expected to be on PATH by default. You can also use the `AHK_PATH` environment variable to specify the executable location.
+A convenient way to do this is to install the `binary` extra (requires version 0.12 or higher of this package)
+
+```
+pip install "ahk[binary]"
+```
+
+For versions < 0.12 you can install the ahk-binary package directly:
+
+```
+pip install "ahk-binary<2"
+```
+
+You can also use the `AHK_PATH` environment variable to specify the executable location.
+
+```console
+set AHK_PATH=C:\Path\To\AutoHotkey.exe
+```
 
 Alternatively, you may provide the path in code
 
