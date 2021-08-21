@@ -7,7 +7,7 @@ from unittest import TestCase
 from PIL import Image
 from itertools import product
 import time
-
+from ahk.daemon import AHKDaemon
 
 class TestScreen(TestCase):
     def setUp(self):
@@ -44,3 +44,19 @@ class TestScreen(TestCase):
         result = self.ahk.pixel_get_color(x, y)
         self.assertIsNotNone(result)
         self.assertEqual(int(result, 16), 0xFF0000)
+
+class TestScreenDaemon(TestScreen):
+    def setUp(self):
+        self.ahk = AHKDaemon()
+        self.ahk.start()
+        self.before_windows = self.ahk.windows()
+        im = Image.new('RGB', (20, 20))
+        for coord in product(range(20), range(20)):
+            im.putpixel(coord, (255, 0, 0))
+        self.im = im
+        im.show()
+        time.sleep(2)
+
+    def tearDown(self):
+        super().tearDown()
+        self.ahk.stop()
