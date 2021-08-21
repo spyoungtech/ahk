@@ -1,2 +1,2 @@
 SetKeyDelay,{{ delay }},{{ press_duration }}
-WinSend,{{ title }},{{ keys }}
+{% if raw %}WinSendRaw{% else %}WinSend{% endif %},{{ title }},{{ keys }}
