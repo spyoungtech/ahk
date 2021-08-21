@@ -8,7 +8,7 @@ project_root = os.path.abspath(
 sys.path.insert(0, project_root)
 
 from ahk import AHK
-
+from ahk.daemon import AHKDaemon
 
 class TestWindow(TestCase):
 
@@ -101,11 +101,15 @@ class TestWindow(TestCase):
     def tearDown(self):
         self.p.terminate()
 
+class TestWindowDaemon(TestWindow):
+    def setUp(self):
+        self.ahk = AHKDaemon()
+        self.ahk.start()
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
 
-if __name__ == "__main__":
-    ahk = AHK()
-    p = subprocess.Popen('notepad')
-    time.sleep(1)
-    win = ahk.win_get(title='Untitled - Notepad')
-    print(win.transparent)
-    win.transparent = 255
+    def tearDown(self):
+        super().tearDown()
+        self.ahk.stop()
