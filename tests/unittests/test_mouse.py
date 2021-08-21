@@ -13,6 +13,7 @@ project_root = os.path.abspath(
 )
 sys.path.insert(0, project_root)
 from ahk import AsyncAHK, AHK
+from ahk.daemon import AHKDaemon
 
 
 
@@ -47,16 +48,30 @@ class TestMouse(TestCase):
 
     def test_mouse_drag(self):
         self.notepad_process = subprocess.Popen('notepad')
+        time.sleep(0.5)
         notepad = self.ahk.find_window(title=b"Untitled - Notepad")
         win_width = notepad.width
         win_height = notepad.height
+        print(*notepad.position)
         self.ahk.mouse_move(*notepad.position)
+        time.sleep(1)
         # moving the mouse to the window position puts it in a position where it can be resized by dragging ↖ ↘
         # after this, we expect the window height/width to shrink by 10px
         self.ahk.mouse_drag(10, 10, relative=True)
         assert notepad.width == win_width - 10
         assert notepad.height == win_height - 10
 
+
+class TestMouseDaemon(TestMouse):
+    def setUp(self) -> None:
+        self.ahk = AHKDaemon()
+        self.ahk.start()
+        self.original_position = self.ahk.mouse_position
+        self.notepad_process = None
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        self.ahk.stop()
 
 class TestMouseAsync(IsolatedAsyncioTestCase):
     def setUp(self) -> None:

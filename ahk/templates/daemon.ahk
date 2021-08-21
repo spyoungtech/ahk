@@ -83,9 +83,9 @@ MouseMove(ByRef command) {
 
 CoordMode(ByRef command) {
     if (command.Length() = 2) {
-        CoordMode, command[2]
+        CoordMode,% command[2]
     } else {
-        CoordMode, command[2], command[3]
+        CoordMode,% command[2],% command[3]
     }
 }
 
@@ -156,7 +156,7 @@ KeyWait(ByRef command) {
 }
 
 SetKeyDelay(ByRef command) {
-    SetKeyDelay, command[2]
+    SetKeyDelay, command[2], command[3]
 }
 
 Join(sep, params*) {
@@ -382,6 +382,15 @@ WindowList(ByRef command) {
 }
 
 WinSend(ByRef command) {
+    title := command[2]
+    command.RemoveAt(1)
+    command.RemoveAt(1)
+    str := Join(",", command*)
+    keys := Unescape(str)
+    ControlSend,,% keys, %title%
+}
+
+WinSendRaw(ByRef command) {
     title := command[2]
     command.RemoveAt(1)
     command.RemoveAt(1)
