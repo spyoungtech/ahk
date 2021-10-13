@@ -1,9 +1,14 @@
 import subprocess
 import time
 from unittest import TestCase
+import os, sys
+project_root = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
+)
+sys.path.insert(0, project_root)
 
 from ahk import AHK
-
+from ahk.daemon import AHKDaemon
 
 class TestWindow(TestCase):
 
@@ -70,14 +75,41 @@ class TestWindow(TestCase):
         self.assertEqual(self.win.title, b'Untitled - Notepad')
         self.assertEqual(self.win.text, b'')
 
+    def test_height_change(self):
+        current_height = self.win.height
+        self.win.height = current_height + 100
+        assert self.win.height == current_height + 100
+    
+    def test_width_change(self):
+        current_width = self.win.width
+        self.win.width = current_width + 100
+        assert self.win.width == current_width + 100
+
+    def test_rect_setter(self):
+        """
+        get rect ;-)
+        """
+        x, y, width, height = self.win.rect
+        self.win.rect = (x+10, y+10, width+10, height+10)
+        assert self.win.rect == (x+10, y+10, width+10, height+10)
+
+    def test_title_change(self):
+        self.win.title = 'foo'
+        assert self.win.title == b'foo'
+
+
     def tearDown(self):
         self.p.terminate()
 
+class TestWindowDaemon(TestWindow):
+    def setUp(self):
+        self.ahk = AHKDaemon()
+        self.ahk.start()
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
 
-if __name__ == "__main__":
-    ahk = AHK()
-    p = subprocess.Popen('notepad')
-    time.sleep(1)
-    win = ahk.win_get(title='Untitled - Notepad')
-    print(win.transparent)
-    win.transparent = 255
+    def tearDown(self):
+        super().tearDown()
+        self.ahk.stop()

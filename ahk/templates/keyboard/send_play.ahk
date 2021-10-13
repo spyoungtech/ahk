@@ -2,5 +2,5 @@
 {% block body %}
 {% if delay %}SetKeyDelay, {{ delay }}{% endif %}
 
-SendPlay {{ s }}
+SendPlay,{{ s }}
 {% endblock body %}

@@ -16,7 +16,7 @@ from ahk import AsyncAHK, AHK
 from ahk.keys import ALT, CTRL, KEYS
 
 
-class TestKeyboardAsync(TestCase):
+class TestKeyboardAsync(IsolatedAsyncioTestCase):
     def setUp(self):
         """
         Record all open windows
@@ -28,10 +28,9 @@ class TestKeyboardAsync(TestCase):
         self.p = subprocess.Popen("notepad")
         time.sleep(1)
 
-    def tearDown(self):
+    async def asyncTearDown(self):
         self.p.terminate()
-        time.sleep(0.2)
-        asyncio.run(asyncio.sleep(0.2))
+        await asyncio.sleep(0.5)
 
     async def test_window_send(self):
         notepad = await self.ahk.find_window(title=b"Untitled - Notepad")

@@ -5,6 +5,7 @@ import threading
 import time
 from itertools import product
 from unittest import TestCase
+import pytest
 
 project_root = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
@@ -13,6 +14,7 @@ sys.path.insert(0, project_root)
 
 from ahk import AHK
 from ahk.keys import ALT, CTRL, KEYS
+from ahk.daemon import AHKDaemon
 
 
 class TestKeyboard(TestCase):
@@ -36,6 +38,12 @@ class TestKeyboard(TestCase):
         time.sleep(1)
         self.assertIn(b"hello world", self.notepad.text)
 
+    @pytest.mark.flaky(reruns=5)
+    def test_window_send_raw(self):
+        self.notepad.send("{Tab 4}", raw=True, delay=10, press_duration=10)
+        time.sleep(0.5)
+        assert b'{Tab 4}' in self.notepad.text
+
     def test_send(self):
         self.notepad.activate()
         self.ahk.send("hello world")
@@ -49,6 +57,7 @@ class TestKeyboard(TestCase):
     def test_send_input(self):
         self.notepad.activate()
         self.ahk.send_input("Hello World")
+        time.sleep(0.5)
         assert b"Hello World" in self.notepad.text
 
     def test_type(self):
@@ -76,6 +85,18 @@ class TestKeyboard(TestCase):
         self.ahk.set_capslock_state("on")
         assert self.ahk.key_state("CapsLock", "T")
 
+class TestKeyboardDaemon(TestKeyboard):
+    def setUp(self):
+        self.ahk = AHKDaemon()
+        self.ahk.start()
+        self.before_windows = self.ahk.windows()
+        self.p = subprocess.Popen("notepad")
+        time.sleep(1)
+        self.notepad = self.ahk.find_window(title=b"Untitled - Notepad")
+
+    def tearDown(self):
+        super().tearDown()
+        self.ahk.stop()
 
 def a_down():
     time.sleep(0.5)

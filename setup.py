@@ -8,7 +8,7 @@ with open('docs/README.md', encoding='utf-8') as f:
 
 setup(
     name='ahk',
-    version='0.12.0',
+    version='0.13.0',
     url='https://github.com/spyoungtech/ahk',
     description='A Python wrapper for AHK',
     long_description=long_description,
@@ -16,6 +16,9 @@ setup(
     author_email='spencer.young@spyoung.com',
     author='Spencer Young',
     packages=['ahk'],
+    extras_require={
+        "binary": ["ahk-binary==1.1.33.9"],
+    },
     install_requires=['jinja2'],
     classifiers=[
         'Intended Audience :: Developers',
@@ -32,5 +35,6 @@ setup(
     ],
     tests_require=test_requirements,
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
+    keywords=['ahk', 'autohotkey', 'windows', 'mouse', 'keyboard', 'automation', 'pyautogui']
 )

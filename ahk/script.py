@@ -15,7 +15,7 @@ import os
 import subprocess
 import warnings
 from shutil import which
-from ahk.utils import make_logger
+from ahk.utils import make_logger, escape_sequence_replace
 from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
 from typing import Set
@@ -32,8 +32,11 @@ DEFAULT_EXECUTABLE_PATH = r"C:\Program Files\AutoHotkey\AutoHotkey.exe"
 
 def _resolve_executable_path(executable_path: str = ''):
     if not executable_path:
-        executable_path = os.environ.get('AHK_PATH') or which(
-            'AutoHotkey.exe') or which('AutoHotkeyA32.exe')
+        executable_path = os.environ.get('AHK_PATH') \
+                          or which('AutoHotkey.exe') \
+                          or which('AutoHotkeyU64.exe') \
+                          or which('AutoHotkeyU32.exe') \
+                          or which('AutoHotkeyA32.exe')
 
     if not executable_path:
         if os.path.exists(DEFAULT_EXECUTABLE_PATH):
@@ -43,7 +46,8 @@ def _resolve_executable_path(executable_path: str = ''):
         raise ExecutableNotFoundError(
             'Could not find AutoHotkey.exe on PATH. '
             'Provide the absolute path with the `executable_path` keyword argument '
-            'or in the AHK_PATH environment variable.'
+            'or in the AHK_PATH environment variable. '
+            'You may be able to resolve this error by installing the binary extra: pip install "ahk[binary]"'
         )
 
     if not os.path.exists(executable_path):
@@ -89,6 +93,10 @@ class ScriptEngine(object):
         if directives is None:
             directives = set()
         self._directives = set(directives)
+
+    @staticmethod
+    def escape_sequence_replace(*args, **kwargs):
+        return escape_sequence_replace(*args, **kwargs)
 
     def render_template(self, template_name, directives=None, blocking=True, **kwargs):
         """

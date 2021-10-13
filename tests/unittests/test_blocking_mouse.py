@@ -18,8 +18,9 @@ def test_blocking_blocks():
 def test_nonblocking_does_not_block():
     ahk.mouse_position = (100, 100)
     assert ahk.mouse_position == (100, 100)
-    ahk.mouse_move(10, 10, speed=30, blocking=False)
+    proc = ahk.mouse_move(10, 10, speed=30, blocking=False)
     assert ahk.mouse_position != (10, 10)
     time.sleep(0.1)
     assert ahk.mouse_position != (100, 100)  # make sure it actually moved!
-
+    proc.kill()
+    time.sleep(0.1)

@@ -1,4 +1,5 @@
 pytest
+pytest-rerunfailures
 behave
 behave-classy
 coveralls
