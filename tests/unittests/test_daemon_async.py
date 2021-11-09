@@ -246,4 +246,3 @@ class TestKeyboardDaemonAsync(IsolatedAsyncioTestCase):
         text = await notepad.get_text()
         assert b'Hello\r\n' in text
         assert b'World!' in text
-

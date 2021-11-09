@@ -522,4 +522,3 @@ Loop {
         FileAppend, %newline_count%`n, *
         FileAppend, %response%`n, *
 }
-

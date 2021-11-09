@@ -20,7 +20,7 @@ on_finish:
   - cmd: |
       venv\Scripts\activate.bat
       IF DEFINED COVERALLS_REPO_TOKEN (python -m coveralls) ELSE (echo skipping coveralls report for external pr)
-      
+
 
 cache:
   - ahk_install.exe -> appveyor.yml
