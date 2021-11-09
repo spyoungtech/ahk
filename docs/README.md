@@ -3,9 +3,9 @@
 A Python wrapper around AHK.
 
 [![Docs](https://readthedocs.org/projects/ahk/badge/?version=latest)](https://ahk.readthedocs.io/en/latest/?badge=latest)
-[![Build](https://ci.appveyor.com/api/projects/status/2c53x6gglw9nxgj1/branch/master?svg=true)](https://ci.appveyor.com/project/spyoungtech/ahk/branch/master) 
-[![version](https://img.shields.io/pypi/v/ahk.svg?colorB=blue)](https://pypi.org/project/ahk/) 
-[![pyversion](https://img.shields.io/pypi/pyversions/ahk.svg?)](https://pypi.org/project/ahk/) 
+[![Build](https://ci.appveyor.com/api/projects/status/2c53x6gglw9nxgj1/branch/master?svg=true)](https://ci.appveyor.com/project/spyoungtech/ahk/branch/master)
+[![version](https://img.shields.io/pypi/v/ahk.svg?colorB=blue)](https://pypi.org/project/ahk/)
+[![pyversion](https://img.shields.io/pypi/pyversions/ahk.svg?)](https://pypi.org/project/ahk/)
 [![Coverage](https://coveralls.io/repos/github/spyoungtech/ahk/badge.svg?branch=master)](https://coveralls.io/github/spyoungtech/ahk?branch=master)
 [![Downloads](https://pepy.tech/badge/ahk)](https://pepy.tech/project/ahk)
 
@@ -18,7 +18,7 @@ Requires Python 3.6+
 
 [Async API](#async-api) requires Python 3.8+
 
-See also [Non-Python dependencies](#non-python-dependencies)  
+See also [Non-Python dependencies](#non-python-dependencies)
 
 
 # Usage
@@ -70,7 +70,7 @@ ahk.key_state('CapsLock', mode='T')  # Check toggle state of a key (like for Num
 ahk.key_press('a')  # Press and release a key
 ahk.key_down('Control')  # Press down (but do not release) Control key
 ahk.key_up('Control')  # Release the key
-ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be pressed. NOTE: This throws 
+ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be pressed. NOTE: This throws
                               # a TimeoutError if the key isn't pressed within the timeout window
 ahk.set_capslock_state("on")  # Turn CapsLock on
 ```
@@ -113,7 +113,7 @@ win.activate()           # Give the window focus
 win.activate_bottom()    # Give the window focus
 win.close()              # Close the window
 win.hide()               # Hide the windwow
-win.kill()               # Kill the window 
+win.kill()               # Kill the window
 win.maximize()           # Maximize the window
 win.minimize()           # Minimize the window
 win.restore()            # Restore the window
@@ -127,7 +127,7 @@ win.always_on_top = True # Make the window always on top
 
 for window in ahk.windows():
     print(window.title)
-    
+
     # Some more attributes
     print(window.text)
     print(window.rect)   # (x, y, width, height)
@@ -222,14 +222,14 @@ You should see an output something like
 ```
 ## Add directives
 
-You can add directives that will be added to all generated scripts. 
+You can add directives that will be added to all generated scripts.
 For example, to prevent the AHK trayicon from appearing, you can add the NoTrayIcon directive.
 
 ```python
 from ahk import AHK
 from ahk.directives import NoTrayIcon
 
-ahk = AHK(directives=[NoTrayIcon]) 
+ahk = AHK(directives=[NoTrayIcon])
 ```
 
 By default, some directives are automatically added to ensure functionality and are merged with any user-provided directives.
@@ -274,7 +274,7 @@ print(result.stdout)  # b'Hello Data!'
 
 ## Preview features
 
-Preview features are experimental features that are may not be fully functional. 
+Preview features are experimental features that are may not be fully functional.
 These features are (even more) likely to have breaking changes without warning.
 
 Github issues are provided for convenience to collect feedback on these features.
@@ -282,8 +282,8 @@ Github issues are provided for convenience to collect feedback on these features
 
 ## AHKDaemon
 
-Normally, `AHK` works by creating a new subprocess for every command invocation. Because processes are expensive 
-to create in Windows, this can lead to performance issues for some use-cases. `AHKDaemon` allows all AHK commands to be 
+Normally, `AHK` works by creating a new subprocess for every command invocation. Because processes are expensive
+to create in Windows, this can lead to performance issues for some use-cases. `AHKDaemon` allows all AHK commands to be
 carried out in a single process, as opposed to running each command in a new subprocess, improving performance.
 
 Some other details change in Daemon mode, such as persistence of state (e.g. changes to CoordMode).
@@ -296,8 +296,8 @@ daemon.start()
 daemon.mouse_move(100, 100)
 ```
 
-For the most part, the AHK Daemon works just like the regular `AHK` class, with a few caveats. Most notably, AHKDaemon 
-does not allow you to run arbitrary AutoHotkey scripts and does not yet support Hotkeys. However, you can always use 
+For the most part, the AHK Daemon works just like the regular `AHK` class, with a few caveats. Most notably, AHKDaemon
+does not allow you to run arbitrary AutoHotkey scripts and does not yet support Hotkeys. However, you can always use
 the normal `AHK` class alongside the daemon for these needs.
 
 `AsyncAHKDaemon` is also available for asyncio support.
@@ -307,7 +307,7 @@ In the future, AHKDaemon may become the default implementation.
 
 ## Async API
 
-An async API is provided so functions can be called using `async`/`await`. 
+An async API is provided so functions can be called using `async`/`await`.
 All the same methods from the synchronous API are available in the async API.
 
 ```python
@@ -324,27 +324,27 @@ asyncio.run(main())
 ```
 For the most part, the async API is identical to that of the normal API, with a few exceptions:
 
-While properties (like `.mouse_position` or `.title` for windows) can be `await`ed, 
+While properties (like `.mouse_position` or `.title` for windows) can be `await`ed,
 additional methods (like `get_mouse_position()` and `get_title()`) have been added for a more intuitive API.
 
-Property setters have different (probably undesired) behavior 
-in the async API. Instead, you should use a comparable method. If you _do_ use the property setters, the invocation is created using `asyncio.create_task()`, which means 
-that the task won't run until control is yielded back to the event loop. For now, this will also raise a warning to the same.  
+Property setters have different (probably undesired) behavior
+in the async API. Instead, you should use a comparable method. If you _do_ use the property setters, the invocation is created using `asyncio.create_task()`, which means
+that the task won't run until control is yielded back to the event loop. For now, this will also raise a warning to the same.
 
 
-Lastly, while it's possible to pass `blocking=False` in the async API, this sometimes will cause problems with certain functions. For now, a warning is raised in this case. 
+Lastly, while it's possible to pass `blocking=False` in the async API, this sometimes will cause problems with certain functions. For now, a warning is raised in this case.
 
 ```python
 ahk = AsyncAHK()
 async def main():
     pos = ahk.mouse_position  # BAD! Does not work!
-    pos = await ahk.mouse_position # OK. Works, but looks kind of weird 
-    pos = await ahk.get_mouse_position() # GOOD! 
-    
+    pos = await ahk.mouse_position # OK. Works, but looks kind of weird
+    pos = await ahk.get_mouse_position() # GOOD!
+
     # BAD: You probably don't want to do this
     ahk.mouse_position = (100, 100) # won't do anything right away. Raises warning
     print(await ahk.get_mouse_position()) # probably won't be 100,100
-    
+
     # GOOD: Instead, do this:
     await ahk.mouse_move(100, 100, speed=0)
     assert await ahk.get_mouse_position() == (100, 100)
@@ -355,10 +355,10 @@ async def main():
 
 [GH-9]
 
-Hotkeys now have a primitive implementation. You give it a hotkey (a string the same as in an ahk script, without the `::`) 
+Hotkeys now have a primitive implementation. You give it a hotkey (a string the same as in an ahk script, without the `::`)
 and the body of an AHK script to execute as a response to the hotkey.
 
-Right now, only AHK code is supported as callbacks for hotkeys. 
+Right now, only AHK code is supported as callbacks for hotkeys.
 Support for Python callbacks via the Async API is planned.
 
 ```python
@@ -371,7 +371,7 @@ script = 'Run Notepad' # Define an ahk script
 hotkey = Hotkey(ahk, key_combo, script) # Create Hotkey
 hotkey.start()  #  Start listening for hotkey
 ```
-At this point, the hotkey is active. 
+At this point, the hotkey is active.
 If you press <kbd>![Windows Key][winlogo]</kbd> + <kbd>n</kbd>, the script `Run Notepad` will execute.
 
 There is no need to add `return` to the provided script, as it is provided by the template.
@@ -407,7 +407,7 @@ ac.mouse_move(500, 500, speed=10)  # not yet
 ac.perform()  # *now* each of the actions run in order
 ```
 
-Just like anywhere else, scripts running simultaneously may conflict with one another, so using blocking interfaces is 
+Just like anywhere else, scripts running simultaneously may conflict with one another, so using blocking interfaces is
 generally recommended. Currently, there is limited support for interacting with windows in actionchains, you may want to use `win_set`)
 
 
@@ -415,10 +415,10 @@ generally recommended. Currently, there is limited support for interacting with 
 
 [GH-26]
 
-Right now, these are implemented by iterating over all window handles and filtering with Python.  
+Right now, these are implemented by iterating over all window handles and filtering with Python.
 They may be optimized in the future.
 
-`AHK.find_windows` returns a generator filtering results based on attributes provided as keyword arguments.  
+`AHK.find_windows` returns a generator filtering results based on attributes provided as keyword arguments.
 `AHK.find_window` is similar, but returns the first matching window instead of all matching windows.
 
 There are couple convenience functions, but not sure if these will stay around or maybe we'll add more, depending on feedback.
@@ -430,7 +430,7 @@ There are couple convenience functions, but not sure if these will stay around o
 
 ## Errors and Debugging
 
-You can enable debug logging, which will output script text before execution, and some other potentially useful 
+You can enable debug logging, which will output script text before execution, and some other potentially useful
 debugging information.
 
 ```python
@@ -439,7 +439,7 @@ logging.basicConfig(level=logging.DEBUG)
 ```
 (See the [logging module documentation](https://docs.python.org/3/library/logging.html) for more information)
 
-Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling 
+Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling
 will be added.
 
 <a name="deps" />
@@ -481,7 +481,7 @@ All contributions are welcomed and appreciated.
 
 Please feel free to open a GitHub issue or PR for feedback, ideas, feature requests or questions.
 
-There's still some work to be done in the way of implementation. The ideal interfaces are still yet to be determined and 
+There's still some work to be done in the way of implementation. The ideal interfaces are still yet to be determined and
 *your* help would be invaluable.
 
 

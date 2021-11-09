@@ -79,7 +79,7 @@ class TestWindow(TestCase):
         current_height = self.win.height
         self.win.height = current_height + 100
         assert self.win.height == current_height + 100
-    
+
     def test_width_change(self):
         current_width = self.win.width
         self.win.width = current_width + 100

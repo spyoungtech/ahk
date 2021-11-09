@@ -416,16 +416,16 @@ class Window(object):
     def disable(self):
         """
         Distable the window
-        
-        :return: 
+
+        :return:
         """
         return self.set('Disable', '') or None
 
     def enable(self):
         """
         Enable the window
-        
-        :return: 
+
+        :return:
         """
         return self.set('Enable', '') or None
 
@@ -442,8 +442,8 @@ class Window(object):
     def to_top(self):
         """
         Bring the window to the foreground (above other windows)
-        
-        :return: 
+
+        :return:
         """
         return self.set('Top', '') or None
 
@@ -502,8 +502,8 @@ class Window(object):
         Hides the window. See also: `WinHide`_
 
         .. _WinHide: https://www.autohotkey.com/docs/commands/WinHide.htm
-        
-        
+
+
         :return:
         """
         return self._base_method("WinHide") or None
@@ -514,64 +514,64 @@ class Window(object):
     def maximize(self):
         """
         maximize the window
-        
-        :return: 
+
+        :return:
         """
         return self._base_method("WinMaximize") or None
 
     def minimize(self):
         """
         minimize the window
-        
-        :return: 
+
+        :return:
         """
         return self._base_method("WinMinimize") or None
 
     def restore(self):
         """
         restore the window
-        
-        :return: 
+
+        :return:
         """
         return self._base_method("WinRestore") or None
 
     def show(self):
         """
         show the window
-        
-        :return: 
+
+        :return:
         """
         return self._base_method("WinShow") or None
 
     def wait(self, seconds_to_wait=""):
         """
-        
-        :param seconds_to_wait: 
-        :return: 
+
+        :param seconds_to_wait:
+        :return:
         """
         return self._base_method("WinWait", seconds_to_wait=seconds_to_wait, blocking=True) or None
 
     def wait_active(self, seconds_to_wait=""):
         """
-        
-        :param seconds_to_wait: 
-        :return: 
+
+        :param seconds_to_wait:
+        :return:
         """
         return self._base_method("WinWaitActive", seconds_to_wait=seconds_to_wait, blocking=True) or None
 
     def wait_not_active(self, seconds_to_wait=""):
         """
-        
-        :param seconds_to_wait: 
-        :return: 
+
+        :param seconds_to_wait:
+        :return:
         """
         return self._base_method("WinWaitNotActive", seconds_to_wait=seconds_to_wait, blocking=True) or None
 
     def wait_close(self, seconds_to_wait=""):
         """
-        
+
         :param seconds_to_wait:
-        :return: 
+        :return:
         """
         return self._base_method("WinWaitClose", seconds_to_wait=seconds_to_wait, blocking=True) or None
 
@@ -587,11 +587,11 @@ class Window(object):
         """
         Move the window to a position and/or change its geometry
 
-        :param x: 
-        :param y: 
-        :param width: 
-        :param height: 
-        :return: 
+        :param x:
+        :param y:
+        :param width:
+        :param height:
+        :return:
         """
         script = self._move(x=x, y=y, width=width, height=height)
         return self.engine.run_script(script) or None
@@ -723,12 +723,12 @@ class WindowMixin(ScriptEngine):
     def find_windows(self, func=None, **kwargs):
         """
         Find all matching windows
-        
+
         :param func: a callable to filter windows
         :param bool exact: if False (the default) partial matches are found. If True, only exact matches are returned
         :param kwargs: keywords of attributes of the window (has no effect if ``func`` is provided)
-        
-        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects. 
+
+        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects.
         """
         if func is None:
             exact = kwargs.pop('exact', False)
@@ -748,10 +748,10 @@ class WindowMixin(ScriptEngine):
     def find_window(self, func=None, **kwargs):
         """
         Like ``find_windows`` but only returns the first found window
-        
-        
-        :param func: 
-        :param kwargs: 
+
+
+        :param func:
+        :param kwargs:
         :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
         """
         with suppress(StopIteration):
@@ -760,12 +760,12 @@ class WindowMixin(ScriptEngine):
     def find_windows_by_title(self, title, exact=False):
         """
         Equivalent to ``find_windows(title=title)```
-        
+
         Note that ``title`` is a ``bytes`` object
-        
-        :param bytes title: 
-        :param exact: 
-        :return: 
+
+        :param bytes title:
+        :param exact:
+        :return:
         """
         for window in self.find_windows(title=title, exact=exact):
             yield window
@@ -773,7 +773,7 @@ class WindowMixin(ScriptEngine):
     def find_window_by_title(self, *args, **kwargs):
         """
         Like ``find_windows_by_title`` but only returns the first result.
-        
+
         :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
         """
         with suppress(StopIteration):
@@ -781,40 +781,40 @@ class WindowMixin(ScriptEngine):
 
     def find_windows_by_text(self, text, exact=False):
         """
-        
-        :param text: 
-        :param exact: 
-        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects. 
+
+        :param text:
+        :param exact:
+        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects.
         """
         for window in self.find_windows(text=text, exact=exact):
             yield window
 
     def find_window_by_text(self, *args, **kwargs):
         """
-        
-        :param args: 
-        :param kwargs: 
-        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found 
+
+        :param args:
+        :param kwargs:
+        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
         """
         with suppress(StopIteration):
             return next(self.find_windows_by_text(*args, **kwargs))
 
     def find_windows_by_class(self, class_name, exact=False):
         """
-        
-        :param class_name: 
-        :param exact: 
-        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects. 
+
+        :param class_name:
+        :param exact:
+        :return: a generator containing any matching :py:class:`~ahk.window.Window` objects.
         """
         for window in self.find_windows(class_name=class_name, exact=exact):
             yield window
 
     def find_window_by_class(self, *args, **kwargs):
         """
-        
-        :param args: 
-        :param kwargs: 
-        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found 
+
+        :param args:
+        :param kwargs:
+        :return: a :py:class:`~ahk.window.Window` object or ``None`` if no matching window is found
         """
         with suppress(StopIteration):
             return next(self.find_windows_by_class(*args, **kwargs))
