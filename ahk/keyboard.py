@@ -35,9 +35,7 @@ class Hotkey:
         """
         if self.running:
             raise RuntimeError('Hotkey is already running')
-        script = self.engine.render_template(
-            'hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey
-        )
+        script = self.engine.render_template('hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey)
         self._gen = self._start(script)
         proc = next(self._gen)
         self._proc = proc
@@ -98,9 +96,7 @@ class KeyboardMixin(ScriptEngine):
         result = ast.literal_eval(result)
         return bool(result)
 
-    def _key_wait(
-        self, key_name, timeout: int = None, logical_state=False, released=False
-    ) -> str:
+    def _key_wait(self, key_name, timeout: int = None, logical_state=False, released=False) -> str:
         options = ''
         if not released:
             options += 'D'
@@ -108,13 +104,10 @@ class KeyboardMixin(ScriptEngine):
             options += 'L'
         if timeout:
             options += f'T{timeout}'
-        script = self.render_template(
-            'keyboard/key_wait.ahk', key_name=key_name, options=options
-        )
+        script = self.render_template('keyboard/key_wait.ahk', key_name=key_name, options=options)
         return script
-    def key_wait(
-        self, key_name, timeout: int = None, logical_state=False, released=False
-    ) -> None:
+
+    def key_wait(self, key_name, timeout: int = None, logical_state=False, released=False) -> None:
         """
         Wait for key to be pressed or released (default is pressed; specify ``released=True`` to wait for key release).
 
@@ -127,9 +120,9 @@ class KeyboardMixin(ScriptEngine):
         :return: None
         :raises TimeoutError: if the key was not pressed (or released, if specified) within timeout
         """
-        result = self.run_script(self._key_wait(
-            key_name, timeout=timeout, logical_state=logical_state, released=released
-        ))
+        result = self.run_script(
+            self._key_wait(key_name, timeout=timeout, logical_state=logical_state, released=released)
+        )
         if result == '1':
             raise TimeoutError(f'timed out waiting for {key_name}')
 
@@ -144,9 +137,7 @@ class KeyboardMixin(ScriptEngine):
         return self.send_input(s, blocking=blocking) or None
 
     def _send(self, s, raw=False, delay=None, blocking=True):
-        script = self.render_template(
-            'keyboard/send.ahk', s=s, raw=raw, delay=delay, blocking=blocking
-        )
+        script = self.render_template('keyboard/send.ahk', s=s, raw=raw, delay=delay, blocking=blocking)
         return script
 
     def send(self, s, raw=False, delay=None, blocking=True):
@@ -212,7 +203,8 @@ class KeyboardMixin(ScriptEngine):
         script = self.render_template('keyboard/send_event.ahk', s=s, delay=delay)
         return script
 
-        #self.run_script(script)
+        # self.run_script(script)
+
     def send_event(self, s, delay=None):
         """
         https://autohotkey.com/docs/commands/Send.htm
@@ -301,19 +293,16 @@ class AsyncKeyboardMixin(AsyncScriptEngine, KeyboardMixin):
     #     script = self._send_input(s, blocking=blocking)
     #     return await self.a_run_script(script, blocking=blocking) or None
 
-
     async def key_state(self, key_name, mode=None) -> bool:
         script = self._key_state(key_name, mode=mode)
         result = await self.a_run_script(script)
         result = ast.literal_eval(result)
         return bool(result)
 
-    async def key_wait(
-        self, key_name, timeout: int = None, logical_state=False, released=False
-    ) -> None:
-        result = await self.a_run_script(self._key_wait(
-            key_name, timeout=timeout, logical_state=logical_state, released=released
-        ))
+    async def key_wait(self, key_name, timeout: int = None, logical_state=False, released=False) -> None:
+        result = await self.a_run_script(
+            self._key_wait(key_name, timeout=timeout, logical_state=logical_state, released=released)
+        )
         if result == '1':
             raise TimeoutError(f'timed out waiting for {key_name}')
 

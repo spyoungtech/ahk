@@ -20,8 +20,7 @@ def check_pwd():
     """
     for name in os.listdir(os.getcwd()):
         if name.lower() == 'autohotkey.exe' or name.lower() == 'autohotkeya32':
-            pytest.skip(
-                'Skipping because autohotkey is in present directory (and will therefore always be found)')
+            pytest.skip('Skipping because autohotkey is in present directory (and will therefore always be found)')
 
 
 def test_no_executable_raises_error():

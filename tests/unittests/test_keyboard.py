@@ -7,9 +7,7 @@ from itertools import product
 from unittest import TestCase
 import pytest
 
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
-)
+project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 
 from ahk import AHK
@@ -85,6 +83,7 @@ class TestKeyboard(TestCase):
         self.ahk.set_capslock_state('on')
         assert self.ahk.key_state('CapsLock', 'T')
 
+
 class TestKeyboardDaemon(TestKeyboard):
     def setUp(self):
         self.ahk = AHKDaemon()
@@ -97,6 +96,7 @@ class TestKeyboardDaemon(TestKeyboard):
     def tearDown(self):
         super().tearDown()
         self.ahk.stop()
+
 
 def a_down():
     time.sleep(0.5)

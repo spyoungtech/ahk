@@ -2,16 +2,15 @@ import subprocess
 import time
 from unittest import TestCase
 import os, sys
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
-)
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 
 from ahk import AHK
 from ahk.daemon import AHKDaemon
 
-class TestWindow(TestCase):
 
+class TestWindow(TestCase):
     def setUp(self):
         self.ahk = AHK()
         self.p = subprocess.Popen('notepad')
@@ -90,16 +89,16 @@ class TestWindow(TestCase):
         get rect ;-)
         """
         x, y, width, height = self.win.rect
-        self.win.rect = (x+10, y+10, width+10, height+10)
-        assert self.win.rect == (x+10, y+10, width+10, height+10)
+        self.win.rect = (x + 10, y + 10, width + 10, height + 10)
+        assert self.win.rect == (x + 10, y + 10, width + 10, height + 10)
 
     def test_title_change(self):
         self.win.title = 'foo'
         assert self.win.title == b'foo'
 
-
     def tearDown(self):
         self.p.terminate()
+
 
 class TestWindowDaemon(TestWindow):
     def setUp(self):

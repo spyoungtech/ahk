@@ -59,7 +59,6 @@ SYMBOLS = {
     'Control': '^',
     'LControl': '<^',
     'RControl': '>^',
-
 }
 
 
@@ -117,6 +116,7 @@ class KEYS:
     KEYS constants
     REF: https://autohotkey.com/docs/KeyList.htm
     """
+
     CAPS_LOCK = Key('CapsLock')
     CapsLock = CAPS_LOCK
     SCROLL_LOCK = Key('ScrollLock')

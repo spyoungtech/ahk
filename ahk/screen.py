@@ -142,7 +142,6 @@ class ScreenMixin(ScriptEngine):
         script = self._pixel_get_color(*args, **kwargs)
         return self.run_script(script)
 
-
     def _pixel_search(
         self,
         color: Union[str, int],
@@ -198,6 +197,7 @@ class ScreenMixin(ScriptEngine):
             return ast.literal_eval(resp)
         except SyntaxError:
             return None
+
 
 class AsyncScreenMixin(AsyncScriptEngine, ScreenMixin):
     async def pixel_search(self, *args, **kwargs):

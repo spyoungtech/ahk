@@ -15,7 +15,6 @@ from PIL import Image
 from ahk.keys import KEYS
 
 
-
 class TestKeyboardDaemon(TestCase):
     def setUp(self):
         """
@@ -95,10 +94,11 @@ class TestMouseDaemon(TestCase):
     def test_mouse_move(self):
         x, y = self.ahk.mouse_position
         self.ahk.mouse_move(10, 10, relative=True)
-        assert self.ahk.mouse_position == (x+10, y+10)
+        assert self.ahk.mouse_position == (x + 10, y + 10)
 
     def tearDown(self) -> None:
         self.ahk.stop()
+
 
 class TestScreen(TestCase):
     def setUp(self):

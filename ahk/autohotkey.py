@@ -24,6 +24,7 @@ class AHK(WindowMixin, MouseMixin, KeyboardMixin, ScreenMixin, SoundMixin, Regis
 
     pass
 
+
 #
 class AsyncAHK(
     AsyncMouseMixin,
@@ -32,7 +33,7 @@ class AsyncAHK(
     AsyncScreenMixin,
     AsyncSoundMixin,
     AsyncRegistryMixin,
-    AsyncGUIMixin
+    AsyncGUIMixin,
 ):
     ...
 
@@ -66,5 +67,11 @@ class ActionChain(AHK):
         :return:
         """
         n = n * 1000  # convert to milliseconds
-        script = self.render_template('base.ahk', body=f'Sleep {n}', directives={'#Persistent',})
+        script = self.render_template(
+            'base.ahk',
+            body=f'Sleep {n}',
+            directives={
+                '#Persistent',
+            },
+        )
         self.run_script(script)

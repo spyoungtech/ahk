@@ -10,6 +10,7 @@ class DirectiveMeta(type):
     Overrides __str__ so directives with no arguments can be used without instantiation
     Overrides __hash__ to make objects 'unique' based upon a hash of the str representation
     """
+
     def __str__(cls):
         return f'#{cls.__name__}'
 
@@ -26,6 +27,7 @@ class Directive(SimpleNamespace, metaclass=DirectiveMeta):
     They are designed to be hashable and comparable with string equivalent of AHK directive.
     Directives that don't require arguments do not need to be instantiated.
     """
+
     def __init__(self, **kwargs):
         super().__init__(name=self.name, **kwargs)
         self._kwargs = kwargs

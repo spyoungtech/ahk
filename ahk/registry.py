@@ -13,58 +13,58 @@ class RegistryMixin(ScriptEngine):
     def reg_read(self, key_name: str, value_name='') -> str:
         """Read registery
 
-            Reference:
-                https://www.autohotkey.com/docs/commands/RegRead.htm
+        Reference:
+            https://www.autohotkey.com/docs/commands/RegRead.htm
 
-            Arguments:
-                key_name {str} -- RegEdit
+        Arguments:
+            key_name {str} -- RegEdit
 
-            Keyword Arguments:
-                value_name {str} -- TODO (default: {""})
+        Keyword Arguments:
+            value_name {str} -- TODO (default: {""})
 
-            Returns:
-                str -- Registery value
-            """
+        Returns:
+            str -- Registery value
+        """
         return self._run_template('reg_read.ahk', key_name=key_name, value_name=value_name)
 
     def reg_delete(self, key_name: str, value_name='') -> None:
         """Delete registery
 
-            Reference:
-                https://www.autohotkey.com/docs/commands/RegDelete.htm
+        Reference:
+            https://www.autohotkey.com/docs/commands/RegDelete.htm
 
-            Arguments:
-                key_name {str} -- RegEdit
+        Arguments:
+            key_name {str} -- RegEdit
 
-            Keyword Arguments:
-                value_name {str} -- TODO (default: {""})
-            """
+        Keyword Arguments:
+            value_name {str} -- TODO (default: {""})
+        """
         return self._render_template('reg_delete.ahk', key_name=key_name, value_name=value_name)
 
     def reg_write(self, value_type: str, key_name: str, value_name='') -> None:
         """Write registery
 
-            Reference:
-                https://www.autohotkey.com/docs/commands/RegWrite.htm
+        Reference:
+            https://www.autohotkey.com/docs/commands/RegWrite.htm
 
-            Arguments:
-                value_type {str} -- RegEdit value
-                key_name {str} -- RegEdit
+        Arguments:
+            value_type {str} -- RegEdit value
+            key_name {str} -- RegEdit
 
-            Keyword Arguments:
-                value_name {str} -- TODO (default: {""})
-            """
+        Keyword Arguments:
+            value_name {str} -- TODO (default: {""})
+        """
         return self._render_template('reg_write.ahk', value_type=value_type, key_name=key_name, value_name=value_name)
 
     def reg_set_view(self, reg_view: int) -> None:
         """Set registery view
 
-            Reference:
-                https://www.autohotkey.com/docs/commands/SetRegView.htm
+        Reference:
+            https://www.autohotkey.com/docs/commands/SetRegView.htm
 
-            Arguments:
-                reg_view {str} -- Registery view
-            """
+        Arguments:
+            reg_view {str} -- Registery view
+        """
 
         if reg_view not in [32, 64, '32', '64']:
             raise ValueError('No valid bit, please use 32 or 64')
@@ -127,6 +127,7 @@ class RegistryMixin(ScriptEngine):
             stacklevel=2,
         )
         return self.reg_delete(*args, **kwargs)
+
 
 class AsyncRegistryMixin(AsyncScriptEngine, RegistryMixin):
     pass

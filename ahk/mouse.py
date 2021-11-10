@@ -46,6 +46,7 @@ class MouseMixin(ScriptEngine):
     """
     Provides mouse functionality for the AHK class
     """
+
     def __init__(self, mouse_speed=2, mode=None, **kwargs):
         """
 
@@ -106,7 +107,9 @@ class MouseMixin(ScriptEngine):
             x = x or posx
             y = y or posy
 
-        return self.render_template('mouse/mouse_move.ahk', x=x, y=y, speed=speed, relative=relative, mode=mode, blocking=blocking)
+        return self.render_template(
+            'mouse/mouse_move.ahk', x=x, y=y, speed=speed, relative=relative, mode=mode, blocking=blocking
+        )
 
     def mouse_move(self, *args, **kwargs):
         """
@@ -216,7 +219,18 @@ class MouseMixin(ScriptEngine):
         """
         return self.mouse_wheel('down', *args, **kwargs) or None
 
-    def _mouse_drag(self, x, y=None, *, from_position=None, speed=None, button: Union[str, int] =1, relative=None, blocking=True, mode=None):
+    def _mouse_drag(
+        self,
+        x,
+        y=None,
+        *,
+        from_position=None,
+        speed=None,
+        button: Union[str, int] = 1,
+        relative=None,
+        blocking=True,
+        mode=None,
+    ):
         if from_position is None:
             x1, y1 = self.mouse_position
         else:
@@ -239,16 +253,18 @@ class MouseMixin(ScriptEngine):
         if mode is None:
             mode = self.mode
 
-        script = self.render_template('mouse/mouse_drag.ahk',
-                                      button=button,
-                                      x1=x1,
-                                      y1=y1,
-                                      x2=x2,
-                                      y2=y2,
-                                      speed=speed,
-                                      relative=relative,
-                                      blocking=blocking,
-                                      mode=mode)
+        script = self.render_template(
+            'mouse/mouse_drag.ahk',
+            button=button,
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            speed=speed,
+            relative=relative,
+            blocking=blocking,
+            mode=mode,
+        )
 
         return script
 

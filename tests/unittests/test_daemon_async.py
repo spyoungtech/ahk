@@ -12,6 +12,7 @@ from ahk.daemon import AsyncAHKDaemon
 from ahk.window import AsyncWindow, WindowNotFoundError
 from PIL import Image
 
+
 class TestMouseDaemonAsync(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.ahk = AsyncAHKDaemon()
@@ -23,11 +24,12 @@ class TestMouseDaemonAsync(IsolatedAsyncioTestCase):
     async def test_mouse_move(self):
         x, y = await self.ahk.mouse_position
         await self.ahk.mouse_move(10, 10, relative=True)
-        assert await self.ahk.mouse_position == (x+10, y+10)
+        assert await self.ahk.mouse_position == (x + 10, y + 10)
 
 
 class TestWindowDaemonAsync(IsolatedAsyncioTestCase):
     win: AsyncWindow
+
     async def asyncSetUp(self):
         self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
@@ -45,7 +47,6 @@ class TestWindowDaemonAsync(IsolatedAsyncioTestCase):
         self.win.transparent = 255
         await asyncio.sleep(0.5)
         self.assertEqual(await self.win.transparent, 255)
-
 
     async def test_pinned(self):
         self.assertFalse(await self.win.always_on_top)
@@ -95,7 +96,8 @@ class TestWindowDaemonAsync(IsolatedAsyncioTestCase):
         await asyncio.sleep(0.5)
         self.assertTrue(await self.win.maximized)
         self.assertTrue(await self.win.is_maximized())
-#
+
+    #
     async def test_names(self):
         self.assertEqual(await self.win.class_name, b'Notepad')
         self.assertEqual(await self.win.get_class_name(), b'Notepad')
@@ -170,10 +172,8 @@ class TestWinGetDaemonAsync(IsolatedAsyncioTestCase):
         await asyncio.sleep(0.5)
         self.ahk.stop()
 
-
     async def test_get_calculator(self):
         assert await self.win.position
-
 
     async def test_win_close(self):
         await self.win.close()
@@ -188,11 +188,11 @@ class TestWinGetDaemonAsync(IsolatedAsyncioTestCase):
     async def test_find_window_func(self):
         async def func(win):
             return b'Untitled' in await win.title
+
         assert self.win == await self.ahk.find_window(func=func)
 
     async def test_getattr_window_subcommand(self):
         assert isinstance(await self.win.pid, str)
-
 
 
 class TestKeyboardDaemonAsync(IsolatedAsyncioTestCase):

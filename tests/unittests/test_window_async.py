@@ -4,9 +4,8 @@ from unittest import IsolatedAsyncioTestCase
 import asyncio
 import os
 import sys
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
-)
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk import AHK, AsyncAHK
 from ahk.window import AsyncWindow
@@ -14,6 +13,7 @@ from ahk.window import AsyncWindow
 
 class TestWindowAsync(IsolatedAsyncioTestCase):
     win: AsyncWindow
+
     def setUp(self):
         self.ahk = AsyncAHK()
         self.p = subprocess.Popen('notepad')
@@ -31,12 +31,13 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         await asyncio.sleep(0.5)
         self.assertEqual(await self.win.transparent, 255)
 
-
     def test_transparent(self):
         asyncio.run(self.a_transparent())
-#
+
+    #
     def test_pinned(self):
         asyncio.run(self.a_pinned())
+
     async def a_pinned(self):
         self.assertFalse(await self.win.always_on_top)
 
@@ -85,7 +86,8 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         await asyncio.sleep(0.5)
         self.assertTrue(await self.win.maximized)
         self.assertTrue(await self.win.is_maximized())
-#
+
+    #
     async def test_names(self):
         self.assertEqual(await self.win.class_name, b'Notepad')
         self.assertEqual(await self.win.get_class_name(), b'Notepad')

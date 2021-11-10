@@ -8,9 +8,7 @@ from itertools import product
 from unittest import TestCase, IsolatedAsyncioTestCase
 
 
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
-)
+project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk import AsyncAHK, AHK
 from ahk.keys import ALT, CTRL, KEYS
@@ -23,8 +21,8 @@ class TestKeyboardAsync(IsolatedAsyncioTestCase):
         :return:
         """
         self.ahk = AsyncAHK()
-        #self._normal_ahk = AHK()
-        #self.before_windows = self._normal_ahk.windows()
+        # self._normal_ahk = AHK()
+        # self.before_windows = self._normal_ahk.windows()
         self.p = subprocess.Popen('notepad')
         time.sleep(1)
 
@@ -73,6 +71,7 @@ def press_a():
     time.sleep(0.5)
     ahk = AHK()
     ahk.key_press('a')
+
 
 #
 class TestKeysAsync(IsolatedAsyncioTestCase):
@@ -126,10 +125,8 @@ class TestKeysAsync(IsolatedAsyncioTestCase):
     def test_key_wait_timeout(self):
         self.assertRaises(TimeoutError, asyncio.run, self.a_key_wait_timeout())
 
-
     async def test_key_state_when_not_pressed(self):
         self.assertFalse(await self.ahk.key_state('a'))
-
 
     async def test_key_state_pressed(self):
         await self.ahk.key_down('Control')

@@ -8,14 +8,11 @@ import asyncio
 from itertools import product
 from functools import partial
 from unittest import TestCase, IsolatedAsyncioTestCase
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
-)
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk import AsyncAHK, AHK
 from ahk.daemon import AHKDaemon
-
-
 
 
 class TestMouse(TestCase):
@@ -32,7 +29,7 @@ class TestMouse(TestCase):
     def test_mouse_move(self):
         x, y = self.ahk.mouse_position
         self.ahk.mouse_move(10, 10, relative=True)
-        assert self.ahk.mouse_position == (x+10, y+10)
+        assert self.ahk.mouse_position == (x + 10, y + 10)
 
     def test_mouse_move_absolute(self):
         original_x, original_y = self.original_position
@@ -44,7 +41,7 @@ class TestMouse(TestCase):
     def test_mouse_move_callable_speed(self):
         x, y = self.ahk.mouse_position
         self.ahk.mouse_move(10, 10, relative=True, speed=lambda: 10)
-        assert self.ahk.mouse_position == (x+10, y+10)
+        assert self.ahk.mouse_position == (x + 10, y + 10)
 
     def test_mouse_drag(self):
         self.notepad_process = subprocess.Popen('notepad')
@@ -73,6 +70,7 @@ class TestMouseDaemon(TestMouse):
         super().tearDown()
         self.ahk.stop()
 
+
 class TestMouseAsync(IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.ahk = AsyncAHK()
@@ -80,4 +78,4 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
     async def test_mouse_move(self):
         x, y = await self.ahk.mouse_position
         await self.ahk.mouse_move(10, 10, relative=True)
-        assert await self.ahk.mouse_position == (x+10, y+10)
+        assert await self.ahk.mouse_position == (x + 10, y + 10)

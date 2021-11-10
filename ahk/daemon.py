@@ -7,19 +7,24 @@ import threading
 import queue
 import atexit
 
+
 def escape(s):
     s = s.replace('\n', '`n')
     return s
 
+
 class STOP:
     """A sentinel value"""
+
     ...
+
 
 class AHKDaemon(AHK):
     proc: subprocess.Popen
     _template_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
     _template = os.path.join(_template_path, 'daemon.ahk')
     _template_overrides = os.listdir(f'{_template_path}/daemon')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.queue = queue.Queue()
@@ -38,10 +43,7 @@ class AHKDaemon(AHK):
             raise RuntimeError('Already running')
         self._is_running = True
         runargs = [self.executable_path, self._template]
-        proc = subprocess.Popen(runargs,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+        proc = subprocess.Popen(runargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.proc = proc
         atexit.register(self.proc.terminate)
 
@@ -138,6 +140,7 @@ class AsyncAHKDaemon(AsyncAHK):
     _template_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
     _template = os.path.join(_template_path, 'daemon.ahk')
     _template_overrides = os.listdir(f'{_template_path}/daemon')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.queue = asyncio.Queue()
@@ -155,10 +158,9 @@ class AsyncAHKDaemon(AsyncAHK):
             raise RuntimeError('Already running')
         self._is_running = True
         runargs = [self.executable_path, self._template]
-        proc = await asyncio.subprocess.create_subprocess_exec(*runargs,
-                                                               stdin=asyncio.subprocess.PIPE,
-                                                               stdout=asyncio.subprocess.PIPE,
-                                                               stderr=asyncio.subprocess.PIPE)
+        proc = await asyncio.subprocess.create_subprocess_exec(
+            *runargs, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
         self.proc = proc
 
     async def _get_command(self):

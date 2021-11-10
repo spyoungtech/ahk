@@ -1,5 +1,6 @@
 from setuptools import setup
 from io import open
+
 test_requirements = ['behave', 'behave-classy', 'pytest']
 extras = {'test': test_requirements}
 
@@ -36,5 +37,5 @@ setup(
     tests_require=test_requirements,
     include_package_data=True,
     zip_safe=False,
-    keywords=['ahk', 'autohotkey', 'windows', 'mouse', 'keyboard', 'automation', 'pyautogui']
+    keywords=['ahk', 'autohotkey', 'windows', 'mouse', 'keyboard', 'automation', 'pyautogui'],
 )

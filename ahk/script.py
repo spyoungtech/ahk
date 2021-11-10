@@ -19,6 +19,7 @@ from ahk.utils import make_logger, escape_sequence_replace
 from ahk.directives import Persistent
 from jinja2 import Environment, FileSystemLoader
 from typing import Set
+
 logger = make_logger(__name__)
 
 
@@ -32,11 +33,13 @@ DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 def _resolve_executable_path(executable_path: str = ''):
     if not executable_path:
-        executable_path = os.environ.get('AHK_PATH') \
-                          or which('AutoHotkey.exe') \
-                          or which('AutoHotkeyU64.exe') \
-                          or which('AutoHotkeyU32.exe') \
-                          or which('AutoHotkeyA32.exe')
+        executable_path = (
+            os.environ.get('AHK_PATH')
+            or which('AutoHotkey.exe')
+            or which('AutoHotkeyU64.exe')
+            or which('AutoHotkeyU32.exe')
+            or which('AutoHotkeyA32.exe')
+        )
 
     if not executable_path:
         if os.path.exists(DEFAULT_EXECUTABLE_PATH):
@@ -51,8 +54,7 @@ def _resolve_executable_path(executable_path: str = ''):
         )
 
     if not os.path.exists(executable_path):
-        raise ExecutableNotFoundError(
-            f"executable_path does not seems to exist: '{executable_path}' not found")
+        raise ExecutableNotFoundError(f"executable_path does not seems to exist: '{executable_path}' not found")
 
     if os.path.isdir(executable_path):
         raise ExecutableNotFoundError(
@@ -69,7 +71,6 @@ def _resolve_executable_path(executable_path: str = ''):
 
 
 class ScriptEngine(object):
-
     def __init__(self, executable_path: str = '', directives: Set = None, **kwargs):
         """
         This class is typically not used directly. AHK components inherit from this class
@@ -88,8 +89,7 @@ class ScriptEngine(object):
         self.executable_path = _resolve_executable_path(executable_path)
 
         templates_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates')
-        self.env = Environment(loader=FileSystemLoader(templates_path),
-                               autoescape=False, trim_blocks=True)
+        self.env = Environment(loader=FileSystemLoader(templates_path), autoescape=False, trim_blocks=True)
         if directives is None:
             directives = set()
         self._directives = set(directives)
@@ -136,8 +136,9 @@ class ScriptEngine(object):
         decode = kwargs.pop('decode', False)
         script_bytes = bytes(script_text, 'utf-8')
         if blocking:
-            result = subprocess.run(runargs, input=script_bytes,
-                                    stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs)
+            result = subprocess.run(
+                runargs, input=script_bytes, stderr=subprocess.PIPE, stdout=subprocess.PIPE, **kwargs
+            )
             if decode:
                 logger.debug('Stdout: %s', repr(result.stdout))
                 logger.debug('Stderr: %s', repr(result.stderr))
@@ -145,8 +146,9 @@ class ScriptEngine(object):
             else:
                 return result
         else:
-            proc = subprocess.Popen(runargs, stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs)
+            proc = subprocess.Popen(
+                runargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+            )
             try:
                 proc.communicate(script_bytes, timeout=0)
             except subprocess.TimeoutExpired:
@@ -158,10 +160,9 @@ class ScriptEngine(object):
         if blocking is not True:
             warnings.warn('blocking=False will probably result in problems', stacklevel=2)
         runargs = [self.executable_path, '/ErrorStdOut', '*']
-        proc = await asyncio.subprocess.create_subprocess_exec(*runargs,
-                                                               stdin=asyncio.subprocess.PIPE,
-                                                               stdout=asyncio.subprocess.PIPE,
-                                                               stderr=asyncio.subprocess.PIPE)
+        proc = await asyncio.subprocess.create_subprocess_exec(
+            *runargs, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
         script_bytes = bytes(script_text, 'utf-8')
         if not blocking:
             proc.stdin.write(script_bytes)
@@ -172,7 +173,6 @@ class ScriptEngine(object):
         if kwargs.get('decode', False):
             return stdout.decode()
         return stdout
-
 
     async def a_run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
         """
@@ -227,6 +227,7 @@ class ScriptEngine(object):
             logger.fatal('Error running temp script: %s', e)
             raise
         return result
+
 
 class AsyncScriptEngine(ScriptEngine):
     run_script = ScriptEngine.a_run_script
