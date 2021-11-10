@@ -26,7 +26,7 @@ class ExecutableNotFoundError(EnvironmentError):
     pass
 
 
-DEFAULT_EXECUTABLE_PATH = r"C:\Program Files\AutoHotkey\AutoHotkey.exe"
+DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 """The deafult path to look for AutoHotkey, if not specified some other way"""
 
 
@@ -56,8 +56,8 @@ def _resolve_executable_path(executable_path: str = ''):
 
     if os.path.isdir(executable_path):
         raise ExecutableNotFoundError(
-            f"The path {executable_path} appears to be a directory, but should be a file."
-            " Please specify the *full path* to the autohotkey.exe executable file"
+            f'The path {executable_path} appears to be a directory, but should be a file.'
+            ' Please specify the *full path* to the autohotkey.exe executable file'
         )
 
     if not executable_path.endswith('.exe'):
@@ -70,7 +70,7 @@ def _resolve_executable_path(executable_path: str = ''):
 
 class ScriptEngine(object):
 
-    def __init__(self, executable_path: str = "", directives: Set = None, **kwargs):
+    def __init__(self, executable_path: str = '', directives: Set = None, **kwargs):
         """
         This class is typically not used directly. AHK components inherit from this class
         and the arguments for this class should usually be passed in to :py:class:`~ahk.AHK`.
@@ -156,7 +156,7 @@ class ScriptEngine(object):
     async def _a_run_script(self, script_text, **kwargs):
         blocking = kwargs.pop('blocking', True)
         if blocking is not True:
-            warnings.warn("blocking=False will probably result in problems", stacklevel=2)
+            warnings.warn('blocking=False will probably result in problems', stacklevel=2)
         runargs = [self.executable_path, '/ErrorStdOut', '*']
         proc = await asyncio.subprocess.create_subprocess_exec(*runargs,
                                                                stdin=asyncio.subprocess.PIPE,

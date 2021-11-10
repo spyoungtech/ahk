@@ -35,7 +35,7 @@ class AHKDaemon(AHK):
 
     def _run(self):
         if self._is_running:
-            raise RuntimeError("Already running")
+            raise RuntimeError('Already running')
         self._is_running = True
         runargs = [self.executable_path, self._template]
         proc = subprocess.Popen(runargs,
@@ -94,14 +94,14 @@ class AHKDaemon(AHK):
 
     def run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
         if not blocking:
-            warnings.warn("blocking=False in daemon mode is not supported", stacklevel=3)
+            warnings.warn('blocking=False in daemon mode is not supported', stacklevel=3)
         if not self._is_running:
-            raise RuntimeError("Not running! Must call .start() first!")
+            raise RuntimeError('Not running! Must call .start() first!')
         script_text = script_text.replace('#NoEnv', '', 1)
         with self.run_lock:
             for line in script_text.split('\n'):
                 line = line.strip()
-                if not line or line.startswith("FileAppend"):
+                if not line or line.startswith('FileAppend'):
                     continue
                 self.queue.put_nowait(line.encode('utf-8'))
             self.queue.join()
@@ -118,14 +118,14 @@ class AHKDaemon(AHK):
         s = escape(s)
         self.send(s, *args, **kwargs)
 
-    def show_tooltip(self, text: str, second=None, x="", y="", id="", blocking=True):
+    def show_tooltip(self, text: str, second=None, x='', y='', id='', blocking=True):
         return super().show_tooltip(text, second=second, x=x, y=y, id=id, blocking=blocking)
 
     def hide_tooltip(self, id):
         return super().show_tooltip(text='', second='', x='', y='', id=id)
 
     def hide_traytip(self):
-        self.run_script("HideTrayTip")
+        self.run_script('HideTrayTip')
 
     @staticmethod
     def escape_sequence_replace(s):
@@ -152,7 +152,7 @@ class AsyncAHKDaemon(AsyncAHK):
 
     async def _run(self):
         if self._is_running:
-            raise RuntimeError("Already running")
+            raise RuntimeError('Already running')
         self._is_running = True
         runargs = [self.executable_path, self._template]
         proc = await asyncio.subprocess.create_subprocess_exec(*runargs,
@@ -212,12 +212,12 @@ class AsyncAHKDaemon(AsyncAHK):
 
     async def a_run_script(self, script_text: str, decode=True, blocking=True, **runkwargs):
         if not self._is_running:
-            raise RuntimeError("Not running! Must await .start() first!")
+            raise RuntimeError('Not running! Must await .start() first!')
         script_text = script_text.replace('#NoEnv', '', 1)
         async with self.run_lock:
             for line in script_text.split('\n'):
                 line = line.strip()
-                if not line or line.startswith("FileAppend"):
+                if not line or line.startswith('FileAppend'):
                     continue
                 self.queue.put_nowait(line.encode('utf-8'))
             await self.queue.join()
@@ -234,14 +234,14 @@ class AsyncAHKDaemon(AsyncAHK):
         s = escape(s)
         await self.send(s, *args, **kwargs)
 
-    def show_tooltip(self, text: str, second=None, x="", y="", id="", blocking=True):
+    def show_tooltip(self, text: str, second=None, x='', y='', id='', blocking=True):
         return super().show_tooltip(text, second=second, x=x, y=y, id=id, blocking=blocking)
 
     def hide_tooltip(self, id):
         return super().show_tooltip(text='', second='', x='', y='', id=id)
 
     async def hide_traytip(self):
-        await self.run_script("HideTrayTip")
+        await self.run_script('HideTrayTip')
 
     @staticmethod
     def escape_sequence_replace(s):

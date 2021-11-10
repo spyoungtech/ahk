@@ -3,7 +3,7 @@ import time
 from unittest import TestCase
 import os, sys
 project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
 )
 sys.path.insert(0, project_root)
 

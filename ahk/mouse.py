@@ -279,7 +279,7 @@ class AsyncMouseMixin(AsyncScriptEngine, MouseMixin):
 
     @MouseMixin.mouse_position.setter
     def mouse_position(self, position):
-        warnings.warn("mouse_position setter only schedules coroutine. use mouse_move() (with speed=0) instead")
+        warnings.warn('mouse_position setter only schedules coroutine. use mouse_move() (with speed=0) instead')
         x, y = position
         coro = self.mouse_move(x=x, y=y, speed=0, relative=False)
         asyncio.create_task(coro)

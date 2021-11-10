@@ -11,7 +11,7 @@ class DirectiveMeta(type):
     Overrides __hash__ to make objects 'unique' based upon a hash of the str representation
     """
     def __str__(cls):
-        return f"#{cls.__name__}"
+        return f'#{cls.__name__}'
 
     def __hash__(self):
         return hash(str(self))
@@ -39,7 +39,7 @@ class Directive(SimpleNamespace, metaclass=DirectiveMeta):
             arguments = ' '.join(str(value) for key, value in self._kwargs.items())
         else:
             arguments = ''
-        return f"#{self.name} {arguments}".rstrip()
+        return f'#{self.name} {arguments}'.rstrip()
 
     def __eq__(self, other):
         return str(self) == other

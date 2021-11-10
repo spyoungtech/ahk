@@ -5,7 +5,7 @@ import asyncio
 import os
 import sys
 project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
 )
 sys.path.insert(0, project_root)
 from ahk import AHK, AsyncAHK
@@ -99,7 +99,7 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_title_setter(self):
         starting_title = await self.win.title
 
-        await self.win.set_title("new title")
+        await self.win.set_title('new title')
         assert await self.win.get_title() != starting_title
 
     def tearDown(self):

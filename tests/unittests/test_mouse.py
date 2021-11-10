@@ -9,7 +9,7 @@ from itertools import product
 from functools import partial
 from unittest import TestCase, IsolatedAsyncioTestCase
 project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
 )
 sys.path.insert(0, project_root)
 from ahk import AsyncAHK, AHK
@@ -49,7 +49,7 @@ class TestMouse(TestCase):
     def test_mouse_drag(self):
         self.notepad_process = subprocess.Popen('notepad')
         time.sleep(0.5)
-        notepad = self.ahk.find_window(title=b"Untitled - Notepad")
+        notepad = self.ahk.find_window(title=b'Untitled - Notepad')
         win_width = notepad.width
         win_height = notepad.height
         print(*notepad.position)

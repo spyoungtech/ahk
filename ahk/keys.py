@@ -167,7 +167,7 @@ class KEYS:
     RAlt = RIGHT_ALT
     SHIFT = KeyModifier('Shift')
     Shift = SHIFT
-    LEFT_SHIFT = KeyModifier("LShift")
+    LEFT_SHIFT = KeyModifier('LShift')
     LShift = LEFT_SHIFT
     RIGHT_SHIFT = KeyModifier('RShift')
     RShift = RIGHT_SHIFT

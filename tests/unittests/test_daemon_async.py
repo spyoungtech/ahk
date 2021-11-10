@@ -108,7 +108,7 @@ class TestWindowDaemonAsync(IsolatedAsyncioTestCase):
 
     async def test_title_setter(self):
         starting_title = await self.win.title
-        await self.win.set_title("new title")
+        await self.win.set_title('new title')
         assert await self.win.get_title() != starting_title
 
     async def asyncTearDown(self):
@@ -183,7 +183,7 @@ class TestWinGetDaemonAsync(IsolatedAsyncioTestCase):
         except WindowNotFoundError as e:
             pass
         else:
-            raise AssertionError("Expected WindowNotFoundError")
+            raise AssertionError('Expected WindowNotFoundError')
 
     async def test_find_window_func(self):
         async def func(win):
@@ -203,7 +203,7 @@ class TestKeyboardDaemonAsync(IsolatedAsyncioTestCase):
         """
         self.ahk = AsyncAHKDaemon()
         await self.ahk.start()
-        self.p = subprocess.Popen("notepad")
+        self.p = subprocess.Popen('notepad')
         time.sleep(1)
 
     async def asyncTearDown(self):
@@ -212,35 +212,35 @@ class TestKeyboardDaemonAsync(IsolatedAsyncioTestCase):
         await asyncio.sleep(0.5)
 
     async def test_window_send(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
-        await notepad.send("hello world")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
+        await notepad.send('hello world')
         await asyncio.sleep(1)
         self.assertIn(b'hello world', await notepad.get_text())
 
     async def test_send(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
         await notepad.activate()
         await self.ahk.send('hello world')
         self.assertIn(b'hello world', await notepad.get_text())
 
     async def test_send_input(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
-        await self.ahk.send_input("Hello World")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
+        await self.ahk.send_input('Hello World')
         await asyncio.sleep(0.5)
-        assert b"Hello World" in await notepad.get_text()
+        assert b'Hello World' in await notepad.get_text()
 
     async def test_type(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
         await notepad.activate()
-        await self.ahk.type("Hello, World!")
-        assert b"Hello, World!" in await notepad.get_text()
+        await self.ahk.type('Hello, World!')
+        assert b'Hello, World!' in await notepad.get_text()
 
     async def test_multi_line_response(self):
         """
         Test that responses with multi-line strings are not truncated
         Not really a 'keyboard' test, but whatever
         """
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
         await notepad.activate()
         await self.ahk.type('Hello\nWorld!')
         text = await notepad.get_text()

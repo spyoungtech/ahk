@@ -25,9 +25,9 @@ class TestKeyboardDaemon(TestCase):
         self.ahk = AHKDaemon()
         self.ahk.start()
         self.before_windows = self.ahk.windows()
-        self.p = subprocess.Popen("notepad")
+        self.p = subprocess.Popen('notepad')
         time.sleep(1)
-        self.notepad = self.ahk.find_window(title=b"Untitled - Notepad")
+        self.notepad = self.ahk.find_window(title=b'Untitled - Notepad')
 
     def tearDown(self):
         self.ahk.set_capslock_state('off')
@@ -36,45 +36,45 @@ class TestKeyboardDaemon(TestCase):
         time.sleep(0.2)
 
     def test_window_send(self):
-        self.notepad.send("hello world")
+        self.notepad.send('hello world')
         time.sleep(1)
-        self.assertIn(b"hello world", self.notepad.text)
+        self.assertIn(b'hello world', self.notepad.text)
 
     def test_send(self):
         self.notepad.activate()
-        self.ahk.send("hello world")
-        assert b"hello world" in self.notepad.text
+        self.ahk.send('hello world')
+        assert b'hello world' in self.notepad.text
 
     def test_send_input(self):
         self.notepad.activate()
-        self.ahk.send_input("Hello World")
+        self.ahk.send_input('Hello World')
         time.sleep(0.5)
-        assert b"Hello World" in self.notepad.text
+        assert b'Hello World' in self.notepad.text
 
     def test_type(self):
         self.notepad.activate()
-        self.ahk.type("Hello, World!")
-        assert b"Hello, World!" in self.notepad.text
+        self.ahk.type('Hello, World!')
+        assert b'Hello, World!' in self.notepad.text
 
     def test_type_escapes_equals(self):
         """
         https://github.com/spyoungtech/ahk/issues/96
         """
         self.notepad.activate()
-        self.ahk.type("=foo")
-        assert b"=foo" in self.notepad.text
+        self.ahk.type('=foo')
+        assert b'=foo' in self.notepad.text
 
     def test_sendraw_equals(self):
         """
         https://github.com/spyoungtech/ahk/issues/96
         """
         self.notepad.activate()
-        self.ahk.send_raw("=foo")
-        assert b"=foo" in self.notepad.text
+        self.ahk.send_raw('=foo')
+        assert b'=foo' in self.notepad.text
 
     def test_set_capslock_state(self):
-        self.ahk.set_capslock_state("on")
-        assert self.ahk.key_state("CapsLock", "T")
+        self.ahk.set_capslock_state('on')
+        assert self.ahk.key_state('CapsLock', 'T')
 
     def test_multi_line_response(self):
         """

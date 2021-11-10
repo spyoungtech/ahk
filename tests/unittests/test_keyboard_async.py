@@ -9,7 +9,7 @@ from unittest import TestCase, IsolatedAsyncioTestCase
 
 
 project_root = os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "../..")
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..')
 )
 sys.path.insert(0, project_root)
 from ahk import AsyncAHK, AHK
@@ -25,7 +25,7 @@ class TestKeyboardAsync(IsolatedAsyncioTestCase):
         self.ahk = AsyncAHK()
         #self._normal_ahk = AHK()
         #self.before_windows = self._normal_ahk.windows()
-        self.p = subprocess.Popen("notepad")
+        self.p = subprocess.Popen('notepad')
         time.sleep(1)
 
     async def asyncTearDown(self):
@@ -33,46 +33,46 @@ class TestKeyboardAsync(IsolatedAsyncioTestCase):
         await asyncio.sleep(0.5)
 
     async def test_window_send(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
-        await notepad.send("hello world")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
+        await notepad.send('hello world')
         await asyncio.sleep(1)
         self.assertIn(b'hello world', await notepad.get_text())
 
     async def test_send(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
         await notepad.activate()
         await self.ahk.send('hello world')
         self.assertIn(b'hello world', await notepad.get_text())
 
     async def test_send_input(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
-        await self.ahk.send_input("Hello World")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
+        await self.ahk.send_input('Hello World')
         await asyncio.sleep(0.5)
-        assert b"Hello World" in await notepad.get_text()
+        assert b'Hello World' in await notepad.get_text()
 
     async def test_type(self):
-        notepad = await self.ahk.find_window(title=b"Untitled - Notepad")
+        notepad = await self.ahk.find_window(title=b'Untitled - Notepad')
         await notepad.activate()
-        await self.ahk.type("Hello, World!")
-        assert b"Hello, World!" in await notepad.get_text()
+        await self.ahk.type('Hello, World!')
+        assert b'Hello, World!' in await notepad.get_text()
 
 
 def a_down():
     time.sleep(0.5)
     ahk = AHK()
-    ahk.key_down("a")
+    ahk.key_down('a')
 
 
 def release_a():
     time.sleep(0.5)
     ahk = AHK()
-    ahk.key_up("a")
+    ahk.key_up('a')
 
 
 def press_a():
     time.sleep(0.5)
     ahk = AHK()
-    ahk.key_press("a")
+    ahk.key_press('a')
 
 #
 class TestKeysAsync(IsolatedAsyncioTestCase):
@@ -85,12 +85,12 @@ class TestKeysAsync(IsolatedAsyncioTestCase):
     def tearDown(self):
         if self.thread is not None:
             self.thread.join(timeout=3)
-        if self._normal_ahk.key_state("a"):
-            self._normal_ahk.key_up("a")
-        if self._normal_ahk.key_state("Control"):
-            self._normal_ahk.key_up("Control")
+        if self._normal_ahk.key_state('a'):
+            self._normal_ahk.key_up('a')
+        if self._normal_ahk.key_state('Control'):
+            self._normal_ahk.key_up('Control')
 
-        notepad = self._normal_ahk.find_window(title=b"Untitled - Notepad")
+        notepad = self._normal_ahk.find_window(title=b'Untitled - Notepad')
         if notepad:
             notepad.kill()
 
@@ -98,7 +98,7 @@ class TestKeysAsync(IsolatedAsyncioTestCase):
             self.hotkey.stop()
 
     async def a_key_wait_pressed(self):
-        await self.ahk.key_wait("a", timeout=5)
+        await self.ahk.key_wait('a', timeout=5)
 
     def test_key_wait_pressed(self):
         start = time.time()
@@ -109,7 +109,7 @@ class TestKeysAsync(IsolatedAsyncioTestCase):
         assert end - start < 5
 
     async def a_key_wait_released(self):
-        await self.ahk.key_wait("a", timeout=2)
+        await self.ahk.key_wait('a', timeout=2)
 
     def test_key_wait_released(self):
         start = time.time()
@@ -128,12 +128,12 @@ class TestKeysAsync(IsolatedAsyncioTestCase):
 
 
     async def test_key_state_when_not_pressed(self):
-        self.assertFalse(await self.ahk.key_state("a"))
+        self.assertFalse(await self.ahk.key_state('a'))
 
 
     async def test_key_state_pressed(self):
-        await self.ahk.key_down("Control")
-        self.assertTrue(await self.ahk.key_state("Control"))
+        await self.ahk.key_down('Control')
+        self.assertTrue(await self.ahk.key_state('Control'))
 
 
 #     def test_hotkey(self):

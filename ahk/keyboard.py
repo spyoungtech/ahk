@@ -20,7 +20,7 @@ class Hotkey:
 
     @property
     def running(self):
-        return hasattr(self, "_proc")
+        return hasattr(self, '_proc')
 
     def _start(self, script):
         try:
@@ -34,9 +34,9 @@ class Hotkey:
         Starts an AutoHotkey process with the hotkey script
         """
         if self.running:
-            raise RuntimeError("Hotkey is already running")
+            raise RuntimeError('Hotkey is already running')
         script = self.engine.render_template(
-            "hotkey.ahk", blocking=False, script=self.script, hotkey=self.hotkey
+            'hotkey.ahk', blocking=False, script=self.script, hotkey=self.hotkey
         )
         self._gen = self._start(script)
         proc = next(self._gen)
@@ -53,7 +53,7 @@ class Hotkey:
         Stops the process if it is running
         """
         if not self.running:
-            raise RuntimeError("Hotkey is not running")
+            raise RuntimeError('Hotkey is not running')
         try:
             next(self._gen)
         except StopIteration:
@@ -71,7 +71,7 @@ class KeyboardMixin(ScriptEngine):
         :param script: The script to execute when the hotkey is activated (AutoHotkey code as a string)
         :return: an :py:class:`~ahk.keyboard.Hotkey` instance
         """
-        engine = kwargs.pop("engine", self)
+        engine = kwargs.pop('engine', self)
         return Hotkey(engine, *args, **kwargs)
 
     def _key_state(self, key_name, mode=None) -> str:
@@ -85,7 +85,7 @@ class KeyboardMixin(ScriptEngine):
         :return: True if pressed down, else False
         """
         script = self.render_template(
-            "keyboard/key_state.ahk",
+            'keyboard/key_state.ahk',
             key_name=key_name,
             mode=mode,
             directives=(InstallMouseHook, InstallKeybdHook),
@@ -101,15 +101,15 @@ class KeyboardMixin(ScriptEngine):
     def _key_wait(
         self, key_name, timeout: int = None, logical_state=False, released=False
     ) -> str:
-        options = ""
+        options = ''
         if not released:
-            options += "D"
+            options += 'D'
         if logical_state:
-            options += "L"
+            options += 'L'
         if timeout:
-            options += f"T{timeout}"
+            options += f'T{timeout}'
         script = self.render_template(
-            "keyboard/key_wait.ahk", key_name=key_name, options=options
+            'keyboard/key_wait.ahk', key_name=key_name, options=options
         )
         return script
     def key_wait(
@@ -130,8 +130,8 @@ class KeyboardMixin(ScriptEngine):
         result = self.run_script(self._key_wait(
             key_name, timeout=timeout, logical_state=logical_state, released=released
         ))
-        if result == "1":
-            raise TimeoutError(f"timed out waiting for {key_name}")
+        if result == '1':
+            raise TimeoutError(f'timed out waiting for {key_name}')
 
     def type(self, s, blocking=True):
         """
@@ -145,7 +145,7 @@ class KeyboardMixin(ScriptEngine):
 
     def _send(self, s, raw=False, delay=None, blocking=True):
         script = self.render_template(
-            "keyboard/send.ahk", s=s, raw=raw, delay=delay, blocking=blocking
+            'keyboard/send.ahk', s=s, raw=raw, delay=delay, blocking=blocking
         )
         return script
 
@@ -182,11 +182,11 @@ class KeyboardMixin(ScriptEngine):
         """
         if len(s) > 5000:
             warnings.warn(
-                "String length greater than allowed. Characters beyond 5000 may not be sent. "
-                "See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details."
+                'String length greater than allowed. Characters beyond 5000 may not be sent. '
+                'See https://autohotkey.com/docs/commands/Send.htm#SendInputDetail for details.'
             )
 
-        script = self.render_template("keyboard/send_input.ahk", s=s, blocking=blocking)
+        script = self.render_template('keyboard/send_input.ahk', s=s, blocking=blocking)
         return script
 
     def send_input(self, s, blocking=True):
@@ -194,7 +194,7 @@ class KeyboardMixin(ScriptEngine):
         return self.run_script(script, blocking=blocking) or None
 
     def _send_play(self, s):
-        script = self.render_template("keyboard/send_play.ahk", s=s)
+        script = self.render_template('keyboard/send_play.ahk', s=s)
         return script
 
     def send_play(self, s):
@@ -209,7 +209,7 @@ class KeyboardMixin(ScriptEngine):
         return self.run_script(script) or None
 
     def _send_event(self, s, delay=None):
-        script = self.render_template("keyboard/send_event.ahk", s=s, delay=delay)
+        script = self.render_template('keyboard/send_event.ahk', s=s, delay=delay)
         return script
 
         #self.run_script(script)
@@ -269,16 +269,16 @@ class KeyboardMixin(ScriptEngine):
     def _set_capslock_state(self, state=None):
         if isinstance(state, str):
             state = state.lower()
-            if state not in ("on", "off", "alwayson", 'alwaysoff'):
+            if state not in ('on', 'off', 'alwayson', 'alwaysoff'):
                 raise ValueError(f'state value must be one of "On"|"Off"|"AlwaysOn"|"AlwaysOff" - not {repr(state)}')
 
         elif isinstance(state, bool):
             if state:
-                state = "on"
+                state = 'on'
             else:
-                state = "off"
+                state = 'off'
 
-        script = self.render_template("keyboard/set_capslock_state.ahk", state=state)
+        script = self.render_template('keyboard/set_capslock_state.ahk', state=state)
         return script
         # self.run_script(script)
 
@@ -314,8 +314,8 @@ class AsyncKeyboardMixin(AsyncScriptEngine, KeyboardMixin):
         result = await self.a_run_script(self._key_wait(
             key_name, timeout=timeout, logical_state=logical_state, released=released
         ))
-        if result == "1":
-            raise TimeoutError(f"timed out waiting for {key_name}")
+        if result == '1':
+            raise TimeoutError(f'timed out waiting for {key_name}')
 
     async def key_press(self, key, release=True, blocking=True):
         await self.key_down(key, blocking=blocking)
