@@ -1,5 +1,6 @@
 from setuptools import setup
 from io import open
+
 test_requirements = ['behave', 'behave-classy', 'pytest']
 extras = {'test': test_requirements}
 
@@ -12,12 +13,12 @@ setup(
     url='https://github.com/spyoungtech/ahk',
     description='A Python wrapper for AHK',
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type='text/markdown',
     author_email='spencer.young@spyoung.com',
     author='Spencer Young',
     packages=['ahk'],
     extras_require={
-        "binary": ["ahk-binary==1.1.33.9"],
+        'binary': ['ahk-binary==1.1.33.9'],
     },
     install_requires=['jinja2'],
     classifiers=[
@@ -36,5 +37,5 @@ setup(
     tests_require=test_requirements,
     include_package_data=True,
     zip_safe=False,
-    keywords=['ahk', 'autohotkey', 'windows', 'mouse', 'keyboard', 'automation', 'pyautogui']
+    keywords=['ahk', 'autohotkey', 'windows', 'mouse', 'keyboard', 'automation', 'pyautogui'],
 )

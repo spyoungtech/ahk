@@ -37,7 +37,9 @@ class SoundMixin(ScriptEngine):
         :param control_type:
         :return:
         """
-        script = self.render_template('sound/sound_get.ahk', device_number=device_number, component_type=component_type, control_type=control_type)
+        script = self.render_template(
+            'sound/sound_get.ahk', device_number=device_number, component_type=component_type, control_type=control_type
+        )
         return self.run_script(script)
 
     def get_volume(self, device_number=1):
@@ -64,10 +66,13 @@ class SoundMixin(ScriptEngine):
         :return:
         """
 
-        script = self.render_template('sound/sound_set.ahk', value=value,
-                                      device_number=device_number,
-                                      component_type=component_type,
-                                      control_type=control_type)
+        script = self.render_template(
+            'sound/sound_set.ahk',
+            value=value,
+            device_number=device_number,
+            component_type=component_type,
+            control_type=control_type,
+        )
         return self.run_script(script) or None
 
     def set_volume(self, value, device_number=1):

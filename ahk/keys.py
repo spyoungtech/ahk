@@ -59,7 +59,6 @@ SYMBOLS = {
     'Control': '^',
     'LControl': '<^',
     'RControl': '>^',
-
 }
 
 
@@ -117,6 +116,7 @@ class KEYS:
     KEYS constants
     REF: https://autohotkey.com/docs/KeyList.htm
     """
+
     CAPS_LOCK = Key('CapsLock')
     CapsLock = CAPS_LOCK
     SCROLL_LOCK = Key('ScrollLock')
@@ -167,7 +167,7 @@ class KEYS:
     RAlt = RIGHT_ALT
     SHIFT = KeyModifier('Shift')
     Shift = SHIFT
-    LEFT_SHIFT = KeyModifier("LShift")
+    LEFT_SHIFT = KeyModifier('LShift')
     LShift = LEFT_SHIFT
     RIGHT_SHIFT = KeyModifier('RShift')
     RShift = RIGHT_SHIFT

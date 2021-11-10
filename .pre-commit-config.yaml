@@ -5,3 +5,12 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
+    -   id: double-quote-string-fixer
+-   repo: https://github.com/psf/black
+    rev: '21.10b0'
+    hooks:
+    -   id: black
+        args:
+            - "-S"
+            - "-l"
+            - "120"

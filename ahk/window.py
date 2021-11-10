@@ -94,9 +94,9 @@ class Control:
 
 class Window(object):
 
-    MINIMIZED = "-1"
-    MAXIMIZED = "1"
-    NON_MIN_NON_MAX = "0"
+    MINIMIZED = '-1'
+    MAXIMIZED = '1'
+    NON_MIN_NON_MAX = '0'
 
     _set_subcommands = {
         'always_on_top': 'AlwaysOnTop',
@@ -109,7 +109,7 @@ class Window(object):
         'ex_style': 'ExStyle',
         'region': 'Region',
         'transparent': 'Transparent',
-        'transcolor': 'TransColor'
+        'transcolor': 'TransColor',
     }
 
     _get_subcommands = {
@@ -121,12 +121,12 @@ class Window(object):
         'process': 'ProcessPath',
         'count': 'count',
         'list': 'list',
-        'min_max': "MinMax",
+        'min_max': 'MinMax',
         'controls': 'ControlList',
         'controls_hwnd': 'ControlListHwnd',
         'transparent': 'Transparent',
         'trans_color': 'TransColor',
-        'style': 'Style',   # This will probably get a property later
+        'style': 'Style',  # This will probably get a property later
         'ex_style': 'ExStyle',  # This will probably get a property later
     }
 
@@ -147,9 +147,7 @@ class Window(object):
 
     @classmethod
     def from_pid(cls, engine: ScriptEngine, pid, **kwargs):
-        script = engine.render_template('window/get.ahk',
-                                        subcommand="ID",
-                                        title=f'ahk_pid {pid}')
+        script = engine.render_template('window/get.ahk', subcommand='ID', title=f'ahk_pid {pid}')
         ahk_id = engine.run_script(script)
         return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
@@ -166,7 +164,7 @@ class Window(object):
         script = self._render_template(
             'window/get.ahk',
             subcommand=sub,
-            title=f"ahk_id {self.id}",
+            title=f'ahk_id {self.id}',
         )
 
         return script
@@ -184,10 +182,7 @@ class Window(object):
             raise ValueError(f'No such subcommand {subcommand}')
 
         script = self._render_template(
-            'window/win_set.ahk',
-            subcommand=subcommand,
-            value=value,
-            title=f"ahk_id {self.id}"
+            'window/win_set.ahk', subcommand=subcommand, value=value, title=f'ahk_id {self.id}'
         )
         return script
 
@@ -196,11 +191,7 @@ class Window(object):
         return self.engine.run_script(script)
 
     def _get_pos(self, info=None):
-        script = self._render_template(
-            'window/win_position.ahk',
-            title=f"ahk_id {self.id}",
-            pos_info=info
-        )
+        script = self._render_template('window/win_position.ahk', title=f'ahk_id {self.id}', pos_info=info)
         return script
 
     def get_pos(self, info=None):
@@ -255,11 +246,7 @@ class Window(object):
         self.move(height=new_height)
 
     def _base_check(self, command):
-        script = self._render_template(
-            "window/base_check.ahk",
-            command=command,
-            title=f"ahk_id {self.id}"
-        )
+        script = self._render_template('window/base_check.ahk', command=command, title=f'ahk_id {self.id}')
         return script
 
     def _base_property(self, command):
@@ -272,22 +259,19 @@ class Window(object):
         return self.is_active()
 
     def is_active(self):
-        return self._base_property(command="WinActive")
+        return self._base_property(command='WinActive')
 
     @property
     def exist(self):
         return self.exists()
 
     def exists(self):
-        return self._base_property(command="WinExist")
+        return self._base_property(command='WinExist')
 
     def _base_get_method_(self, command):
-        script = self._render_template(
-            "window/base_get_command.ahk",
-            command=command,
-            title=f"ahk_id {self.id}"
-        )
+        script = self._render_template('window/base_get_command.ahk', command=command, title=f'ahk_id {self.id}')
         return script
+
     def _base_get_method(self, command):
         script = self._base_get_method_(command)
         result = self.engine.run_script(script, decode=False)
@@ -305,14 +289,10 @@ class Window(object):
         return self.get_title()
 
     def get_title(self):
-        return self._base_get_method("WinGetTitle")
+        return self._base_get_method('WinGetTitle')
 
     def _set_title(self, value):
-        script = self._render_template(
-            "window/win_set_title.ahk",
-            title=f"ahk_id {self.id}",
-            new_title=value
-        )
+        script = self._render_template('window/win_set_title.ahk', title=f'ahk_id {self.id}', new_title=value)
         return script
 
     @title.setter
@@ -327,7 +307,6 @@ class Window(object):
     def class_name(self):
         return self.get_class_name()
 
-
     @property
     def text(self):
         return self.get_text()
@@ -341,30 +320,30 @@ class Window(object):
         return self.is_maximized()
 
     def is_minimized(self):
-        return self.get("MinMax") == self.MINIMIZED
+        return self.get('MinMax') == self.MINIMIZED
 
     def is_maximized(self):
-        return self.get("MinMax") == self.MAXIMIZED
+        return self.get('MinMax') == self.MAXIMIZED
 
     @property
     def non_max_non_min(self):
-        return self.get("MinMax") == self.NON_MIN_NON_MAX
+        return self.get('MinMax') == self.NON_MIN_NON_MAX
 
     def is_minmax(self):
-        return self.get("MinMax") != self.NON_MIN_NON_MAX
+        return self.get('MinMax') != self.NON_MIN_NON_MAX
 
     def get_class_name(self):
-        return self._base_get_method("WinGetClass")
+        return self._base_get_method('WinGetClass')
 
     def get_text(self):
-        return self._base_get_method("WinGetText")
+        return self._base_get_method('WinGetText')
 
     @property
     def transparent(self) -> int:
         return self.get_transparency()
 
     def get_transparency(self) -> int:
-        result = self.get("Transparent")
+        result = self.get('Transparent')
         if result:
             return int(result)
         else:
@@ -376,17 +355,12 @@ class Window(object):
 
     def set_transparency(self, value):
         if isinstance(value, int) and 0 <= value <= 255:
-            return self.set("Transparent", value) or None
+            return self.set('Transparent', value) or None
         else:
-            raise ValueError(
-                f'"{value}" not a valid option. Please use [0, 255] integer'
-            )
+            raise ValueError(f'"{value}" not a valid option. Please use [0, 255] integer')
 
     def _always_on_top(self):
-        script = self._render_template(
-            'window/win_is_always_on_top.ahk',
-            title=f"ahk_id {self.id}"
-        )
+        script = self._render_template('window/win_is_always_on_top.ahk', title=f'ahk_id {self.id}')
         return script
 
     @property
@@ -410,8 +384,7 @@ class Window(object):
         elif value in ('toggle', 'Toggle', -1):
             return self.set('AlwaysOnTop', 'Toggle') or None
         else:
-            raise ValueError(
-                f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
+            raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
 
     def disable(self):
         """
@@ -451,16 +424,13 @@ class Window(object):
         kwargs['win'] = self
         return self.engine.render_template(*args, **kwargs)
 
-    def _base_method_(self, command, seconds_to_wait="", blocking=False):
+    def _base_method_(self, command, seconds_to_wait='', blocking=False):
         script = self._render_template(
-            "window/base_command.ahk",
-            command=command,
-            title=f"ahk_id {self.id}",
-            seconds_to_wait=seconds_to_wait
+            'window/base_command.ahk', command=command, title=f'ahk_id {self.id}', seconds_to_wait=seconds_to_wait
         )
         return script
 
-    def _base_method(self, command, seconds_to_wait="", blocking=True):
+    def _base_method(self, command, seconds_to_wait='', blocking=True):
         script = self._base_method_(command, seconds_to_wait=seconds_to_wait)
         return self.engine.run_script(script, blocking=blocking)
 
@@ -474,7 +444,7 @@ class Window(object):
 
         :return:
         """
-        return self._base_method("WinActivate") or None
+        return self._base_method('WinActivate') or None
 
     def activate_bottom(self):
         """
@@ -484,9 +454,9 @@ class Window(object):
 
         :return:
         """
-        return self._base_method("WinActivateBottom") or None
+        return self._base_method('WinActivateBottom') or None
 
-    def close(self, seconds_to_wait=""):
+    def close(self, seconds_to_wait=''):
         """
         Closes the Window. See also: `WinClose`_
 
@@ -495,7 +465,7 @@ class Window(object):
         :param seconds_to_wait:
         :return:
         """
-        return self._base_method("WinClose", seconds_to_wait=seconds_to_wait) or None
+        return self._base_method('WinClose', seconds_to_wait=seconds_to_wait) or None
 
     def hide(self):
         """
@@ -506,10 +476,10 @@ class Window(object):
 
         :return:
         """
-        return self._base_method("WinHide") or None
+        return self._base_method('WinHide') or None
 
-    def kill(self, seconds_to_wait=""):
-        return self._base_method("WinKill", seconds_to_wait=seconds_to_wait) or None
+    def kill(self, seconds_to_wait=''):
+        return self._base_method('WinKill', seconds_to_wait=seconds_to_wait) or None
 
     def maximize(self):
         """
@@ -517,7 +487,7 @@ class Window(object):
 
         :return:
         """
-        return self._base_method("WinMaximize") or None
+        return self._base_method('WinMaximize') or None
 
     def minimize(self):
         """
@@ -525,7 +495,7 @@ class Window(object):
 
         :return:
         """
-        return self._base_method("WinMinimize") or None
+        return self._base_method('WinMinimize') or None
 
     def restore(self):
         """
@@ -533,7 +503,7 @@ class Window(object):
 
         :return:
         """
-        return self._base_method("WinRestore") or None
+        return self._base_method('WinRestore') or None
 
     def show(self):
         """
@@ -541,45 +511,43 @@ class Window(object):
 
         :return:
         """
-        return self._base_method("WinShow") or None
+        return self._base_method('WinShow') or None
 
-    def wait(self, seconds_to_wait=""):
+    def wait(self, seconds_to_wait=''):
         """
 
         :param seconds_to_wait:
         :return:
         """
-        return self._base_method("WinWait", seconds_to_wait=seconds_to_wait, blocking=True) or None
+        return self._base_method('WinWait', seconds_to_wait=seconds_to_wait, blocking=True) or None
 
-    def wait_active(self, seconds_to_wait=""):
+    def wait_active(self, seconds_to_wait=''):
         """
 
         :param seconds_to_wait:
         :return:
         """
-        return self._base_method("WinWaitActive", seconds_to_wait=seconds_to_wait, blocking=True) or None
+        return self._base_method('WinWaitActive', seconds_to_wait=seconds_to_wait, blocking=True) or None
 
-    def wait_not_active(self, seconds_to_wait=""):
+    def wait_not_active(self, seconds_to_wait=''):
         """
 
         :param seconds_to_wait:
         :return:
         """
-        return self._base_method("WinWaitNotActive", seconds_to_wait=seconds_to_wait, blocking=True) or None
+        return self._base_method('WinWaitNotActive', seconds_to_wait=seconds_to_wait, blocking=True) or None
 
-    def wait_close(self, seconds_to_wait=""):
+    def wait_close(self, seconds_to_wait=''):
         """
 
         :param seconds_to_wait:
         :return:
         """
-        return self._base_method("WinWaitClose", seconds_to_wait=seconds_to_wait, blocking=True) or None
+        return self._base_method('WinWaitClose', seconds_to_wait=seconds_to_wait, blocking=True) or None
 
     def _move(self, x='', y='', width=None, height=None):
         script = self._render_template(
-            'window/win_move.ahk',
-            title=f"ahk_id {self.id}",
-            x=x, y=y, width=width, height=height
+            'window/win_move.ahk', title=f'ahk_id {self.id}', x=x, y=y, width=width, height=height
         )
         return script
 
@@ -601,9 +569,12 @@ class Window(object):
             keys = self.engine.escape_sequence_replace(keys)
         script = self._render_template(
             'window/win_send.ahk',
-            title=f"ahk_id {self.id}",
-            keys=keys, raw=raw, delay=delay,
-            press_duration=press_duration, blocking=blocking
+            title=f'ahk_id {self.id}',
+            keys=keys,
+            raw=raw,
+            delay=delay,
+            press_duration=press_duration,
+            blocking=blocking,
         )
         return script
 
@@ -618,6 +589,7 @@ class Window(object):
 
     def _click(self, x=None, y=None, *, button=None, n=1, options=None, blocking=True):
         from ahk.mouse import resolve_button
+
         if x or y:
             if y is None and isinstance(x, collections.abc.Sequence) and len(x) == 2:
                 #  alow position to be specified by a sequence of length 2
@@ -626,8 +598,7 @@ class Window(object):
         button = resolve_button(button)
 
         script = self._render_template(
-            'window/win_click.ahk',
-            x=x, y=y, hwnd=f"ahk_id {self.id}", button=button, n=n, options=options
+            'window/win_click.ahk', x=x, y=y, hwnd=f'ahk_id {self.id}', button=button, n=n, options=options
         )
 
         return script
@@ -673,7 +644,7 @@ class WindowMixin(ScriptEngine):
             title=title,
             text=text,
             exclude_text=exclude_text,
-            exclude_title=exclude_title
+            exclude_title=exclude_title,
         )
         return script
 
@@ -684,13 +655,11 @@ class WindowMixin(ScriptEngine):
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     def _win_set(self, subcommand, *args, blocking=True):
-        script = self.render_template(
-            'window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
+        script = self.render_template('window/set.ahk', subcommand=subcommand, *args, blocking=blocking)
         return script
 
     def win_set(self, subcommand, *args, blocking=True):
-        script = self.render_template(
-            'window/set.ahk',  subcommand=subcommand, *args, blocking=blocking)
+        script = self.render_template('window/set.ahk', subcommand=subcommand, *args, blocking=blocking)
         return self.run_script(script, blocking=blocking) or None
 
     @property
@@ -703,6 +672,7 @@ class WindowMixin(ScriptEngine):
     def _all_window_ids_(self):
         script = self.render_template('window/id_list.ahk')
         return script
+
     def _all_window_ids(self):
         script = self._all_window_ids_()
         result = self.run_script(script)
@@ -742,6 +712,7 @@ class WindowMixin(ScriptEngine):
                     if result is False:
                         return False
                 return True
+
         for window in filter(func, self.windows()):
             yield window
 
@@ -821,7 +792,6 @@ class WindowMixin(ScriptEngine):
 
 
 class AsyncWindow(Window):
-
     @classmethod
     async def from_mouse_position(cls, engine: ScriptEngine, **kwargs):
         script = engine.render_template('window/from_mouse.ahk')
@@ -830,9 +800,7 @@ class AsyncWindow(Window):
 
     @classmethod
     async def from_pid(cls, engine: ScriptEngine, pid, **kwargs):
-        script = engine.render_template('window/get.ahk',
-                                        subcommand="ID",
-                                        title=f'ahk_pid {pid}')
+        script = engine.render_template('window/get.ahk', subcommand='ID', title=f'ahk_pid {pid}')
         ahk_id = await engine.a_run_script(script)
         return cls(engine=engine, ahk_id=ahk_id, **kwargs)
 
@@ -852,27 +820,37 @@ class AsyncWindow(Window):
 
     @Window.rect.setter
     def rect(self, new_position):
-        warnings.warn("rect setter only schedules coroutine. window may not change immediately. Use move() instead", stacklevel=2)
+        warnings.warn(
+            'rect setter only schedules coroutine. window may not change immediately. Use move() instead', stacklevel=2
+        )
         x, y, width, height = new_position
         coro = self.move(x=x, y=y, width=width, height=height)
         asyncio.create_task(coro)
 
     @Window.position.setter
     def position(self, new_position):
-        warnings.warn("position setter only schedules coroutine. window may not change immediately. use set_position() instead", stacklevel=2)
+        warnings.warn(
+            'position setter only schedules coroutine. window may not change immediately. use set_position() instead',
+            stacklevel=2,
+        )
         x, y = new_position
         coro = self.move(x, y)
         asyncio.create_task(coro)
 
     @Window.width.setter
     def width(self, new_width):
-        warnings.warn("width setter only schedules coroutine. window may not change immediately. use move() instead", stacklevel=2)
+        warnings.warn(
+            'width setter only schedules coroutine. window may not change immediately. use move() instead', stacklevel=2
+        )
         coro = self.move(width=new_width)
         asyncio.create_task(coro)
 
     @Window.height.setter
     def height(self, new_height):
-        warnings.warn("height setter only schedules coroutine. window may not change immediately. use move() instead", stacklevel=2)
+        warnings.warn(
+            'height setter only schedules coroutine. window may not change immediately. use move() instead',
+            stacklevel=2,
+        )
         coro = self.move(height=new_height)
         asyncio.create_task(coro)
 
@@ -890,26 +868,29 @@ class AsyncWindow(Window):
 
     @Window.title.setter
     def title(self, new_title):
-        warnings.warn("title setter only schedules coroutine. window may not change immediately. use set_title() instead", stacklevel=2)
+        warnings.warn(
+            'title setter only schedules coroutine. window may not change immediately. use set_title() instead',
+            stacklevel=2,
+        )
         coro = self.set_title(new_title)
         asyncio.create_task(coro)
 
     async def is_minimized(self):
-        return await self.get("MinMax") == self.MINIMIZED
+        return await self.get('MinMax') == self.MINIMIZED
 
     async def is_maximized(self):
-        return await self.get("MinMax") == self.MAXIMIZED
+        return await self.get('MinMax') == self.MAXIMIZED
 
     @property
     async def non_max_non_min(self):
-        return await self.get("MinMax") == self.NON_MIN_NON_MAX
+        return await self.get('MinMax') == self.NON_MIN_NON_MAX
 
     async def is_minmax(self):
-        return await self.get("MinMax") != self.NON_MIN_NON_MAX
+        return await self.get('MinMax') != self.NON_MIN_NON_MAX
 
     @property
     async def transparent(self) -> int:
-        result = await self.get("Transparent")
+        result = await self.get('Transparent')
         if result:
             return int(result)
         else:
@@ -917,16 +898,19 @@ class AsyncWindow(Window):
 
     @transparent.setter
     def transparent(self, value):
-        warnings.warn("transparent setter only schedules coroutine. window may not change immediately. use set_transparency() instead", stacklevel=2)
+        warnings.warn(
+            'transparent setter only schedules coroutine. window may not change immediately. use set_transparency() instead',
+            stacklevel=2,
+        )
 
         if isinstance(value, int) and 0 <= value <= 255:
-            coro = self.set("Transparent", value)
+            coro = self.set('Transparent', value)
             asyncio.create_task(coro)
         else:
             raise ValueError('transparency must be integer in range [0, 255]')
 
     async def get_transparency(self) -> int:
-        result = await self.get("Transparent")
+        result = await self.get('Transparent')
         if result:
             return int(result)
         else:
@@ -934,10 +918,9 @@ class AsyncWindow(Window):
 
     async def set_transparency(self, value):
         if isinstance(value, int) and 0 <= value <= 255:
-            await self.set("Transparent", value)
+            await self.set('Transparent', value)
         else:
-            raise ValueError(
-                f'"{value}" not a valid option. Please use [0, 255] integer')
+            raise ValueError(f'"{value}" not a valid option. Please use [0, 255] integer')
 
     async def is_always_on_top(self):
         script = self._always_on_top()
@@ -946,7 +929,9 @@ class AsyncWindow(Window):
 
     @Window.always_on_top.setter
     def always_on_top(self, value):
-        warnings.warn(f"always_on_top setter only schedules coroutine. changes may not happen immediately. use set_always_on_top({repr(value)}) instead")
+        warnings.warn(
+            f'always_on_top setter only schedules coroutine. changes may not happen immediately. use set_always_on_top({repr(value)}) instead'
+        )
         if value in ('on', 'On', True, 1):
             coro = self.set('AlwaysOnTop', 'On')
         elif value in ('off', 'Off', False, 0):
@@ -954,8 +939,7 @@ class AsyncWindow(Window):
         elif value in ('toggle', 'Toggle', -1):
             coro = self.set('AlwaysOnTop', 'Toggle')
         else:
-            raise ValueError(
-                f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
+            raise ValueError(f'"{value}" not a valid option. Please use On/Off/Toggle/True/False/0/1/-1')
         asyncio.create_task(coro)
 
 
@@ -1005,6 +989,7 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
                     if result is False:
                         return False
                 return True
+
         async for window in async_filter(func, await self.windows()):
             yield window
 
@@ -1019,7 +1004,7 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         """
         async for window in self.find_windows(func=func, **kwargs):
             return window  # return the first result
-        raise WindowNotFoundError("yikes")
+        raise WindowNotFoundError('yikes')
 
     async def find_windows_by_title(self, title, exact=False):
         """

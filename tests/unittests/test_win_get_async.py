@@ -2,6 +2,7 @@ import asyncio
 import sys
 import os
 import time
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk import AHK, AsyncAHK
@@ -9,6 +10,7 @@ from ahk.window import WindowNotFoundError
 import pytest
 import subprocess
 from unittest import IsolatedAsyncioTestCase
+
 
 class TestWinGetAsync(IsolatedAsyncioTestCase):
     def setUp(self):
@@ -21,7 +23,6 @@ class TestWinGetAsync(IsolatedAsyncioTestCase):
     def tearDown(self):
         self.p.terminate()
         asyncio.run(asyncio.sleep(0.5))
-
 
     async def test_get_calculator(self):
         assert await self.win.position
@@ -37,6 +38,7 @@ class TestWinGetAsync(IsolatedAsyncioTestCase):
     async def test_find_window_func(self):
         async def func(win):
             return b'Untitled' in await win.title
+
         assert self.win == await self.ahk.find_window(func=func)
 
     async def test_getattr_window_subcommand(self):

@@ -1,5 +1,6 @@
 import sys
 import os
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk import AHK
@@ -8,6 +9,7 @@ from PIL import Image
 from itertools import product
 import time
 from ahk.daemon import AHKDaemon
+
 
 class TestScreen(TestCase):
     def setUp(self):
@@ -44,6 +46,7 @@ class TestScreen(TestCase):
         result = self.ahk.pixel_get_color(x, y)
         self.assertIsNotNone(result)
         self.assertEqual(int(result, 16), 0xFF0000)
+
 
 class TestScreenDaemon(TestScreen):
     def setUp(self):

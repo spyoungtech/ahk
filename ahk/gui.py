@@ -11,7 +11,7 @@ class GUIMixin(ScriptEngine):
         self.window_encoding = kwargs.pop('window_encoding', None)
         super().__init__(*args, **kwargs)
 
-    def show_tooltip(self, text: str, second=1.0, x="", y="", id="", blocking=True):
+    def show_tooltip(self, text: str, second=1.0, x='', y='', id='', blocking=True):
         """Show ToolTip
 
         https://www.autohotkey.com/docs/commands/ToolTip.htm
@@ -29,10 +29,10 @@ class GUIMixin(ScriptEngine):
         :raises ValueError: ID must be between [1, 20]
         """
         if id and not (1 <= int(id) <= 20):
-            raise ValueError("ID value must be between [1, 20]")
+            raise ValueError('ID value must be between [1, 20]')
 
-        encoded_text = "% " + "".join([f"Chr({hex(ord(char))})" for char in text])
-        script = self.render_template("gui/tooltip.ahk", text=encoded_text, second=second, x=x, y=y, id=id)
+        encoded_text = '% ' + ''.join([f'Chr({hex(ord(char))})' for char in text])
+        script = self.render_template('gui/tooltip.ahk', text=encoded_text, second=second, x=x, y=y, id=id)
         return self.run_script(script, blocking=blocking) or None
 
     def _show_traytip(
@@ -56,11 +56,11 @@ class GUIMixin(ScriptEngine):
         :type large_icon: bool, optional
         """
 
-        encoded_title = "% " + "".join([f"Chr({hex(ord(char))})" for char in title])
-        encoded_text = "% " + "".join([f"Chr({hex(ord(char))})" for char in text])
+        encoded_title = '% ' + ''.join([f'Chr({hex(ord(char))})' for char in title])
+        encoded_text = '% ' + ''.join([f'Chr({hex(ord(char))})' for char in text])
         option = type_id + (16 if slient else 0) + (32 if large_icon else 0)
         script = self.render_template(
-            "gui/traytip.ahk", title=encoded_title, text=encoded_text, second=second, option=option
+            'gui/traytip.ahk', title=encoded_title, text=encoded_text, second=second, option=option
         )
         return self.run_script(script, blocking=blocking) or None
 

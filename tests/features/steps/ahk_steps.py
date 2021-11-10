@@ -28,4 +28,5 @@ class AHKSteps(AHK, Base):
         assert x == xpos
         assert y == ypos
 
+
 AHKSteps().register()
