@@ -1,4 +1,5 @@
 sphinx<3
+mistune<2
 sphinx-rtd-theme
 sphinx-autodoc-typehints<1.11
 m2r
