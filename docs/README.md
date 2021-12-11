@@ -93,7 +93,7 @@ win = ahk.win_get(title='Untitled - Notepad')  # by title
 win = list(ahk.windows())                      # list of all windows
 win = Window(ahk, ahk_id='0xabc123')           # by ahk_id
 win = Window.from_mouse_position(ahk)          # the window under the mouse cursor
-win = Window.from_pid('20366')                 # by process ID
+win = Window.from_pid(ahk, pid='20366')                 # by process ID
 ```
 
 ### Working with windows
