@@ -14,10 +14,11 @@ artifacts:
     path: dist\*
 
 test_script:
-  - powershell .\ci\runtests.ps1
+  - cmd: .\ci\runtests.bat
 
 on_finish:
   - cmd: |
+      powershell .\ci\uploadjunit.ps1
       venv\Scripts\activate.bat
       IF DEFINED COVERALLS_REPO_TOKEN (python -m coveralls) ELSE (echo skipping coveralls report for external pr)
 
