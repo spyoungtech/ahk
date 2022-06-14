@@ -652,6 +652,8 @@ class WindowMixin(ScriptEngine):
         script = self._win_get(title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text)
         encoding = encoding or self.window_encoding
         ahk_id = self.run_script(script)
+        if not ahk_id:
+            return None
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     def _win_set(self, subcommand, *args, blocking=True):
@@ -948,6 +950,8 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         encoding = kwargs.pop('encoding', self.window_encoding)
         script = self._win_get(*args, **kwargs)
         ahk_id = await self.a_run_script(script)
+        if not ahk_id:
+            return None
         return AsyncWindow(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     async def _all_window_ids(self):
@@ -1004,7 +1008,7 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         """
         async for window in self.find_windows(func=func, **kwargs):
             return window  # return the first result
-        raise WindowNotFoundError('yikes')
+        return None
 
     async def find_windows_by_title(self, title, exact=False):
         """

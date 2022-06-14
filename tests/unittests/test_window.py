@@ -3,11 +3,14 @@ import time
 from unittest import TestCase
 import os, sys
 
+import pytest
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 
 from ahk import AHK
 from ahk.daemon import AHKDaemon
+from ahk.window import WindowNotFoundError
 
 
 class TestWindow(TestCase):
@@ -98,6 +101,18 @@ class TestWindow(TestCase):
 
     def tearDown(self):
         self.p.terminate()
+
+    def test_find_window(self):
+        win = self.ahk.find_window(title=b'Untitled - Notepad')
+        assert win.id == self.win.id
+
+    def test_find_window_nonexistent_is_none(self):
+        win = self.ahk.find_window(title=b'This should not exist')
+        assert win is None
+
+    def test_winget_nonexistent_window_is_none(self):
+        win = self.ahk.win_get(title='This should not exist')
+        assert win is None
 
 
 class TestWindowDaemon(TestWindow):

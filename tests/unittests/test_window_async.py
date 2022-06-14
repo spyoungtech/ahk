@@ -104,6 +104,18 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         await self.win.set_title('new title')
         assert await self.win.get_title() != starting_title
 
+    async def test_find_window(self):
+        win = await self.ahk.find_window(title=b'Untitled - Notepad')
+        assert win.id == self.win.id
+
+    async def test_find_window_nonexistent_is_none(self):
+        win = await self.ahk.find_window(title=b'This should not exist')
+        assert win is None
+
+    async def test_winget_nonexistent_window_is_none(self):
+        win = await self.ahk.win_get(title='This should not exist')
+        assert win is None
+
     def tearDown(self):
         self.p.terminate()
         asyncio.run(asyncio.sleep(0.5))
