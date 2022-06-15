@@ -29,11 +29,12 @@ class TestWinGetAsync(IsolatedAsyncioTestCase):
 
     async def a_win_get(self):
         win = await self.ahk.win_get(title='Untitled - Notepad')
-        await win.position
+        return win
 
     def test_win_close(self):
         asyncio.run(self.win.close())
-        self.assertRaises(WindowNotFoundError, asyncio.run, self.a_win_get())
+        win = asyncio.run(self.a_win_get())
+        assert win is None
 
     async def test_find_window_func(self):
         async def func(win):

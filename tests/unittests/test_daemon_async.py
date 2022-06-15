@@ -177,13 +177,8 @@ class TestWinGetDaemonAsync(IsolatedAsyncioTestCase):
 
     async def test_win_close(self):
         await self.win.close()
-        try:
-            win = await self.ahk.win_get(title='Untitled - Notepad')
-            await win.position
-        except WindowNotFoundError as e:
-            pass
-        else:
-            raise AssertionError('Expected WindowNotFoundError')
+        win = await self.ahk.win_get(title='Untitled - Notepad')
+        assert win is None
 
     async def test_find_window_func(self):
         async def func(win):

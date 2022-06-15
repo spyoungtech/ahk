@@ -34,8 +34,7 @@ def test_win_close():
         assert win
         assert win.position
         win.close()
-        with pytest.raises(WindowNotFoundError):
-            ahk.win_get(title='Untitled - Notepad').position
+        assert ahk.win_get(title='Untitled - Notepad') is None
     finally:
         if p is not None:
             p.terminate()
