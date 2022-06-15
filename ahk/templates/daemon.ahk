@@ -512,6 +512,20 @@ AHKWinGetPos(ByRef command) {
     return s
 }
 
+AHKWinWait(ByRef command) {
+    title := command[2]
+    text := command[3]
+    timeout := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinWait,%title%,%text%,%timeout%,%extitle%,%extext%
+    if !ErrorLevel
+    {
+           WinGet, output, ID
+           return output
+    }
+}
+
 CountNewlines(ByRef s) {
     newline := "`n"
     StringReplace, s, s, %newline%, %newline%, UseErrorLevel

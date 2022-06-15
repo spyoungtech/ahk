@@ -94,6 +94,13 @@ win = list(ahk.windows())                      # list of all windows
 win = Window(ahk, ahk_id='0xabc123')           # by ahk_id
 win = Window.from_mouse_position(ahk)          # the window under the mouse cursor
 win = Window.from_pid(ahk, pid='20366')                 # by process ID
+
+# Wait for a window
+try:
+    # wait up to 5 seconds for notepad
+    win = ahk.win_wait(title='Untitled - Notepad', timeout=5)
+except TimeoutError:
+    print('Notepad was not found!')
 ```
 
 ### Working with windows
