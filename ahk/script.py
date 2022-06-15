@@ -132,7 +132,7 @@ class ScriptEngine(object):
 
     def _run_script(self, script_text, **kwargs):
         blocking = kwargs.pop('blocking', True)
-        runargs = [self.executable_path, '/ErrorStdOut', '*']
+        runargs = [self.executable_path, '/CP65001', '/ErrorStdOut', '*']
         decode = kwargs.pop('decode', False)
         script_bytes = bytes(script_text, 'utf-8')
         if blocking:
@@ -159,7 +159,7 @@ class ScriptEngine(object):
         blocking = kwargs.pop('blocking', True)
         if blocking is not True:
             warnings.warn('blocking=False will probably result in problems', stacklevel=2)
-        runargs = [self.executable_path, '/ErrorStdOut', '*']
+        runargs = [self.executable_path, '/CP65001', '/ErrorStdOut', '*']
         proc = await asyncio.subprocess.create_subprocess_exec(
             *runargs, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
