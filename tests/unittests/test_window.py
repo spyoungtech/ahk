@@ -114,6 +114,14 @@ class TestWindow(TestCase):
         win = self.ahk.win_get(title='This should not exist')
         assert win is None
 
+    def test_winwait_nonexistent_raises_timeout_error(self):
+        with pytest.raises(TimeoutError):
+            win = self.ahk.win_wait(title='This should not exist')
+
+    def test_winwait_existing_window(self):
+        win = self.ahk.win_wait(title='Untitled - Notepad')
+        assert win.id == self.win.id
+
 
 class TestWindowDaemon(TestWindow):
     def setUp(self):

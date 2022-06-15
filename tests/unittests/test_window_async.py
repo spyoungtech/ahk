@@ -5,6 +5,8 @@ import asyncio
 import os
 import sys
 
+import pytest
+
 project_root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../..'))
 sys.path.insert(0, project_root)
 from ahk import AHK, AsyncAHK
@@ -115,6 +117,14 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_winget_nonexistent_window_is_none(self):
         win = await self.ahk.win_get(title='This should not exist')
         assert win is None
+
+    async def test_winwait_nonexistent_raises_timeout_error(self):
+        with pytest.raises(TimeoutError):
+            win = await self.ahk.win_wait(title='This should not exist')
+
+    async def test_winwait_existing_window(self):
+        win = await self.ahk.win_wait(title='Untitled - Notepad')
+        assert win.id == self.win.id
 
     def tearDown(self):
         self.p.terminate()

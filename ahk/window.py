@@ -513,14 +513,6 @@ class Window(object):
         """
         return self._base_method('WinShow') or None
 
-    def wait(self, seconds_to_wait=''):
-        """
-
-        :param seconds_to_wait:
-        :return:
-        """
-        return self._base_method('WinWait', seconds_to_wait=seconds_to_wait, blocking=True) or None
-
     def wait_active(self, seconds_to_wait=''):
         """
 
@@ -654,6 +646,28 @@ class WindowMixin(ScriptEngine):
         ahk_id = self.run_script(script)
         if not ahk_id:
             return None
+        return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
+
+    def win_wait(self, *, title='', text='', exclude_title='', timeout=0.5, exclude_text='', encoding=None):
+        """
+        WinWait
+        Wait for a window. If found within the timeout (in seconds), returns a Window object.
+        If not found, raises a TimeoutError
+
+        ref: https://www.autohotkey.com/docs/commands/WinWait.htm
+        """
+        script = self.render_template(
+            'window/win_wait.ahk',
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            timeout=timeout,
+            exclude_text=exclude_text,
+        )
+        encoding = encoding or self.window_encoding
+        ahk_id = self.run_script(script)
+        if not ahk_id:
+            raise TimeoutError(f'No window found after timeout ({timeout})')
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     def _win_set(self, subcommand, *args, blocking=True):
@@ -1071,3 +1085,18 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         """
         async for window in self.find_windows_by_class(*args, **kwargs):
             return window
+
+    async def win_wait(self, *, title='', text='', exclude_title='', timeout=0.5, exclude_text='', encoding=None):
+        script = self.render_template(
+            'window/win_wait.ahk',
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            timeout=timeout,
+            exclude_text=exclude_text,
+        )
+        encoding = encoding or self.window_encoding
+        ahk_id = await self.a_run_script(script)
+        if not ahk_id:
+            raise TimeoutError(f'No window found after timeout ({timeout})')
+        return AsyncWindow(engine=self, ahk_id=ahk_id, encoding=encoding)
