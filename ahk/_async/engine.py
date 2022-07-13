@@ -1,4 +1,3 @@
-from collections import deque
 from typing import Optional
 from typing import Tuple
 
@@ -8,7 +7,7 @@ from .window import AsyncWindow
 
 
 class AsyncAHK:
-    def __init__(self, transport: Optional[AsyncTransport] = None):
+    def __init__(self, *, transport: Optional[AsyncTransport] = None):
         if transport is None:
             transport = AsyncDaemonProcessTransport()
         self._transport: AsyncTransport = transport

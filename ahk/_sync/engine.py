@@ -1,4 +1,3 @@
-from collections import deque
 from typing import Optional
 from typing import Tuple
 
@@ -8,7 +7,7 @@ from .window import Window
 
 
 class AHK:
-    def __init__(self, transport: Optional[Transport] = None):
+    def __init__(self, *, transport: Optional[Transport] = None):
         if transport is None:
             transport = DaemonProcessTransport()
         self._transport: Transport = transport

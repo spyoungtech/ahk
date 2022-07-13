@@ -115,6 +115,8 @@ def _resolve_executable_path(executable_path: str = '') -> str:
 
 
 class AsyncTransport(ABC):
+    _started: bool = False
+
     async def init(self) -> None:
         return None
 
@@ -406,28 +408,14 @@ class AsyncTransport(ABC):
         ...
 
     async def function_call(self, function_name: str, args: Optional[list[str]] = None) -> ResponseMessage:
+        if not self._started:
+            await self.init()
         request = RequestMessage(function_name=function_name, args=args)
         return await self.send(request)
 
     @abstractmethod
     async def send(self, request: RequestMessage) -> ResponseMessage:
         return NotImplemented
-
-
-# class Process:
-#     def __init__(self, runargs: list[str]):
-#         self.runargs = runargs
-#
-#     # def __enter__(self) -> Generator[subprocess.Popen[bytes], None, None]:
-#     #     yield subprocess.Popen(self.runargs, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-#
-#     async def __aenter__(self) -> asyncio.subprocess.Process:
-#         return await async_create_process(self.runargs)
-#
-#
-#     async def __aexit__(self, *args: Any, **kwargs: Any) -> None:
-#         return None
-#
 
 
 class AsyncDaemonProcessTransport(AsyncTransport):
@@ -443,8 +431,6 @@ class AsyncDaemonProcessTransport(AsyncTransport):
     async def start(self) -> None:
         assert self._proc is None, 'cannot start a process twice'
         runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', 'ahk\\daemon.ahk']  # TODO: build this dynamically
-        # async with Process(runargs) as proc:
-        #     self._proc = proc
         self._proc = AsyncAHKProcess(runargs=runargs)
         await self._proc.start()
 
@@ -452,7 +438,6 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         newline = '\n'
 
         msg = f"{request.function_name}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode('utf-8')
-        print('msg', repr(msg))
         assert self._proc is not None
         self._proc.write(msg)
         await self._proc.adrain_stdin()
