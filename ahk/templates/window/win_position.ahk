@@ -12,5 +12,5 @@ s .= Format("({})", width)
 {% else %}
 s .= Format("({}, {}, {}, {})", x, y, width, height)
 {% endif %}
-FileAppend, %s%, *
+FileAppend, %s%, *, UTF-8
 {% endblock body %}

@@ -6,5 +6,5 @@ Loop %windows%
     id := windows%A_Index%
     r .= id . "`,"
 }
-FileAppend, %r%, *
+FileAppend, %r%, *, UTF-8
 {% endblock body %}

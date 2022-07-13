@@ -7,5 +7,5 @@ Loop %windows%
     WinGetTitle wt, ahk_id %id%
     r .= wt . "`n"
 }
-FileAppend, %r%, *
+FileAppend, %r%, *, UTF-8
 {% endblock body %}

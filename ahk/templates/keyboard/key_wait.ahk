@@ -2,5 +2,5 @@
 {% block body %}
 KeyWait, {{ key_name }}{% if options %} , {{ options }}{% endif %}
 
-FileAppend, %ErrorLevel%, *
+FileAppend, %ErrorLevel%, *, UTF-8
 {% endblock body %}

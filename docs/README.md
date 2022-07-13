@@ -262,7 +262,7 @@ Suppose you have a script like so
 ```autohotkey
 #Persistent
 data := "Hello Data!"
-FileAppend, %data%, * ; send data var to stdout
+FileAppend, %data%, *, UTF-8 ; send data var to stdout
 ExitApp
 ```
 

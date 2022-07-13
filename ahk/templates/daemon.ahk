@@ -541,6 +541,6 @@ Loop {
         func := commandArray[1]
         response := %func%(commandArray)
         newline_count := CountNewlines(response)
-        FileAppend, %newline_count%`n, *
-        FileAppend, %response%`n, *
+        FileAppend, %newline_count%`n, *, UTF-8
+        FileAppend, %response%`n, *, UTF-8
 }
