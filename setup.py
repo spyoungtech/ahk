@@ -9,7 +9,7 @@ with open('docs/README.md', encoding='utf-8') as f:
 
 setup(
     name='ahk',
-    version='0.14.0',
+    version='0.14.1',
     url='https://github.com/spyoungtech/ahk',
     description='A Python wrapper for AHK',
     long_description=long_description,
