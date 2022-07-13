@@ -1,4 +1,5 @@
 import asyncio.subprocess
+import atexit
 import io
 import os
 import subprocess
@@ -8,8 +9,11 @@ from abc import ABC
 from abc import abstractmethod
 from io import BytesIO
 from shutil import which
+from typing import Any
 from typing import Literal
 from typing import Optional
+from typing import Protocol
+from typing import runtime_checkable
 
 from ahk.message import BooleanResponseMessage
 from ahk.message import CoordinateResponseMessage
@@ -28,6 +32,16 @@ DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 SyncIOProcess = subprocess.Popen[bytes]
 
 
+@runtime_checkable
+class Killable(Protocol):
+    def kill(self) -> None:
+        ...
+
+
+def kill(proc: Killable) -> None:
+    proc.kill()
+
+
 class SyncAHKProcess:
     def __init__(self, runargs: list[str]):
         self.runargs = runargs
@@ -35,6 +49,7 @@ class SyncAHKProcess:
 
     def start(self) -> None:
         self._proc = sync_create_process(self.runargs)
+        atexit.register(kill, self._proc)
         return None
 
 
@@ -108,6 +123,7 @@ class Transport(ABC):
     _started: bool = False
 
     def init(self) -> None:
+        self._started = True
         return None
 
     @typing.overload
@@ -416,6 +432,7 @@ class DaemonProcessTransport(Transport):
 
     def init(self) -> None:
         self.start()
+        super().init()
         return None
 
     def start(self) -> None:
@@ -427,7 +444,9 @@ class DaemonProcessTransport(Transport):
     def send(self, request: RequestMessage) -> ResponseMessage:
         newline = '\n'
 
-        msg = f"{request.function_name}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode('utf-8')
+        msg = f"{request.function_name}{',' if request.args else ''}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode(
+            'utf-8'
+        )
         assert self._proc is not None
         self._proc.write(msg)
         self._proc.drain_stdin()
@@ -439,6 +458,6 @@ class DaemonProcessTransport(Transport):
         for _ in range(int(num_lines) + 1):
             part = self._proc.readline()
             content_buffer.write(part)
-        content = content_buffer.getvalue()
+        content = content_buffer.getvalue()[:-1]
         response = ResponseMessage.from_bytes(content)
         return response

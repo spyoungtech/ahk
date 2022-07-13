@@ -20,6 +20,6 @@ def test_novalue_response_raises_exception_when_sentinel_not_present() -> None:
 
 
 def test_novalue_response_sentinel() -> None:
-    msg = NoValueResponseMessage(raw_content=b'\xee\x80\x80\xee\x80\x80')
+    msg = NoValueResponseMessage(raw_content=b'\xee\x80\x80')
     assert msg.unpack() is None
     return None

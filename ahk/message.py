@@ -73,9 +73,7 @@ class ResponseMessage:
 
     @classmethod
     def from_bytes(cls: Type[T_ResponseMessageType], b: bytes) -> T_ResponseMessageType:
-        print('b', b)
         tom, _, message_bytes = b.split(b'\n', 2)
-        print('mb', message_bytes)
         klass = cls._tom_lookup(tom)
         return klass(raw_content=message_bytes)  # type: ignore[return-value]
 
@@ -119,7 +117,6 @@ class CoordinateResponseMessage(ResponseMessage):
 
     def unpack(self) -> Tuple[int, int]:
         s = self._raw_content.decode(encoding='utf-8')  # TODO: validate encoding
-        print('s', repr(s))
         val = ast.literal_eval(s)
         assert isinstance(val, tuple)
         x, y = cast(Tuple[int, int], val)
@@ -164,7 +161,7 @@ class NoValueResponseMessage(ResponseMessage):
     type = 'novalue'
 
     def unpack(self) -> None:
-        assert self._raw_content == b'\xee\x80\x80\xee\x80\x80'
+        assert self._raw_content == b'\xee\x80\x80', f'Unexpected or Malformed response: {self._raw_content!r}'
         return None
 
 

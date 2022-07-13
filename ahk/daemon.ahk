@@ -11,7 +11,7 @@ WINDOWIDLISTRESPONSEMESSAGE := "006" ; WindowIDListResponseMessage
 NOVALUERESPONSEMESSAGE := "007" ; NoValueResponseMessage
 EXCEPTIONRESPONSEMESSAGE := "008" ; ExceptionResponseMessage
 
-NOVALUE_SENTINEL := Chr(57344) + Chr(57344)
+NOVALUE_SENTINEL := Chr(57344)
 
 FormatResponse(MessageType, payload) {
     newline_count := CountNewlines(payload)
@@ -75,7 +75,6 @@ MouseGetPos(ByRef command) {
     MouseGetPos, xpos, ypos
     payload .= Format("({}, {})", xpos, ypos)
     resp .= FormatResponse(COORDINATERESPONSEMESSAGE, payload)
-    MsgBox,% resp
     return resp
 }
 
@@ -96,11 +95,15 @@ AHKKeyState(ByRef command) {
 }
 
 MouseMove(ByRef command) {
+    global NOVALUERESPONSEMESSAGE
+    global NOVALUE_SENTINEL
     if (command.Length() = 5) {
     MouseMove, command[2], command[3], command[4], R
     } else {
     MouseMove, command[2], command[3], command[4]
     }
+    resp .= FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+    return resp
 }
 
 CoordMode(ByRef command) {
@@ -542,12 +545,12 @@ CountNewlines(ByRef s) {
 }
 
 
-stdin  := FileOpen("*", "r `n")  ; Requires [v1.1.17+]
+stdin  := FileOpen("*", "r `n", "UTF-8")  ; Requires [v1.1.17+]
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
     commandArray := StrSplit(query, ",")
     func := commandArray[1]
     response := %func%(commandArray)
-    FileAppend, %response%, *
+    FileAppend, %response%, *, UTF-8
 }
