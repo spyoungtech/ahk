@@ -1,6 +1,7 @@
-import typing
+from typing import Any
 from typing import Literal
 from typing import Optional
+from typing import overload
 from typing import Tuple
 from typing import Union
 
@@ -29,7 +30,7 @@ class AsyncAHK:
         resp = await self._transport.function_call('MouseGetPos')
         return resp.unpack()
 
-    @typing.overload
+    @overload
     async def mouse_move(
         self,
         x: Optional[Union[str, int]] = None,
@@ -40,7 +41,7 @@ class AsyncAHK:
     ) -> None:
         ...
 
-    @typing.overload
+    @overload
     async def mouse_move(
         self,
         x: Optional[Union[str, int]] = None,
@@ -52,7 +53,7 @@ class AsyncAHK:
     ) -> None:
         ...
 
-    @typing.overload
+    @overload
     async def mouse_move(
         self,
         x: Optional[Union[str, int]] = None,

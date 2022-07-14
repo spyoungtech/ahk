@@ -106,7 +106,7 @@ class TupleResponseMessage(ResponseMessage):
     type = 'tuple'
 
     def unpack(self) -> Tuple[Any, ...]:
-        s = self._raw_content.decode(encoding='utf-8')  # TODO: validate encoding
+        s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
         assert isinstance(val, tuple)
         return val
@@ -116,7 +116,7 @@ class CoordinateResponseMessage(ResponseMessage):
     type = 'coordinate'
 
     def unpack(self) -> Tuple[int, int]:
-        s = self._raw_content.decode(encoding='utf-8')  # TODO: validate encoding
+        s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
         assert isinstance(val, tuple)
         x, y = cast(Tuple[int, int], val)
@@ -127,7 +127,7 @@ class IntegerResponseMessage(ResponseMessage):
     type = 'integer'
 
     def unpack(self) -> int:
-        s = self._raw_content.decode(encoding='utf-8')  # TODO: validate encoding
+        s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
         assert isinstance(val, int)
         return val
@@ -146,14 +146,14 @@ class StringResponseMessage(ResponseMessage):
     type = 'string'
 
     def unpack(self) -> str:
-        return self._raw_content.decode('utf-8')  # TODO: validate encoding
+        return self._raw_content.decode('utf-8')
 
 
 class WindowIDListResponseMessage(ResponseMessage):
     type = 'windowidlist'
 
     def unpack(self) -> list[str]:
-        s = self._raw_content.decode(encoding='utf-8')  # TODO: validate encoding
+        s = self._raw_content.decode(encoding='utf-8')
         return s.split(',')
 
 
@@ -165,11 +165,16 @@ class NoValueResponseMessage(ResponseMessage):
         return None
 
 
+class AHKExecutionException(Exception):
+    pass
+
+
 class ExceptionResponseMessage(ResponseMessage):
     type = 'exception'
 
     def unpack(self) -> NoReturn:
-        ...
+        s = self._raw_content.decode(encoding='utf-8')
+        raise AHKExecutionException(s)
 
 
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')

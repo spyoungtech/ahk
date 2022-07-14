@@ -546,11 +546,23 @@ CountNewlines(ByRef s) {
 
 
 stdin  := FileOpen("*", "r `n", "UTF-8")  ; Requires [v1.1.17+]
+response := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
     commandArray := StrSplit(query, ",")
-    func := commandArray[1]
-    response := %func%(commandArray)
-    FileAppend, %response%, *, UTF-8
+
+    try {
+        func := commandArray[1]
+        response .= %func%(commandArray)
+    } catch e {
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, %e%)
+    }
+
+    if (response) {
+        FileAppend, %response%, *, UTF-8
+    } else {
+        msg := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("Unknown Error when calling {}", func))
+        FileAppend, %msg%, *, UTF-8
+    }
 }
