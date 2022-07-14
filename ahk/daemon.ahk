@@ -15,7 +15,7 @@ NOVALUE_SENTINEL := Chr(57344)
 
 FormatResponse(MessageType, payload) {
     newline_count := CountNewlines(payload)
-    response .= Format("{}`n{}`n{}`n", MessageType, newline_count, payload)
+    response := Format("{}`n{}`n{}`n", MessageType, newline_count, payload)
     return response
 }
 
@@ -32,7 +32,14 @@ ImageSearch(ByRef command) {
         y2 := A_ScreenHeight
     }
     ImageSearch, xpos, ypos,% x1,% y1,% x2,% y2, %imagepath%
-    s .= Format("({}, {})", xpos, ypos)
+    if (ErrorLevel = 2) {
+        s := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "there was a problem that prevented the command from conducting the search (such as failure to open the image file or a badly formatted option)")
+    } else if (ErrorLevel = 1) {
+        s := FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+    } else {
+        s := FormatResponse(COORDINATERESPONSEMESSAGE, Format("({}, {})", xpos, ypos))
+    }
+
     return s
 }
 
@@ -65,7 +72,7 @@ PixelSearch(ByRef command) {
         options := command[10]
         PixelSearch, xpos, ypos,% x1,% y1,% x2,% y2, command[8], command[9], %options%
     }
-    s .= Format("({}, {})", xpos, ypos)
+    s := Format("({}, {})", xpos, ypos)
     return s
 }
 
@@ -73,8 +80,8 @@ PixelSearch(ByRef command) {
 MouseGetPos(ByRef command) {
     global COORDINATERESPONSEMESSAGE
     MouseGetPos, xpos, ypos
-    payload .= Format("({}, {})", xpos, ypos)
-    resp .= FormatResponse(COORDINATERESPONSEMESSAGE, payload)
+    payload := Format("({}, {})", xpos, ypos)
+    resp := FormatResponse(COORDINATERESPONSEMESSAGE, payload)
     return resp
 }
 
@@ -102,7 +109,7 @@ MouseMove(ByRef command) {
     } else {
     MouseMove, command[2], command[3], command[4]
     }
-    resp .= FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+    resp := FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
     return resp
 }
 
@@ -186,7 +193,7 @@ SetKeyDelay(ByRef command) {
 
 Join(sep, params*) {
     for index,param in params
-        str .= param . sep
+        str := param . sep
     return SubStr(str, 1, -StrLen(sep))
 }
 
@@ -397,13 +404,16 @@ WinWaitClose(ByRef command) {
 
 
 WindowList(ByRef command) {
+    global WINDOWIDLISTRESPONSEMESSAGE
     WinGet windows, List
+    r := ""
     Loop %windows%
     {
         id := windows%A_Index%
-        r .= id . "`,"
+        r := id . "`,"
     }
-    return r
+    resp := FormatResponse(WINDOWIDLISTRESPONSEMESSAGE, r)
+    return resp
 }
 
 WinSend(ByRef command) {
@@ -525,14 +535,14 @@ AHKWinGetPos(ByRef command) {
     if (command.Length() = 3) {
         pos_info := command[3]
         if (pos_info = "position") {
-            s .= Format("({}, {})", x, y)
+            s := Format("({}, {})", x, y)
         } else if (pos_info = "height") {
-            s .= Format("({})", height)
+            s := Format("({})", height)
         } else if (pos_info = "width") {
-            s .= Format("({})", width)
+            s := Format("({})", width)
         }
     } else {
-        s .= Format("({}, {}, {}, {})", x, y, width, height)
+        s := Format("({}, {}, {}, {})", x, y, width, height)
     }
     return s
 }
@@ -554,7 +564,7 @@ Loop {
 
     try {
         func := commandArray[1]
-        response .= %func%(commandArray)
+        response := %func%(commandArray)
     } catch e {
         response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, %e%)
     }
