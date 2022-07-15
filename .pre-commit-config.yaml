@@ -7,7 +7,7 @@ repos:
     entry: python .unasync-rewrite.py
     language: python
     types: [python]
-    files: ^(ahk/_async/.*\.py|\.unasync-rewrite\.py)
+    files: ^(ahk/_async/.*\.py|\.unasync-rewrite\.py|tests/_async/.*\.py)
     pass_filenames: false
     additional_dependencies:
         - unasync
@@ -43,4 +43,4 @@ repos:
     -   id: mypy
         args:
             - "--strict"
-        exclude: ^(tests/.*|setup\.py|\.build\.py|\.unasync-rewrite.py)
+        exclude: ^(tests/.*|setup\.py|\.build\.py|\.unasync-rewrite\.py|_tests_setup\.py)

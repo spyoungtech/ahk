@@ -1,20 +1,24 @@
+"""
+Not a real setup package
+This is just to unasync our tests files
+"""
 import setuptools
 import unasync
 
 setuptools.setup(
     name='ahk',
     version='0.0.1',
-    author_email='spencer.young@spyoung.com',
-    author='Spencer Young',
+    author='Example Author',
+    author_email='author@example.com',
     description='A package used to test customized unasync',
-    url='https://github.com/spyoungtech/ahk',
-    packages=['ahk', 'ahk._async'],
+    url='https://github.com/pypa/sampleproject',
+    packages=['tests', 'tests._async'],
     cmdclass={
         'build_py': unasync.cmdclass_build_py(
             rules=[
                 unasync.Rule(
-                    fromdir='/ahk/_async/',
-                    todir='/ahk/_sync/',
+                    fromdir='/tests/_async/',
+                    todir='/tests/_sync/',
                     additional_replacements={
                         'AsyncAHK': 'AHK',
                         'AsyncTransport': 'Transport',
@@ -29,4 +33,5 @@ setuptools.setup(
             ]
         )
     },
+    # package_dir={"": "src"},
 )

@@ -65,8 +65,15 @@ def main() -> int:
             if fname.endswith('.py'):
                 fp = os.path.join(root, fname)
                 _rewrite_file(fp)
-
+    subprocess.run(['python', '_tests_setup.py', 'build_py'], check=True, shell=True)
+    for root, dirs, files in os.walk('build/lib/tests/_sync'):
+        for fname in files:
+            if fname.endswith('.py'):
+                fp = os.path.join(root, fname)
+                _rewrite_file(fp)
     shutil.copytree('build/lib/ahk/_sync', 'ahk/_sync', dirs_exist_ok=True, copy_function=_copyfunc)
+    shutil.copytree('build/lib/tests/_sync', 'tests/_sync', dirs_exist_ok=True, copy_function=_copyfunc)
+
     return changes
 
 

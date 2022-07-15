@@ -1,19 +1,22 @@
+from __future__ import annotations
+
 import asyncio.subprocess
 import atexit
-import io
 import os
 import subprocess
-import typing
 import warnings
 from abc import ABC
 from abc import abstractmethod
 from io import BytesIO
 from shutil import which
 from typing import Any
+from typing import AnyStr
 from typing import Literal
 from typing import Optional
+from typing import overload
 from typing import Protocol
 from typing import runtime_checkable
+from typing import Union
 
 from ahk.message import BooleanResponseMessage
 from ahk.message import CoordinateResponseMessage
@@ -21,8 +24,10 @@ from ahk.message import IntegerResponseMessage
 from ahk.message import NoValueResponseMessage
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
+from ahk.message import ResponseMessageTypes
 from ahk.message import StringResponseMessage
 from ahk.message import TupleResponseMessage
+from ahk.message import WindowControlListResponseMessage
 from ahk.message import WindowIDListResponseMessage
 
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
@@ -32,6 +37,64 @@ AsyncIOProcess = asyncio.subprocess.Process  # unasync: remove
 
 SyncIOProcess = subprocess.Popen[bytes]
 
+FunctionName = Literal[
+    Literal['ImageSearch'],
+    Literal['PixelGetColor'],
+    Literal['PixelSearch'],
+    Literal['MouseGetPos'],
+    Literal['AHKKeyState'],
+    Literal['MouseMove'],
+    Literal['CoordMode'],
+    Literal['Click'],
+    Literal['MouseClickDrag'],
+    Literal['KeyWait'],
+    Literal['SetKeyDelay'],
+    Literal['Send'],
+    Literal['SendRaw'],
+    Literal['SendInput'],
+    Literal['SendEvent'],
+    Literal['SendPlay'],
+    Literal['SetCapsLockState'],
+    Literal['WinGetTitle'],
+    Literal['WinGetClass'],
+    Literal['WinGetText'],
+    Literal['WinActivate'],
+    Literal['WinActivateBottom'],
+    Literal['WinClose'],
+    Literal['WinHide'],
+    Literal['WinKill'],
+    Literal['WinMaximize'],
+    Literal['WinMinimize'],
+    Literal['WinRestore'],
+    Literal['WinShow'],
+    Literal['WindowList'],
+    Literal['WinSend'],
+    Literal['WinSendRaw'],
+    Literal['ControlSend'],
+    Literal['FromMouse'],
+    Literal['WinGet'],
+    Literal['WinSet'],
+    Literal['WinSetTitle'],
+    Literal['WinIsAlwaysOnTop'],
+    Literal['WinClick'],
+    Literal['AHKWinMove'],
+    Literal['AHKWinGetPos'],
+    Literal['WinGetID'],
+    Literal['WinGetIDLast'],
+    Literal['WinGetPID'],
+    Literal['WinGetProcessName'],
+    Literal['WinGetProcessPath'],
+    Literal['WinGetCount'],
+    Literal['WinGetList'],
+    Literal['WinGetMinMax'],
+    Literal['WinGetControlList'],
+    Literal['WinGetControlListHwnd'],
+    Literal['WinGetTransparent'],
+    Literal['WinGetTransColor'],
+    Literal['WinGetStyle'],
+    Literal['WinGetExStyle'],
+]
+
 
 @runtime_checkable
 class Killable(Protocol):
@@ -40,7 +103,10 @@ class Killable(Protocol):
 
 
 def kill(proc: Killable) -> None:
-    proc.kill()
+    try:
+        proc.kill()
+    except:
+        pass
 
 
 class AsyncAHKProcess:
@@ -74,6 +140,10 @@ class AsyncAHKProcess:
         assert self._proc.stdout is not None
         return await self._proc.stdout.readline()
 
+    def kill(self) -> None:
+        assert self._proc is not None
+        self._proc.kill()
+
 
 async def async_create_process(runargs: list[str]) -> asyncio.subprocess.Process:  # unasync: remove
     return await asyncio.subprocess.create_subprocess_exec(
@@ -89,7 +159,7 @@ class AhkExecutableNotFoundError(EnvironmentError):
     pass
 
 
-def _resolve_executable_path(executable_path: str = '') -> str:
+def _resolve_executable_path(executable_path: Union[str, os.PathLike[AnyStr]] = '') -> str:
     if not executable_path:
         executable_path = (
             os.environ.get('AHK_PATH', '')
@@ -120,7 +190,7 @@ def _resolve_executable_path(executable_path: str = '') -> str:
             f'The path {executable_path} appears to be a directory, but should be a file.'
             ' Please specify the *full path* to the autohotkey.exe executable file'
         )
-
+    executable_path = str(executable_path)
     if not executable_path.endswith('.exe'):
         warnings.warn(
             'executable_path does not appear to have a .exe extension. This may be the result of a misconfiguration.'
@@ -132,310 +202,164 @@ def _resolve_executable_path(executable_path: str = '') -> str:
 class AsyncTransport(ABC):
     _started: bool = False
 
+    def __init__(self, /, **kwargs: Any):
+        pass
+
     async def init(self) -> None:
         self._started = True
         return None
 
-    @typing.overload
+    # fmt: off
+    @overload
+    async def function_call(self, function_name: Literal['ImageSearch'], args: Optional[list[str]] = None) -> CoordinateResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['PixelGetColor'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['PixelSearch'], args: Optional[list[str]] = None) -> CoordinateResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['MouseGetPos'], args: Optional[list[str]] = None) -> CoordinateResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKKeyState'], args: Optional[list[str]] = None) -> BooleanResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['MouseMove'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['CoordMode'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['Click'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['MouseClickDrag'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['KeyWait'], args: Optional[list[str]] = None) -> IntegerResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['SetKeyDelay'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['Send'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['SendRaw'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['SendInput'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['SendEvent'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['SendPlay'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['SetCapsLockState'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetTitle'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetClass'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetText'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinActivate'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinActivateBottom'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinClose'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinHide'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinKill'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinMaximize'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinMinimize'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinRestore'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinShow'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WindowList'], args: Optional[list[str]] = None) -> WindowIDListResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinSend'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinSendRaw'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['ControlSend'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['FromMouse'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGet'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinSet'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinSetTitle'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinIsAlwaysOnTop'], args: Optional[list[str]] = None) -> BooleanResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinClick'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKWinMove'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKWinGetPos'], args: Optional[list[str]] = None) -> TupleResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetID'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetIDLast'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetPID'], args: Optional[list[str]] = None) -> IntegerResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetProcessName'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetProcessPath'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetCount'], args: Optional[list[str]] = None) -> IntegerResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetList'], args: Optional[list[str]] = None) -> WindowIDListResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetMinMax'], args: Optional[list[str]] = None) -> IntegerResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetControlList'], args: Optional[list[str]] = None) -> WindowControlListResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetControlListHwnd'], args: Optional[list[str]] = None) -> WindowControlListResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetTransparent'], args: Optional[list[str]] = None) -> IntegerResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetTransColor'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetStyle'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    @overload
+    async def function_call(self, function_name: Literal['WinGetExStyle'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+
+    # @overload
+    # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['BaseCheck'], args: Optional[list[str]] = None) -> None: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['WinWait'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['WinWaitActive'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['WinWaitNotActive'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['WinWaitClose'], args: Optional[list[str]] = None) -> None: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['RegRead'], args: Optional[list[str]] = None) -> None: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['SetRegView'], args: Optional[list[str]] = None) -> None: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['RegWrite'], args: Optional[list[str]] = None) -> None: ...
+    # @overload
+    # async def function_call(self, function_name: Literal['RegDelete'], args: Optional[list[str]] = None) -> None: ...
+
+    # fmt: on
+
     async def function_call(
-        self, function_name: Literal['ImageSearch'], args: Optional[list[str]] = None
-    ) -> TupleResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['PixelGetColor'], args: Optional[list[str]] = None
-    ) -> StringResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['PixelSearch'], args: Optional[list[str]] = None
-    ) -> CoordinateResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['MouseGetPos'], args: Optional[list[str]] = None
-    ) -> CoordinateResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['AHKKeyState'], args: Optional[list[str]] = None
-    ) -> BooleanResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['MouseMove'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['CoordMode'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['Click'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['MouseClickDrag'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['RegRead'], args: Optional[list[str]] = None) -> :
-    #     ...
-    #
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['SetRegView'], args: Optional[list[str]] = None):
-    #     ...
-    #
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['RegWrite'], args: Optional[list[str]] = None):
-    #     ...
-    #
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['RegDelete'], args: Optional[list[str]] = None):
-    #     ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['KeyWait'], args: Optional[list[str]] = None
-    ) -> IntegerResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['SetKeyDelay'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['Send'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['SendRaw'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['SendInput'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['SendEvent'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['SendPlay'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['SetCapsLockState'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[list[str]] = None) -> NoValueResponseMessage:
-    #     ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinGetTitle'], args: Optional[list[str]] = None
-    ) -> StringResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinGetClass'], args: Optional[list[str]] = None
-    ) -> StringResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinGetText'], args: Optional[list[str]] = None
-    ) -> StringResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinActivate'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinActivateBottom'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinClose'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinHide'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinKill'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinMaximize'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinMinimize'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinRestore'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinShow'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    #
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['WinWait'], args: Optional[list[str]] = None) -> StringResponseMessage:
-    #     ...
-    #
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['WinWaitActive'], args: Optional[list[str]] = None) -> StringResponseMessage:
-    #     ...
-    #
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['WinWaitNotActive'], args: Optional[list[str]] = None) -> StringResponseMessage:
-    #     ...
-    #
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['WinWaitClose'], args: Optional[list[str]] = None) -> :
-    #     ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WindowList'], args: Optional[list[str]] = None
-    ) -> WindowIDListResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinSend'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinSendRaw'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['ControlSend'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    # @typing.overload
-    # async def function_call(self, function_name: Literal['BaseCheck'], args: Optional[list[str]] = None) -> :
-    #     ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['FromMouse'], args: Optional[list[str]] = None
-    ) -> StringResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinGet'], args: Optional[list[str]] = None
-    ) -> StringResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinSet'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinSetTitle'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinIsAlwaysOnTop'], args: Optional[list[str]] = None
-    ) -> BooleanResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['WinClick'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['AHKWinMove'], args: Optional[list[str]] = None
-    ) -> NoValueResponseMessage:
-        ...
-
-    @typing.overload
-    async def function_call(
-        self, function_name: Literal['AHKWinGetPos'], args: Optional[list[str]] = None
-    ) -> TupleResponseMessage:
-        ...
-
-    async def function_call(self, function_name: str, args: Optional[list[str]] = None) -> ResponseMessage:
+        self, function_name: FunctionName, args: Optional[list[str]] = None
+    ) -> ResponseMessageTypes:
         if not self._started:
             await self.init()
         request = RequestMessage(function_name=function_name, args=args)
-        return await self.send(request)
+        resp = await self.send(request)
+        return resp
 
     @abstractmethod
-    async def send(self, request: RequestMessage) -> ResponseMessage:
+    async def send(self, request: RequestMessage) -> ResponseMessageTypes:
         return NotImplemented
 
 
 class AsyncDaemonProcessTransport(AsyncTransport):
-    def __init__(self, executable_path: str = ''):
+    def __init__(self, *, executable_path: Union[str, os.PathLike[AnyStr]] = ''):
         self._proc: Optional[AsyncAHKProcess]
         self._proc = None
         self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
@@ -451,7 +375,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         self._proc = AsyncAHKProcess(runargs=runargs)
         await self._proc.start()
 
-    async def send(self, request: RequestMessage) -> ResponseMessage:
+    async def send(self, request: RequestMessage) -> ResponseMessageTypes:
         newline = '\n'
 
         msg = f"{request.function_name}{',' if request.args else ''}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode(

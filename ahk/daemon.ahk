@@ -1,5 +1,6 @@
 #NoEnv
 #Persistent
+#SingleInstance force
 
 RESPONSEMESSAGE := "000" ; ResponseMessage
 TUPLERESPONSEMESSAGE := "001" ; TupleResponseMessage
@@ -19,12 +20,193 @@ FormatResponse(MessageType, payload) {
     return response
 }
 
+FormatNoValueResponse() {
+    global NOVALUE_SENTINEL
+    global NOVALUERESPONSEMESSAGE
+    return FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+}
+
+
+WinGetID(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ID, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetIDLast(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, IDLast, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetPID(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, PID, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetProcessName(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ProcessName, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetProcessPath(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ProcessPath, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetCount(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, Count, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetList(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, List, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetMinMax(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, MinMax, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetControlList(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ControlList, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetControlListHwnd(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ControlListHwnd, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetTransparent(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, Transparent, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetTransColor(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, TransColor, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetStyle(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, Style, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+WinGetExStyle(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ExStyle, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+
+
+
 ImageSearch(ByRef command) {
-    imagepath := command[8]
-    x1 := command[4]
-    y1 := command[5]
-    x2 := command[6]
-    y2 := command[7]
+    global COORDINATERESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    imagepath := command[6]
+    x1 := command[2]
+    y1 := command[3]
+    x2 := command[4]
+    y2 := command[5]
+
     if (x2 = "A_ScreenWidth") {
         x2 := A_ScreenWidth
     }
@@ -35,7 +217,7 @@ ImageSearch(ByRef command) {
     if (ErrorLevel = 2) {
         s := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "there was a problem that prevented the command from conducting the search (such as failure to open the image file or a badly formatted option)")
     } else if (ErrorLevel = 1) {
-        s := FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+        s := FormatNoValueResponse()
     } else {
         s := FormatResponse(COORDINATERESPONSEMESSAGE, Format("({}, {})", xpos, ypos))
     }
