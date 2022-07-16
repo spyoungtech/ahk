@@ -1,6 +1,6 @@
 #NoEnv
 #Persistent
-#SingleInstance force
+#SingleInstance Off
 
 RESPONSEMESSAGE := "000" ; ResponseMessage
 TUPLERESPONSEMESSAGE := "001" ; TupleResponseMessage

@@ -1,1 +1,1 @@
-from unittest import IsolatedAsyncioTestCase
+from unittest import TestCase

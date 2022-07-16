@@ -3,7 +3,7 @@ import os
 import subprocess
 import sys
 import time
-from unittest import IsolatedAsyncioTestCase
+from unittest import TestCase
 
 from ahk import AHK
 from ahk import Window

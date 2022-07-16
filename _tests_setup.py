@@ -27,6 +27,9 @@ setuptools.setup(
                         '_AIOP': '_SIOP',
                         'async_create_process': 'sync_create_process',
                         'adrain_stdin': 'drain_stdin',
+                        'IsolatedAsyncioTestCase': 'TestCase',
+                        'asyncSetUp': 'setUp',
+                        'asyncTearDown': 'tearDown'
                         # "__aenter__": "__aenter__",
                     },
                 ),

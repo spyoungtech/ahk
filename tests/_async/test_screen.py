@@ -1,8 +1,6 @@
-import asyncio
 import time
 from itertools import product
 from unittest import IsolatedAsyncioTestCase
-from unittest import TestCase
 
 from PIL import Image
 

@@ -1,7 +1,5 @@
-import asyncio
 import time
 from itertools import product
-from unittest import IsolatedAsyncioTestCase
 from unittest import TestCase
 
 from PIL import Image
@@ -9,8 +7,8 @@ from PIL import Image
 from ahk import AHK
 
 
-class TestScreen(IsolatedAsyncioTestCase):
-    def asyncSetUp(self) -> None:
+class TestScreen(TestCase):
+    def setUp(self) -> None:
         self.ahk = AHK()
         self.before_windows = self.ahk.list_windows()
         im = Image.new('RGB', (20, 20))
@@ -20,7 +18,7 @@ class TestScreen(IsolatedAsyncioTestCase):
         im.show()
         time.sleep(2)
 
-    def asyncTearDown(self):
+    def tearDown(self):
         for win in self.ahk.list_windows():
             if win not in self.before_windows:
                 win.close()
