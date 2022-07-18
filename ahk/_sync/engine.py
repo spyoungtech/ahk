@@ -303,11 +303,11 @@ class AHK:
     @overload
     def _win_get(self, subcommand_function: Literal['WinGetIDLast'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetPID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['WinGetPID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[IntegerResponseMessage, NoValueResponseMessage]: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetProcessName'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['WinGetProcessName'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetProcessPath'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['WinGetProcessPath'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
     @overload
     def _win_get(self, subcommand_function: Literal['WinGetCount'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
     @overload
@@ -360,6 +360,81 @@ class AHK:
             return None
         else:
             return Window(engine=self, ahk_id=win_id)
+
+    def win_get_idlast(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> Union[Window, None]:
+        resp = self._win_get(
+            'WinGetIDLast', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+        )
+        win_id = resp.unpack()
+        if win_id is None:
+            return None
+        else:
+            return Window(engine=self, ahk_id=win_id)
+
+    def win_get_pid(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> Union[int, None]:
+        resp = self._win_get(
+            'WinGetPID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+        )
+        pid = resp.unpack()
+        if pid is None:
+            return None
+        else:
+            return pid
+
+    def win_get_process_name(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> Union[str, None]:
+        resp = self._win_get(
+            'WinGetProcessName', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+        )
+        process_name = resp.unpack()
+        if process_name is None:
+            return None
+        else:
+            return process_name
+
+    def win_get_process_path(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> Union[str, None]:
+        resp = self._win_get(
+            'WinGetProcessPath', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+        )
+        process_path = resp.unpack()
+        if process_path is None:
+            return None
+        else:
+            return process_path
+
+    def win_get_count(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> int:
+        resp = self._win_get(
+            'WinGetCount', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+        )
+        return resp.unpack()
+
+    def win_get_minmax(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> Union[Literal[0], Literal[1], Literal[-1], None]:
+
+        resp = self._win_get(
+            'WinGetMinMax', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+        )
+        val = resp.unpack()
+        if val is None:
+            return None
+        if val == -1:
+            return -1
+        elif val == 0:
+            return 0
+        elif val == 1:
+            return 1
+        else:
+            raise ValueError(f'Unexpected value for minmax: {val!r}')
 
     def win_exists(
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''

@@ -57,7 +57,7 @@ WinGetID(ByRef command) {
     extitle := command[4]
     extext := command[5]
     WinGet, output, ID, %title%, %text%, %extitle%, %extext%
-    if (output = 0) {
+    if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
         response := FormatResponse(STRINGRESPONSEMESSAGE, output)
@@ -68,88 +68,111 @@ WinGetID(ByRef command) {
 
 WinGetIDLast(ByRef command) {
     global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, IDLast, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
     return response
 }
+
+
 WinGetPID(ByRef command) {
-    global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, PID, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    }
     return response
 }
+
+
 WinGetProcessName(ByRef command) {
     global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, ProcessName, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
     return response
 }
+
 WinGetProcessPath(ByRef command) {
     global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, ProcessPath, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
     return response
 }
+
+
 WinGetCount(ByRef command) {
-    global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, Count, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    if (output = 0) {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    } else {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    }
     return response
 }
-WinGetList(ByRef command) {
-    global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    WinGet, output, List, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
-    return response
-}
+
+;WinGetList(ByRef command) {
+;    global STRINGRESPONSEMESSAGE
+;    global INTEGERRESPONSEMESSAGE
+;    global NOVALUERESPONSEMESSAGE
+;    title := command[2]
+;    text := command[3]
+;    extitle := command[4]
+;    extext := command[5]
+;    WinGet, output, List, %title%, %text%, %extitle%, %extext%
+;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+;    return response
+;}
+
+
 WinGetMinMax(ByRef command) {
-    global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, MinMax, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    if (output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    }
     return response
 }
+
 WinGetControlList(ByRef command) {
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE

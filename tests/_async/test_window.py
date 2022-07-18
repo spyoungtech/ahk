@@ -34,3 +34,26 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         await self.win.close()
         await asyncio.sleep(0.2)
         self.assertFalse(await self.win.exists())
+
+    async def test_win_get_returns_none_nonexistent(self):
+        win = await self.ahk.win_get(title='DOES NOT EXIST')
+        assert win is None
+
+    async def test_exists_nonexistent_is_false(self):
+        assert await self.ahk.win_exists(title='DOES NOT EXIST') is False
+
+    async def test_win_pid(self):
+        pid = await self.win.get_pid()
+        assert isinstance(pid, int)
+
+    async def test_win_process_name(self):
+        process_name = await self.win.get_process_name()
+        assert process_name == 'notepad.exe'
+
+    async def test_win_process_path(self):
+        process_path = await self.win.get_process_path()
+        assert 'notepad.exe' in process_path
+
+    async def test_win_minmax(self):
+        minmax = await self.win.get_minmax()
+        assert minmax == 0

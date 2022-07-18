@@ -1,22 +1,16 @@
 import ast
-import io
 import itertools
 import string
-import typing
-from abc import ABC
 from abc import abstractmethod
 from typing import Any
 from typing import cast
 from typing import Generator
-from typing import Generic
-from typing import Literal
 from typing import NoReturn
 from typing import Optional
 from typing import Protocol
 from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
-from typing import TypedDict
 from typing import TypeGuard
 from typing import TypeVar
 from typing import Union
@@ -65,6 +59,8 @@ def is_winget_response_type(
     elif isinstance(obj, WindowIDListResponseMessage):
         return True
     elif isinstance(obj, WindowControlListResponseMessage):
+        return True
+    elif isinstance(obj, NoValueResponseMessage):
         return True
     else:
         return False
@@ -181,7 +177,7 @@ class WindowIDListResponseMessage(ResponseMessage):
 
     def unpack(self) -> list[str]:
         s = self._raw_content.decode(encoding='utf-8')
-        s.rstrip(',')
+        s = s.rstrip(',')
         return s.split(',')
 
 
