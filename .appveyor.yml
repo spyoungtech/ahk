@@ -16,7 +16,7 @@ install:
 build_script:
   - cmd: |
       call venv\Scripts\activate.bat
-      py -3.9 setup.py sdist
+      python setup.py sdist
       call deactivate
 
 #artifacts:
