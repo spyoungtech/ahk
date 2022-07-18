@@ -19,7 +19,7 @@ jobs:
           python -m pip install ahk-binary
       - name: Test with coverage/pytest
         run: |
-          coverage run -m pytest
+          coverage run -m pytest --capture=no
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
