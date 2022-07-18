@@ -1,0 +1,6 @@
+pytest
+pillow
+unasync
+black
+tokenize-rt
+coverage
