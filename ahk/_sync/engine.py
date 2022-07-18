@@ -9,6 +9,7 @@ from typing import overload
 from typing import Sequence
 from typing import Tuple
 from typing import Type
+from typing import TYPE_CHECKING
 from typing import Union
 
 from ..message import IntegerResponseMessage
@@ -30,20 +31,20 @@ class FutureResult:
 CoordModeTargets = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
 CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
 WinGetFunctions = Literal[
-    Literal['WinGetID'],
-    Literal['WinGetIDLast'],
-    Literal['WinGetPID'],
-    Literal['WinGetProcessName'],
-    Literal['WinGetProcessPath'],
-    Literal['WinGetCount'],
-    Literal['WinGetList'],
-    Literal['WinGetMinMax'],
-    Literal['WinGetControlList'],
-    Literal['WinGetControlListHwnd'],
-    Literal['WinGetTransparent'],
-    Literal['WinGetTransColor'],
-    Literal['WinGetStyle'],
-    Literal['WinGetExStyle'],
+    Literal['AHKWinGetID'],
+    Literal['AHKWinGetIDLast'],
+    Literal['AHKWinGetPID'],
+    Literal['AHKWinGetProcessName'],
+    Literal['AHKWinGetProcessPath'],
+    Literal['AHKWinGetCount'],
+    Literal['AHKWinGetList'],
+    Literal['AHKWinGetMinMax'],
+    Literal['AHKWinGetControlList'],
+    Literal['AHKWinGetControlListHwnd'],
+    Literal['AHKWinGetTransparent'],
+    Literal['AHKWinGetTransColor'],
+    Literal['AHKWinGetStyle'],
+    Literal['AHKWinGetExStyle'],
 ]
 CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
@@ -299,33 +300,33 @@ class AHK:
 
     # fmt: off
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[StringResponseMessage, NoValueResponseMessage]: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[StringResponseMessage, NoValueResponseMessage]: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetIDLast'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetIDLast'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetPID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[IntegerResponseMessage, NoValueResponseMessage]: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetPID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[IntegerResponseMessage, NoValueResponseMessage]: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetProcessName'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetProcessName'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetProcessPath'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetProcessPath'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetCount'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetCount'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetList'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowIDListResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetList'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowIDListResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetMinMax'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetMinMax'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetControlList'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowControlListResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetControlList'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowControlListResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetControlListHwnd'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowControlListResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetControlListHwnd'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowControlListResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetTransparent'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetTransparent'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetTransColor'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetTransColor'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetStyle'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetStyle'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
     @overload
-    def _win_get(self, subcommand_function: Literal['WinGetExStyle'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    def _win_get(self, subcommand_function: Literal['AHKWinGetExStyle'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
     # fmt: on
 
     def _win_get(
@@ -346,14 +347,15 @@ class AHK:
 
         args = [title, text, exclude_title, exclude_title, exclude_text]
         resp = self._transport.function_call(subcommand_function, args)
-        assert is_winget_response_type(resp), f'Unexpected response: {resp!r}'
+        if TYPE_CHECKING:
+            assert is_winget_response_type(resp), f'Unexpected response: {resp!r}'
         return resp
 
     def win_get(
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
     ) -> Union[Window, None]:
         resp = self._win_get(
-            'WinGetID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+            'AHKWinGetID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         win_id = resp.unpack()
         if win_id is None:
@@ -365,7 +367,7 @@ class AHK:
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
     ) -> Union[Window, None]:
         resp = self._win_get(
-            'WinGetIDLast', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+            'AHKWinGetIDLast', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         win_id = resp.unpack()
         if win_id is None:
@@ -377,7 +379,7 @@ class AHK:
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
     ) -> Union[int, None]:
         resp = self._win_get(
-            'WinGetPID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+            'AHKWinGetPID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         pid = resp.unpack()
         if pid is None:
@@ -389,7 +391,7 @@ class AHK:
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
     ) -> Union[str, None]:
         resp = self._win_get(
-            'WinGetProcessName', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+            'AHKWinGetProcessName', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         process_name = resp.unpack()
         if process_name is None:
@@ -401,7 +403,7 @@ class AHK:
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
     ) -> Union[str, None]:
         resp = self._win_get(
-            'WinGetProcessPath', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+            'AHKWinGetProcessPath', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         process_path = resp.unpack()
         if process_path is None:
@@ -413,7 +415,7 @@ class AHK:
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
     ) -> int:
         resp = self._win_get(
-            'WinGetCount', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+            'AHKWinGetCount', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         return resp.unpack()
 
@@ -422,7 +424,7 @@ class AHK:
     ) -> Union[Literal[0], Literal[1], Literal[-1], None]:
 
         resp = self._win_get(
-            'WinGetMinMax', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+            'AHKWinGetMinMax', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         val = resp.unpack()
         if val is None:
@@ -435,6 +437,24 @@ class AHK:
             return 1
         else:
             raise ValueError(f'Unexpected value for minmax: {val!r}')
+
+    def win_get_control_list(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> Union[Sequence[SyncControl], None]:
+        resp = self._win_get(
+            'AHKWinGetControlList', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
+        )
+        val = resp.unpack()
+        if val is None:
+            return None
+        ahkid, controls = val
+        window = Window(engine=self, ahk_id=ahkid)
+        ret = []
+        for control in controls:
+            hwnd, classname = control
+            ctrl = SyncControl(window=window, hwnd=hwnd, control_class=classname)
+            ret.append(ctrl)
+        return ret
 
     def win_exists(
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''

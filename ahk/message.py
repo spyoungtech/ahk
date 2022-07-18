@@ -26,7 +26,7 @@ class BytesLineReadable(Protocol):
         ...
 
 
-def is_window_control_list_response(resp_obj: object) -> TypeGuard[Tuple[str, Tuple[str, ...]]]:
+def is_window_control_list_response(resp_obj: object) -> TypeGuard[Tuple[str, list[Tuple[str, str]]]]:
     if not isinstance(resp_obj, tuple):
         return False
     if len(resp_obj) != 2:
@@ -34,10 +34,15 @@ def is_window_control_list_response(resp_obj: object) -> TypeGuard[Tuple[str, Tu
     if not isinstance(resp_obj[0], str):
         return False
     expected_win_list = resp_obj[1]
-    if not isinstance(expected_win_list, tuple):
+    if not isinstance(expected_win_list, list):
         return False
     for obj in expected_win_list:
-        if not isinstance(obj, str):
+        if not isinstance(obj, tuple):
+            return False
+        if len(obj) != 2:
+            return False
+        id_, klass = obj
+        if not isinstance(id_, str) or not isinstance(klass, str):
             return False
     return True
 
@@ -204,8 +209,9 @@ class ExceptionResponseMessage(ResponseMessage):
 class WindowControlListResponseMessage(ResponseMessage):
     type = 'windowcontrollist'
 
-    def unpack(self) -> Tuple[str, Tuple[str, ...]]:
+    def unpack(self) -> Tuple[str, list[Tuple[str, str]]]:
         s = self._raw_content.decode(encoding='utf-8')
+        breakpoint()
         val = ast.literal_eval(s)
         assert is_window_control_list_response(val)
         return val

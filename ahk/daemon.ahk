@@ -11,6 +11,7 @@ STRINGRESPONSEMESSAGE := "005" ; StringResponseMessage
 WINDOWIDLISTRESPONSEMESSAGE := "006" ; WindowIDListResponseMessage
 NOVALUERESPONSEMESSAGE := "007" ; NoValueResponseMessage
 EXCEPTIONRESPONSEMESSAGE := "008" ; ExceptionResponseMessage
+WINDOWCONTROLLISTRESPONSEMESSAGE := "009" ; WindowControlListResponseMessage
 
 NOVALUE_SENTINEL := Chr(57344)
 
@@ -50,7 +51,7 @@ AHKWinClose(ByRef command) {
     return FormatNoValueResponse()
 }
 
-WinGetID(ByRef command) {
+AHKWinGetID(ByRef command) {
     global STRINGRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -66,7 +67,7 @@ WinGetID(ByRef command) {
     return response
 }
 
-WinGetIDLast(ByRef command) {
+AHKWinGetIDLast(ByRef command) {
     global STRINGRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -82,7 +83,7 @@ WinGetIDLast(ByRef command) {
 }
 
 
-WinGetPID(ByRef command) {
+AHKWinGetPID(ByRef command) {
     global INTEGERRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -98,7 +99,7 @@ WinGetPID(ByRef command) {
 }
 
 
-WinGetProcessName(ByRef command) {
+AHKWinGetProcessName(ByRef command) {
     global STRINGRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -113,7 +114,7 @@ WinGetProcessName(ByRef command) {
     return response
 }
 
-WinGetProcessPath(ByRef command) {
+AHKWinGetProcessPath(ByRef command) {
     global STRINGRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -129,7 +130,7 @@ WinGetProcessPath(ByRef command) {
 }
 
 
-WinGetCount(ByRef command) {
+AHKWinGetCount(ByRef command) {
     global INTEGERRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -158,7 +159,7 @@ WinGetCount(ByRef command) {
 ;}
 
 
-WinGetMinMax(ByRef command) {
+AHKWinGetMinMax(ByRef command) {
     global INTEGERRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -173,31 +174,59 @@ WinGetMinMax(ByRef command) {
     return response
 }
 
-WinGetControlList(ByRef command) {
-    global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
+AHKWinGetControlList(ByRef command) {
+    global EXCEPTIONRESPONSEMESSAGE
+    global WINDOWCONTROLLISTRESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
-    WinGet, output, ControlList, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+
+    WinGet, ahkid, ID, %title%, %text%, %extitle%, %extext%
+
+    if (ahkid = "") {
+        return FormatNoValueResponse()
+    }
+
+    WinGet, ctrList, ControlList, %title%, %text%, %extitle%, %extext%
+    WinGet, ctrListID, ControlListHWND, %title%, %text%, %extitle%, %extext%
+
+    if (ctrListID = "") {
+        return FormatNoValueResponse()
+    }
+
+    ctrListArr := StrSplit(ctrList, "`n")
+    ctrListIDArr := StrSplit(ctrListID, "`n")
+    if (ctrListArr.Length() != ctrListIDArr.Length()) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Control hwnd/class lists have unexpected lengths")
+    }
+
+    output := Format("('{}', [", ahkid)
+
+    for index, hwnd in ctrListIDArr {
+        classname := ctrListArr[index]
+        output .= Format("('{}', '{}'), ", hwnd, classname)
+
+    }
+
+    output .= "])"
+    MsgBox,% output
+    response := FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, output)
     return response
 }
-WinGetControlListHwnd(ByRef command) {
-    global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    WinGet, output, ControlListHwnd, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
-    return response
-}
-WinGetTransparent(ByRef command) {
+;AHKWinGetControlListHwnd(ByRef command) {
+;    global STRINGRESPONSEMESSAGE
+;    global INTEGERRESPONSEMESSAGE
+;    global NOVALUERESPONSEMESSAGE
+;    title := command[2]
+;    text := command[3]
+;    extitle := command[4]
+;    extext := command[5]
+;    WinGet, output, ControlListHwnd, %title%, %text%, %extitle%, %extext%
+;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+;    return response
+;}
+AHKWinGetTransparent(ByRef command) {
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
     global NOVALUERESPONSEMESSAGE
@@ -209,7 +238,7 @@ WinGetTransparent(ByRef command) {
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
     return response
 }
-WinGetTransColor(ByRef command) {
+AHKWinGetTransColor(ByRef command) {
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
     global NOVALUERESPONSEMESSAGE
@@ -221,7 +250,7 @@ WinGetTransColor(ByRef command) {
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
     return response
 }
-WinGetStyle(ByRef command) {
+AHKWinGetStyle(ByRef command) {
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
     global NOVALUERESPONSEMESSAGE
@@ -233,7 +262,7 @@ WinGetStyle(ByRef command) {
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
     return response
 }
-WinGetExStyle(ByRef command) {
+AHKWinGetExStyle(ByRef command) {
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
     global NOVALUERESPONSEMESSAGE
@@ -245,7 +274,6 @@ WinGetExStyle(ByRef command) {
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
     return response
 }
-
 
 
 ImageSearch(ByRef command) {

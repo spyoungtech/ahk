@@ -71,6 +71,10 @@ class Window:
 
 
 class SyncControl:
-    def __init__(self, window: Window, control_class: str):
+    def __init__(self, window: Window, hwnd: str, control_class: str):
         self.window: Window = window
+        self.hwnd: str = hwnd
         self.control_class: str = control_class
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} window={self.window!r}, control_hwnd={self.hwnd!r}, control_class={self.control_class!r}>'
