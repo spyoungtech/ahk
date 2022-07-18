@@ -1,4 +1,5 @@
 import asyncio
+import os
 from itertools import product
 from unittest import IsolatedAsyncioTestCase
 
@@ -32,6 +33,9 @@ class TestScreen(IsolatedAsyncioTestCase):
     #     self.assertIsNotNone(result)
 
     async def test_image_search(self):
+        if os.environ.get('CI'):
+            self.skipTest('Does not work in GitHub Actions')
+            return
         self.im.show()
         self.im.save('testimage.png')
         position = await self.ahk.image_search('testimage.png')
