@@ -26,7 +26,7 @@ build_script:
 test_script:
   - ps: |
       .\venv\Scripts\activate.ps1
-      coverage run -a -m pytest .\tests\unittests --junitxml=reports\pytestresults.xml
+      coverage run -m pytest --junitxml=reports\pytestresults.xml
       if ($LastExitCode -ne 0) {
         $failure = 1
       } else {
