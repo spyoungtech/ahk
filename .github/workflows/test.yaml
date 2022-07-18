@@ -16,6 +16,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
+          python -m pip install ahk-binary
       - name: Test with coverage/pytest
         run: |
           coverage run -m pytest
