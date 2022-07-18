@@ -13,8 +13,9 @@ install:
       python -m pip install "ahk-binary"
       call deactivate
 
-#build_script:
-#  - cmd: .\ci\build.bat
+build_script:
+  - cmd: |
+      py -3.9 setup.py sdist
 
 #artifacts:
 #  - name: dist
