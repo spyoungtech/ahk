@@ -211,7 +211,6 @@ class WindowControlListResponseMessage(ResponseMessage):
 
     def unpack(self) -> Tuple[str, list[Tuple[str, str]]]:
         s = self._raw_content.decode(encoding='utf-8')
-        breakpoint()
         val = ast.literal_eval(s)
         assert is_window_control_list_response(val)
         return val

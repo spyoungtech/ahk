@@ -192,7 +192,7 @@ AHKWinGetControlList(ByRef command) {
     WinGet, ctrListID, ControlListHWND, %title%, %text%, %extitle%, %extext%
 
     if (ctrListID = "") {
-        return FormatNoValueResponse()
+        return FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, Format("('{}', [])", ahkid))
     }
 
     ctrListArr := StrSplit(ctrList, "`n")

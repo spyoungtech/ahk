@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Literal
+from typing import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -68,6 +69,14 @@ class AsyncWindow:
                 f'Error when trying to get minmax state of window {self._ahk_id}. The window may have been closed before the operation could be completed'
             )
         return minmax
+
+    async def list_controls(self) -> Sequence['AsyncControl']:
+        controls = await self._engine.win_get_control_list(title=f'ahk_id {self._ahk_id}')
+        if controls is None:
+            raise WindowNotFoundException(
+                f'Error when trying to enumerate controls for window {self._ahk_id}. The window may have been closed before the operation could be completed'
+            )
+        return controls
 
 
 class AsyncControl:
