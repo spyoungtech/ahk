@@ -3,7 +3,7 @@ on: [ push, pull_request ]
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -18,6 +18,8 @@ jobs:
           python -m pip install -r requirements-dev.txt
           python -m pip install ahk-binary
       - name: Test with coverage/pytest
+        env:
+          PYTHONUNBUFFERED: "1"
         run: |
           coverage run -m unittest
       - name: Coveralls
