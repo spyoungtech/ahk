@@ -21,7 +21,7 @@ jobs:
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          coverage run -m unittest
+          coverage run -m pytest -s
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
