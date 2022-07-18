@@ -18,6 +18,7 @@ class TestScreen(TestCase):
         self.im = im
         print('showing im')
         im.show()
+        print('shown')
         time.sleep(2)
 
     def tearDown(self):

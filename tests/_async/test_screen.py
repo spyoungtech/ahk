@@ -18,6 +18,7 @@ class TestScreen(IsolatedAsyncioTestCase):
         self.im = im
         print('showing im')
         im.show()
+        print('shown')
         time.sleep(2)
 
     async def asyncTearDown(self):
