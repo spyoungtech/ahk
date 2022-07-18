@@ -13,6 +13,7 @@ from typing import Union
 
 from ..message import IntegerResponseMessage
 from ..message import is_winget_response_type
+from ..message import NoValueResponseMessage
 from ..message import StringResponseMessage
 from ..message import WindowControlListResponseMessage
 from ..message import WindowIDListResponseMessage
@@ -298,7 +299,7 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def _win_get(self, subcommand_function: Literal['WinGetID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    async def _win_get(self, subcommand_function: Literal['WinGetID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[StringResponseMessage, NoValueResponseMessage]: ...
     @overload
     async def _win_get(self, subcommand_function: Literal['WinGetIDLast'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
     @overload
@@ -340,21 +341,32 @@ class AsyncAHK:
         IntegerResponseMessage,
         WindowIDListResponseMessage,
         WindowControlListResponseMessage,
+        NoValueResponseMessage,
     ]:
 
         args = [title, text, exclude_title, exclude_title, exclude_text]
         resp = await self._transport.function_call(subcommand_function, args)
-        assert is_winget_response_type(resp)
+        assert is_winget_response_type(resp), f'Unexpected response: {resp!r}'
         return resp
 
     async def win_get(
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> AsyncWindow:
+    ) -> Union[AsyncWindow, None]:
         resp = await self._win_get(
             'WinGetID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
         )
         win_id = resp.unpack()
-        return AsyncWindow(engine=self, ahk_id=win_id)
+        if win_id is None:
+            return None
+        else:
+            return AsyncWindow(engine=self, ahk_id=win_id)
+
+    async def win_exists(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
+    ) -> bool:
+        args = [title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinExist', args)
+        return resp.unpack()
 
     async def win_set(self, subcommand: str, *args: Any, blocking: bool = True) -> None:
         # TODO: type hint subcommand literals
@@ -478,20 +490,15 @@ class AsyncAHK:
 
     async def win_close(
         self,
-        title: Optional[str] = None,
+        title: str = '',
         *,
-        text: Optional[str] = None,
+        text: str = '',
         seconds_to_wait: Optional[int] = None,
-        exclude_title: Optional[str] = None,
-        exclude_text: Optional[str] = None,
+        exclude_title: str = '',
+        exclude_text: str = '',
     ) -> None:
-        args = []
-        optional_args = (text, seconds_to_wait, exclude_title, exclude_text)
-        if title is not None:
-            args.append(title)
-        if any(optional_args):
-            for arg in optional_args:
-                args.append(str(arg) or '')
-        resp = await self._transport.function_call('WinClose', args=args)
+        args: list[str]
+        args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinClose', args=args)
         resp.unpack()
         return None

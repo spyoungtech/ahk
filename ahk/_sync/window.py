@@ -26,6 +26,9 @@ class Window:
         self._engine.win_close(title=f'ahk_id {self._ahk_id}')
         return None
 
+    def exists(self) -> bool:
+        return self._engine.win_exists(title=f'ahk_id {self._ahk_id}')
+
 class SyncControl:
     def __init__(self, window: Window, control_class: str):
         self.window: Window = window

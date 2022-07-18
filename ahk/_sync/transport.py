@@ -37,6 +37,7 @@ DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 SyncIOProcess = subprocess.Popen[bytes]
 
 FunctionName = Literal[
+    Literal['AHKWinExist'],
     Literal['ImageSearch'],
     Literal['PixelGetColor'],
     Literal['PixelSearch'],
@@ -59,7 +60,7 @@ FunctionName = Literal[
     Literal['WinGetText'],
     Literal['WinActivate'],
     Literal['WinActivateBottom'],
-    Literal['WinClose'],
+    Literal['AHKWinClose'],
     Literal['WinHide'],
     Literal['WinKill'],
     Literal['WinMaximize'],
@@ -201,6 +202,8 @@ class Transport(ABC):
 
     # fmt: off
     @overload
+    def function_call(self, function_name: Literal['AHKWinExist'], args: Optional[list[str]] = None) -> BooleanResponseMessage: ...
+    @overload
     def function_call(self, function_name: Literal['ImageSearch'], args: Optional[list[str]] = None) -> CoordinateResponseMessage: ...
     @overload
     def function_call(self, function_name: Literal['PixelGetColor'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
@@ -245,7 +248,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['WinActivateBottom'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
     @overload
-    def function_call(self, function_name: Literal['WinClose'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
+    def function_call(self, function_name: Literal['AHKWinClose'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
     @overload
     def function_call(self, function_name: Literal['WinHide'], args: Optional[list[str]] = None) -> NoValueResponseMessage: ...
     @overload
@@ -283,7 +286,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinGetPos'], args: Optional[list[str]] = None) -> TupleResponseMessage: ...
     @overload
-    def function_call(self, function_name: Literal['WinGetID'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
+    def function_call(self, function_name: Literal['WinGetID'], args: Optional[list[str]] = None) -> Union[NoValueResponseMessage, StringResponseMessage]: ...
     @overload
     def function_call(self, function_name: Literal['WinGetIDLast'], args: Optional[list[str]] = None) -> StringResponseMessage: ...
     @overload

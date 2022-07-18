@@ -26,6 +26,9 @@ class AsyncWindow:
         await self._engine.win_close(title=f'ahk_id {self._ahk_id}')
         return None
 
+    async def exists(self) -> bool:
+        return await self._engine.win_exists(title=f'ahk_id {self._ahk_id}')
+
 
 class AsyncControl:
     def __init__(self, window: AsyncWindow, control_class: str):

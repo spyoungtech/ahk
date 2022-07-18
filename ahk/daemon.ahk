@@ -26,19 +26,46 @@ FormatNoValueResponse() {
     return FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
 }
 
+AHKWinExist(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    if WinExist(title, text, extitle, extext) {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    } else {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    }
+    return resp
+}
+
+AHKWinClose(ByRef command) {
+    title := command[2]
+    text := command[3]
+    secondstowait := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
 
 WinGetID(ByRef command) {
     global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, ID, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    if (output = 0) {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+
     return response
 }
+
 WinGetIDLast(ByRef command) {
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
@@ -474,15 +501,6 @@ WinActivateBottom(ByRef command) {
     }
 }
 
-WinClose(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinClose,% title
-    } else {
-        secondstowait := command[3]
-        WinClose, %title%, %secondstowait%
-    }
-}
 
 WinHide(ByRef command) {
     title := command[2]

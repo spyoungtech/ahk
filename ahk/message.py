@@ -192,16 +192,6 @@ class NoValueResponseMessage(ResponseMessage):
         return None
 
 
-class WindowControlListResponseMessage(ResponseMessage):
-    type = 'windowcontrollist'
-
-    def unpack(self) -> Tuple[str, Tuple[str, ...]]:
-        s = self._raw_content.decode(encoding='utf-8')
-        val = ast.literal_eval(s)
-        assert is_window_control_list_response(val)
-        return val
-
-
 class AHKExecutionException(Exception):
     pass
 
@@ -212,6 +202,16 @@ class ExceptionResponseMessage(ResponseMessage):
     def unpack(self) -> NoReturn:
         s = self._raw_content.decode(encoding='utf-8')
         raise AHKExecutionException(s)
+
+
+class WindowControlListResponseMessage(ResponseMessage):
+    type = 'windowcontrollist'
+
+    def unpack(self) -> Tuple[str, Tuple[str, ...]]:
+        s = self._raw_content.decode(encoding='utf-8')
+        val = ast.literal_eval(s)
+        assert is_window_control_list_response(val)
+        return val
 
 
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')
