@@ -610,7 +610,7 @@ WindowList(ByRef command) {
     Loop %windows%
     {
         id := windows%A_Index%
-        r := id . "`,"
+        r .= id . "`,"
     }
     resp := FormatResponse(WINDOWIDLISTRESPONSEMESSAGE, r)
     return resp

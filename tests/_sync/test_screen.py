@@ -22,7 +22,6 @@ class TestScreen(TestCase):
         for win in self.ahk.list_windows():
             if win not in self.before_windows:
                 win.close()
-                break
         self.ahk._transport._proc.kill()
 
     #

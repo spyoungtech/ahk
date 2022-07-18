@@ -22,7 +22,6 @@ class TestScreen(IsolatedAsyncioTestCase):
         for win in await self.ahk.list_windows():
             if win not in self.before_windows:
                 await win.close()
-                break
         self.ahk._transport._proc.kill()
 
     #

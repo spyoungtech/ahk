@@ -181,6 +181,7 @@ class WindowIDListResponseMessage(ResponseMessage):
 
     def unpack(self) -> list[str]:
         s = self._raw_content.decode(encoding='utf-8')
+        s.rstrip(',')
         return s.split(',')
 
 
