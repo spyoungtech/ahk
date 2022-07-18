@@ -1,4 +1,4 @@
-import time
+import asyncio
 from itertools import product
 from unittest import IsolatedAsyncioTestCase
 
@@ -12,14 +12,10 @@ class TestScreen(IsolatedAsyncioTestCase):
         print('setting up')
         self.ahk = AsyncAHK()
         self.before_windows = await self.ahk.list_windows()
-        im = Image.new('RGB', (20, 20))
+        self.im = Image.new('RGB', (20, 20))
         for coord in product(range(20), range(20)):
-            im.putpixel(coord, (255, 0, 0))
-        self.im = im
-        print('showing im')
-        im.show()
-        print('shown')
-        time.sleep(2)
+            self.im.putpixel(coord, (255, 0, 0))
+        await asyncio.sleep(2)
 
     async def asyncTearDown(self):
         print('tearing down')
@@ -36,6 +32,7 @@ class TestScreen(IsolatedAsyncioTestCase):
     #     self.assertIsNotNone(result)
 
     async def test_image_search(self):
+        self.im.show()
         self.im.save('testimage.png')
         position = await self.ahk.image_search('testimage.png')
         assert isinstance(position, tuple)
