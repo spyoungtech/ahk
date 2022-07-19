@@ -4,6 +4,7 @@ import asyncio.subprocess
 import atexit
 import os
 import subprocess
+import sys
 import warnings
 from abc import ABC
 from abc import abstractmethod
@@ -34,8 +35,10 @@ from ahk.message import WindowIDListResponseMessage
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 
-
-SyncIOProcess = subprocess.Popen[bytes]
+if sys.version_info >= (3, 9):
+    SyncIOProcess = subprocess.Popen[bytes]
+else:
+    SyncIOProcess = subprocess.Popen
 
 FunctionName = Literal[
     Literal['AHKWinExist'],

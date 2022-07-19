@@ -4,6 +4,7 @@ import asyncio.subprocess
 import atexit
 import os
 import subprocess
+import sys
 import warnings
 from abc import ABC
 from abc import abstractmethod
@@ -35,8 +36,10 @@ DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 
 AsyncIOProcess = asyncio.subprocess.Process  # unasync: remove
-
-SyncIOProcess = subprocess.Popen[bytes]
+if sys.version_info >= (3, 9):
+    SyncIOProcess = subprocess.Popen[bytes]
+else:
+    SyncIOProcess = subprocess.Popen
 
 FunctionName = Literal[
     Literal['AHKWinExist'],
