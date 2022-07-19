@@ -132,6 +132,7 @@ class AsyncAHKProcess:
 
     def drain_stdin(self) -> None:
         assert isinstance(self._proc, subprocess.Popen)
+        assert self._proc.stdin is not None
         self._proc.stdin.flush()
         return None
 
