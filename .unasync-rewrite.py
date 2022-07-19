@@ -2,6 +2,7 @@ import ast
 import os
 import shutil
 import subprocess
+import sys
 
 import black
 from black import check_stability_and_equivalence
@@ -59,13 +60,13 @@ def _copyfunc(src, dst, *, follow_symlinks=True):
 def main() -> int:
     if os.path.isdir('build'):
         shutil.rmtree('build')
-    subprocess.run(['python', 'setup.py', 'build_py'], check=True, shell=True)
+    subprocess.run([sys.executable, 'setup.py', 'build_py'], check=True)
     for root, dirs, files in os.walk('build/lib/ahk/_sync'):
         for fname in files:
             if fname.endswith('.py'):
                 fp = os.path.join(root, fname)
                 _rewrite_file(fp)
-    subprocess.run(['python', '_tests_setup.py', 'build_py'], check=True, shell=True)
+    subprocess.run([sys.executable, '_tests_setup.py', 'build_py'], check=True)
     for root, dirs, files in os.walk('build/lib/tests/_sync'):
         for fname in files:
             if fname.endswith('.py'):
