@@ -2,13 +2,15 @@ import setuptools
 import unasync
 
 setuptools.setup(
+    python_requires='>=3.7.0',
     name='ahk',
     version='0.0.1',
     author_email='spencer.young@spyoung.com',
     author='Spencer Young',
     description='A package used to test customized unasync',
     url='https://github.com/spyoungtech/ahk',
-    packages=['ahk', 'ahk._async'],
+    packages=['ahk', 'ahk._async', 'ahk._sync'],
+    install_requires=['typing_extensions; python_version < "3.10"'],
     cmdclass={
         'build_py': unasync.cmdclass_build_py(
             rules=[

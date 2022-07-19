@@ -226,16 +226,15 @@ AHKWinGetControlList(ByRef command) {
 ;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
 ;    return response
 ;}
+
 AHKWinGetTransparent(ByRef command) {
-    global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
     WinGet, output, Transparent, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     return response
 }
 AHKWinGetTransColor(ByRef command) {
