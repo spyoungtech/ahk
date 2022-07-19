@@ -138,7 +138,9 @@ class SyncAHKProcess:
     def readline(self) -> bytes:
         assert self._proc is not None
         assert self._proc.stdout is not None
-        return self._proc.stdout.readline()
+        line = self._proc.stdout.readline()
+        assert isinstance(line, bytes)
+        return line
 
     def kill(self) -> None:
         assert self._proc is not None

@@ -144,7 +144,9 @@ class AsyncAHKProcess:
     async def readline(self) -> bytes:
         assert self._proc is not None
         assert self._proc.stdout is not None
-        return await self._proc.stdout.readline()
+        line = await self._proc.stdout.readline()
+        assert isinstance(line, bytes)
+        return line
 
     def kill(self) -> None:
         assert self._proc is not None
