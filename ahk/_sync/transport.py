@@ -12,6 +12,7 @@ from io import BytesIO
 from shutil import which
 from typing import Any
 from typing import AnyStr
+from typing import Callable
 from typing import List
 from typing import Literal
 from typing import Optional
@@ -20,6 +21,7 @@ from typing import Protocol
 from typing import runtime_checkable
 from typing import Union
 
+from ahk.hotkey import ThreadedHotkeyTransport
 from ahk.message import BooleanResponseMessage
 from ahk.message import CoordinateResponseMessage
 from ahk.message import IntegerResponseMessage
@@ -116,10 +118,7 @@ def kill(proc: Killable) -> None:
 class SyncAHKProcess:
     def __init__(self, runargs: List[str]):
         self.runargs = runargs
-        if sys.version_info >= (3, 9):
-            self._proc: Optional[SyncIOProcess] = None
-        else:
-            self._proc: Optional[SyncIOProcess[bytes]] = None
+        self._proc: Optional[SyncIOProcess] = None
 
     def start(self) -> None:
         self._proc = sync_create_process(self.runargs)
@@ -203,8 +202,15 @@ def _resolve_executable_path(executable_path: Union[str, os.PathLike[AnyStr]] = 
 class Transport(ABC):
     _started: bool = False
 
-    def __init__(self, /, **kwargs: Any):
+    def __init__(self, /, executable_path: Union[str, os.PathLike[AnyStr]] = '', **kwargs: Any):
+        self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
+        self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path)
         pass
+
+    def add_hotkey(self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None) -> None:
+        return self._hotkey_transport.add_hotkey(hotkey=hotkey, callback=callback, ex_handler=ex_handler)
+    def add_hotstring(self, trigger_string: str, replacement: str) -> None:
+        return self._hotkey_transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
     def init(self) -> None:
         self._started = True
@@ -365,7 +371,7 @@ class DaemonProcessTransport(Transport):
     def __init__(self, *, executable_path: Union[str, os.PathLike[AnyStr]] = ''):
         self._proc: Optional[SyncAHKProcess]
         self._proc = None
-        self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
+        super().__init__(executable_path=executable_path)
 
     def init(self) -> None:
         self.start()

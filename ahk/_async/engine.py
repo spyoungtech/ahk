@@ -58,6 +58,14 @@ class AsyncAHK:
         transport = TransportClass(**transport_kwargs)
         self._transport: AsyncTransport = transport
 
+    def add_hotkey(
+        self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
+    ) -> None:
+        return self._transport.add_hotkey(hotkey=hotkey, callback=callback, ex_handler=ex_handler)
+
+    def add_hotstring(self, trigger_string: str, replacement: str) -> None:
+        return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
+
     async def list_windows(self) -> List[AsyncWindow]:
         resp = await self._transport.function_call('WindowList')
         window_ids = resp.unpack()

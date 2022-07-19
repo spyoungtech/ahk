@@ -44,3 +44,5 @@ repos:
         args:
             - "--strict"
         exclude: ^(tests/.*|setup\.py|\.build\.py|\.unasync-rewrite\.py|_tests_setup\.py)
+        additional_dependencies:
+          - jinja2
