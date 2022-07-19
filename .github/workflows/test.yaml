@@ -21,12 +21,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
           python -m pip install .
+          python -m pip install tox
           python -m pip install ahk-binary
       - name: Test with coverage/pytest
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          coverage run -m pytest -s
+          tox -e py
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
