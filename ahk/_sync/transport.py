@@ -21,6 +21,11 @@ from typing import Protocol
 from typing import runtime_checkable
 from typing import Union
 
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
+
 from ahk.hotkey import ThreadedHotkeyTransport
 from ahk.message import BooleanResponseMessage
 from ahk.message import CoordinateResponseMessage
@@ -37,10 +42,8 @@ from ahk.message import WindowIDListResponseMessage
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 
-if sys.version_info >= (3, 9):
-    SyncIOProcess = subprocess.Popen[bytes]
-else:
-    SyncIOProcess = subprocess.Popen
+
+SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
 FunctionName = Literal[
     Literal['AHKWinExist'],
@@ -207,8 +210,11 @@ class Transport(ABC):
         self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path)
         pass
 
-    def add_hotkey(self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None) -> None:
+    def add_hotkey(
+        self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
+    ) -> None:
         return self._hotkey_transport.add_hotkey(hotkey=hotkey, callback=callback, ex_handler=ex_handler)
+
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._hotkey_transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
