@@ -11,7 +11,11 @@ from typing import Protocol
 from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
-from typing import TypeGuard
+
+try:
+    from typing import TypeGuard
+except ImportError:
+    from typing_extensions import TypeGuard
 from typing import TypeVar
 from typing import Union
 
