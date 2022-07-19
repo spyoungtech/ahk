@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import itertools
 import string
+import sys
 from abc import abstractmethod
 from typing import Any
 from typing import cast
@@ -15,9 +16,9 @@ from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
 
-try:
+if sys.version_info >= (3, 10):
     from typing import TypeGuard
-except ImportError:
+else:
     from typing_extensions import TypeGuard
 from typing import TypeVar
 from typing import Union
