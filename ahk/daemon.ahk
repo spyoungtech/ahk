@@ -1,5 +1,6 @@
 #NoEnv
 #Persistent
+#SingleInstance Off
 
 RESPONSEMESSAGE := "000" ; ResponseMessage
 TUPLERESPONSEMESSAGE := "001" ; TupleResponseMessage
@@ -10,6 +11,7 @@ STRINGRESPONSEMESSAGE := "005" ; StringResponseMessage
 WINDOWIDLISTRESPONSEMESSAGE := "006" ; WindowIDListResponseMessage
 NOVALUERESPONSEMESSAGE := "007" ; NoValueResponseMessage
 EXCEPTIONRESPONSEMESSAGE := "008" ; ExceptionResponseMessage
+WINDOWCONTROLLISTRESPONSEMESSAGE := "009" ; WindowControlListResponseMessage
 
 NOVALUE_SENTINEL := Chr(57344)
 
@@ -19,12 +21,269 @@ FormatResponse(MessageType, payload) {
     return response
 }
 
+FormatNoValueResponse() {
+    global NOVALUE_SENTINEL
+    global NOVALUERESPONSEMESSAGE
+    return FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+}
+
+AHKWinExist(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    if WinExist(title, text, extitle, extext) {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    } else {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    }
+    return resp
+}
+
+AHKWinClose(ByRef command) {
+    title := command[2]
+    text := command[3]
+    secondstowait := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinGetID(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ID, %title%, %text%, %extitle%, %extext%
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+
+    return response
+}
+
+AHKWinGetIDLast(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, IDLast, %title%, %text%, %extitle%, %extext%
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return response
+}
+
+
+AHKWinGetPID(ByRef command) {
+    global INTEGERRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, PID, %title%, %text%, %extitle%, %extext%
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    }
+    return response
+}
+
+
+AHKWinGetProcessName(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ProcessName, %title%, %text%, %extitle%, %extext%
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return response
+}
+
+AHKWinGetProcessPath(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ProcessPath, %title%, %text%, %extitle%, %extext%
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return response
+}
+
+
+AHKWinGetCount(ByRef command) {
+    global INTEGERRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, Count, %title%, %text%, %extitle%, %extext%
+    if (output = 0) {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    } else {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    }
+    return response
+}
+
+;WinGetList(ByRef command) {
+;    global STRINGRESPONSEMESSAGE
+;    global INTEGERRESPONSEMESSAGE
+;    global NOVALUERESPONSEMESSAGE
+;    title := command[2]
+;    text := command[3]
+;    extitle := command[4]
+;    extext := command[5]
+;    WinGet, output, List, %title%, %text%, %extitle%, %extext%
+;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+;    return response
+;}
+
+
+AHKWinGetMinMax(ByRef command) {
+    global INTEGERRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, MinMax, %title%, %text%, %extitle%, %extext%
+    if (output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    }
+    return response
+}
+
+AHKWinGetControlList(ByRef command) {
+    global EXCEPTIONRESPONSEMESSAGE
+    global WINDOWCONTROLLISTRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+
+    WinGet, ahkid, ID, %title%, %text%, %extitle%, %extext%
+
+    if (ahkid = "") {
+        return FormatNoValueResponse()
+    }
+
+    WinGet, ctrList, ControlList, %title%, %text%, %extitle%, %extext%
+    WinGet, ctrListID, ControlListHWND, %title%, %text%, %extitle%, %extext%
+
+    if (ctrListID = "") {
+        return FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, Format("('{}', [])", ahkid))
+    }
+
+    ctrListArr := StrSplit(ctrList, "`n")
+    ctrListIDArr := StrSplit(ctrListID, "`n")
+    if (ctrListArr.Length() != ctrListIDArr.Length()) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Control hwnd/class lists have unexpected lengths")
+    }
+
+    output := Format("('{}', [", ahkid)
+
+    for index, hwnd in ctrListIDArr {
+        classname := ctrListArr[index]
+        output .= Format("('{}', '{}'), ", hwnd, classname)
+
+    }
+
+    output .= "])"
+    MsgBox,% output
+    response := FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, output)
+    return response
+}
+;AHKWinGetControlListHwnd(ByRef command) {
+;    global STRINGRESPONSEMESSAGE
+;    global INTEGERRESPONSEMESSAGE
+;    global NOVALUERESPONSEMESSAGE
+;    title := command[2]
+;    text := command[3]
+;    extitle := command[4]
+;    extext := command[5]
+;    WinGet, output, ControlListHwnd, %title%, %text%, %extitle%, %extext%
+;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+;    return response
+;}
+
+AHKWinGetTransparent(ByRef command) {
+    global INTEGERRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, Transparent, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    return response
+}
+AHKWinGetTransColor(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, TransColor, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+AHKWinGetStyle(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, Style, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+AHKWinGetExStyle(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global INTEGERRESPONSEMESSAGE
+    global NOVALUERESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGet, output, ExStyle, %title%, %text%, %extitle%, %extext%
+    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    return response
+}
+
+
 ImageSearch(ByRef command) {
-    imagepath := command[8]
-    x1 := command[4]
-    y1 := command[5]
-    x2 := command[6]
-    y2 := command[7]
+    global COORDINATERESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    imagepath := command[6]
+    x1 := command[2]
+    y1 := command[3]
+    x2 := command[4]
+    y2 := command[5]
+
     if (x2 = "A_ScreenWidth") {
         x2 := A_ScreenWidth
     }
@@ -35,7 +294,7 @@ ImageSearch(ByRef command) {
     if (ErrorLevel = 2) {
         s := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "there was a problem that prevented the command from conducting the search (such as failure to open the image file or a badly formatted option)")
     } else if (ErrorLevel = 1) {
-        s := FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+        s := FormatNoValueResponse()
     } else {
         s := FormatResponse(COORDINATERESPONSEMESSAGE, Format("({}, {})", xpos, ypos))
     }
@@ -292,15 +551,6 @@ WinActivateBottom(ByRef command) {
     }
 }
 
-WinClose(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinClose,% title
-    } else {
-        secondstowait := command[3]
-        WinClose, %title%, %secondstowait%
-    }
-}
 
 WinHide(ByRef command) {
     title := command[2]
@@ -410,7 +660,7 @@ WindowList(ByRef command) {
     Loop %windows%
     {
         id := windows%A_Index%
-        r := id . "`,"
+        r .= id . "`,"
     }
     resp := FormatResponse(WINDOWIDLISTRESPONSEMESSAGE, r)
     return resp

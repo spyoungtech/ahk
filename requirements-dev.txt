@@ -1,0 +1,9 @@
+pytest
+pillow
+unasync
+black
+tokenize-rt
+coverage
+mypy
+typing_extensions
+jinja2

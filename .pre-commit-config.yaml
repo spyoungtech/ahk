@@ -7,7 +7,7 @@ repos:
     entry: python .unasync-rewrite.py
     language: python
     types: [python]
-    files: ^(ahk/_async/.*\.py|\.unasync-rewrite\.py)
+    files: ^(ahk/_async/.*\.py|\.unasync-rewrite\.py|tests/_async/.*\.py)
     pass_filenames: false
     additional_dependencies:
         - unasync
@@ -33,14 +33,16 @@ repos:
             - "120"
         exclude: ^(ahk/_sync/.*\.py)
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.7.0
+    rev: v3.8.1
     hooks:
     -   id: reorder-python-imports
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v0.931'
+    rev: 'v0.961'
     hooks:
     -   id: mypy
         args:
             - "--strict"
-        exclude: ^(tests/.*|setup\.py|\.build\.py|\.unasync-rewrite.py)
+        exclude: ^(tests/.*|setup\.py|\.build\.py|\.unasync-rewrite\.py|_tests_setup\.py|buildunasync\.py)
+        additional_dependencies:
+          - jinja2

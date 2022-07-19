@@ -1,22 +1,25 @@
+from __future__ import annotations
+
 import ast
-import io
 import itertools
 import string
-import typing
-from abc import ABC
+import sys
 from abc import abstractmethod
 from typing import Any
 from typing import cast
 from typing import Generator
-from typing import Generic
-from typing import Literal
+from typing import List
 from typing import NoReturn
 from typing import Optional
 from typing import Protocol
 from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
-from typing import TypedDict
+
+if sys.version_info >= (3, 10):
+    from typing import TypeGuard
+else:
+    from typing_extensions import TypeGuard
 from typing import TypeVar
 from typing import Union
 
@@ -29,6 +32,51 @@ class OutOfMessageTypes(Exception):
 class BytesLineReadable(Protocol):
     def readline(self) -> bytes:
         ...
+
+
+def is_window_control_list_response(resp_obj: object) -> TypeGuard[Tuple[str, List[Tuple[str, str]]]]:
+    if not isinstance(resp_obj, tuple):
+        return False
+    if len(resp_obj) != 2:
+        return False
+    if not isinstance(resp_obj[0], str):
+        return False
+    expected_win_list = resp_obj[1]
+    if not isinstance(expected_win_list, list):
+        return False
+    for obj in expected_win_list:
+        if not isinstance(obj, tuple):
+            return False
+        if len(obj) != 2:
+            return False
+        id_, klass = obj
+        if not isinstance(id_, str) or not isinstance(klass, str):
+            return False
+    return True
+
+
+def is_winget_response_type(
+    obj: object,
+) -> TypeGuard[
+    Union[
+        'StringResponseMessage',
+        'IntegerResponseMessage',
+        'WindowIDListResponseMessage',
+        'WindowControlListResponseMessage',
+    ]
+]:
+    if isinstance(obj, StringResponseMessage):
+        return True
+    elif isinstance(obj, IntegerResponseMessage):
+        return True
+    elif isinstance(obj, WindowIDListResponseMessage):
+        return True
+    elif isinstance(obj, WindowControlListResponseMessage):
+        return True
+    elif isinstance(obj, NoValueResponseMessage):
+        return True
+    else:
+        return False
 
 
 T_ResponseMessageType = TypeVar('T_ResponseMessageType', bound='ResponseMessage')
@@ -65,29 +113,17 @@ class ResponseMessage:
         return f'ResponseMessage<type={self.type!r}>'
 
     @staticmethod
-    def _tom_lookup(tom: bytes) -> Type['ResponseMessage']:
+    def _tom_lookup(tom: bytes) -> 'ResponseMessageClassTypes':
         klass = _message_registry.get(tom)
-        if not klass:
+        if klass is None:
             raise ValueError(f'No such TOM {tom!r}')
         return klass
 
     @classmethod
-    def from_bytes(cls: Type[T_ResponseMessageType], b: bytes) -> T_ResponseMessageType:
+    def from_bytes(cls: Type[T_ResponseMessageType], b: bytes) -> 'ResponseMessageTypes':
         tom, _, message_bytes = b.split(b'\n', 2)
         klass = cls._tom_lookup(tom)
-        return klass(raw_content=message_bytes)  # type: ignore[return-value]
-
-    @classmethod
-    def from_stream(cls: Type[T_ResponseMessageType], stream: BytesLineReadable) -> T_ResponseMessageType:
-        content_buffer = io.BytesIO()
-        tom = stream.readline().strip()
-        content_lines = stream.readline().strip()
-        for _ in range(int(content_lines) + 1):
-            part = stream.readline()
-            content_buffer.write(part)
-        contents = content_buffer.getvalue()
-        message_bytes = tom + b'\n' + content_lines + b'\n' + contents
-        return cls.from_bytes(message_bytes)
+        return klass(raw_content=message_bytes)
 
     def to_bytes(self) -> bytes:
         content_lines = self._raw_content.count(b'\n')
@@ -98,7 +134,7 @@ class ResponseMessage:
         return NotImplemented
 
 
-_message_registry: dict[bytes, Type[ResponseMessage]]
+_message_registry: dict[bytes, 'ResponseMessageClassTypes']
 _message_registry = {ResponseMessage._type_order_mark: ResponseMessage}
 
 
@@ -152,8 +188,9 @@ class StringResponseMessage(ResponseMessage):
 class WindowIDListResponseMessage(ResponseMessage):
     type = 'windowidlist'
 
-    def unpack(self) -> list[str]:
+    def unpack(self) -> List[str]:
         s = self._raw_content.decode(encoding='utf-8')
+        s = s.rstrip(',')
         return s.split(',')
 
 
@@ -177,10 +214,46 @@ class ExceptionResponseMessage(ResponseMessage):
         raise AHKExecutionException(s)
 
 
+class WindowControlListResponseMessage(ResponseMessage):
+    type = 'windowcontrollist'
+
+    def unpack(self) -> Tuple[str, List[Tuple[str, str]]]:
+        s = self._raw_content.decode(encoding='utf-8')
+        val = ast.literal_eval(s)
+        assert is_window_control_list_response(val)
+        return val
+
+
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')
 
 
 class RequestMessage:
-    def __init__(self, function_name: str, args: Optional[list[str]] = None):
+    def __init__(self, function_name: str, args: Optional[List[str]] = None):
         self.function_name: str = function_name
-        self.args: list[str] = args or []
+        self.args: List[str] = args or []
+
+
+ResponseMessageTypes = Union[
+    ResponseMessage,
+    TupleResponseMessage,
+    CoordinateResponseMessage,
+    IntegerResponseMessage,
+    BooleanResponseMessage,
+    StringResponseMessage,
+    WindowIDListResponseMessage,
+    NoValueResponseMessage,
+    WindowControlListResponseMessage,
+    ExceptionResponseMessage,
+]
+ResponseMessageClassTypes = Union[
+    Type[TupleResponseMessage],
+    Type[CoordinateResponseMessage],
+    Type[IntegerResponseMessage],
+    Type[BooleanResponseMessage],
+    Type[StringResponseMessage],
+    Type[WindowIDListResponseMessage],
+    Type[NoValueResponseMessage],
+    Type[WindowControlListResponseMessage],
+    Type[ExceptionResponseMessage],
+    Type[ResponseMessage],
+]

@@ -1,0 +1,3 @@
+include ahk/daemon.ahk
+include docs/README.md
+include buildunasync.py

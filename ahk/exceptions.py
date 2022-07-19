@@ -1,0 +1,3 @@
+class AHKBaseException(Exception):
+    # TODO: make existing exceptions subclasses of this
+    ...
