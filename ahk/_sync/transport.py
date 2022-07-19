@@ -116,7 +116,10 @@ def kill(proc: Killable) -> None:
 class SyncAHKProcess:
     def __init__(self, runargs: List[str]):
         self.runargs = runargs
-        self._proc: Optional[SyncIOProcess] = None
+        if sys.version_info >= (3, 9):
+            self._proc: Optional[SyncIOProcess] = None
+        else:
+            self._proc: Optional[SyncIOProcess[bytes]] = None
 
     def start(self) -> None:
         self._proc = sync_create_process(self.runargs)
