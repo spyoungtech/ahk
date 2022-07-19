@@ -396,7 +396,8 @@ class AsyncDaemonProcessTransport(AsyncTransport):
 
     async def start(self) -> None:
         assert self._proc is None, 'cannot start a process twice'
-        runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', 'ahk\\daemon.ahk']  # TODO: build this dynamically
+        daemon_script = os.path.abspath(os.path.join(os.path.dirname(__file__), '../daemon.ahk'))
+        runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
         self._proc = AsyncAHKProcess(runargs=runargs)
         await self._proc.start()
 
