@@ -7,6 +7,7 @@ from abc import abstractmethod
 from typing import Any
 from typing import cast
 from typing import Generator
+from typing import List
 from typing import NoReturn
 from typing import Optional
 from typing import Protocol
@@ -32,7 +33,7 @@ class BytesLineReadable(Protocol):
         ...
 
 
-def is_window_control_list_response(resp_obj: object) -> TypeGuard[Tuple[str, list[Tuple[str, str]]]]:
+def is_window_control_list_response(resp_obj: object) -> TypeGuard[Tuple[str, List[Tuple[str, str]]]]:
     if not isinstance(resp_obj, tuple):
         return False
     if len(resp_obj) != 2:
@@ -186,7 +187,7 @@ class StringResponseMessage(ResponseMessage):
 class WindowIDListResponseMessage(ResponseMessage):
     type = 'windowidlist'
 
-    def unpack(self) -> list[str]:
+    def unpack(self) -> List[str]:
         s = self._raw_content.decode(encoding='utf-8')
         s = s.rstrip(',')
         return s.split(',')
@@ -215,7 +216,7 @@ class ExceptionResponseMessage(ResponseMessage):
 class WindowControlListResponseMessage(ResponseMessage):
     type = 'windowcontrollist'
 
-    def unpack(self) -> Tuple[str, list[Tuple[str, str]]]:
+    def unpack(self) -> Tuple[str, List[Tuple[str, str]]]:
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
         assert is_window_control_list_response(val)
@@ -226,9 +227,9 @@ T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')
 
 
 class RequestMessage:
-    def __init__(self, function_name: str, args: Optional[list[str]] = None):
+    def __init__(self, function_name: str, args: Optional[List[str]] = None):
         self.function_name: str = function_name
-        self.args: list[str] = args or []
+        self.args: List[str] = args or []
 
 
 ResponseMessageTypes = Union[

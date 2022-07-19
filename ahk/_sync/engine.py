@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 from typing import Callable
 from typing import Iterable
+from typing import List
 from typing import Literal
 from typing import Optional
 from typing import overload
@@ -57,7 +58,7 @@ class AHK:
         transport = TransportClass(**transport_kwargs)
         self._transport: Transport = transport
 
-    def list_windows(self) -> list[Window]:
+    def list_windows(self) -> List[Window]:
         resp = self._transport.function_call('WindowList')
         window_ids = resp.unpack()
         ret = [Window(engine=self, ahk_id=ahk_id) for ahk_id in window_ids]
@@ -506,7 +507,7 @@ class AHK:
         elif scale_width and not scale_height:
             scale_height = -1
 
-        options: list[Union[str, int]] = []
+        options: List[Union[str, int]] = []
         if icon:
             options.append(f'Icon{icon}')
         if color_variation is not None:
@@ -592,7 +593,7 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
     ) -> None:
-        args: list[str]
+        args: List[str]
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
         resp = self._transport.function_call('AHKWinClose', args=args)
         resp.unpack()
