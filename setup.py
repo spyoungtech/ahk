@@ -1,35 +1,3 @@
-import setuptools
-import unasync
+from setuptools import setup
 
-setuptools.setup(
-    python_requires='>=3.7.0',
-    name='ahk',
-    version='0.0.1b',
-    author_email='spencer.young@spyoung.com',
-    author='Spencer Young',
-    description='A package used to test customized unasync',
-    url='https://github.com/spyoungtech/ahk',
-    packages=['ahk', 'ahk._async', 'ahk._sync'],
-    install_requires=['typing_extensions; python_version < "3.10"', 'jinja2>=3.0'],
-    package_data={'ahk': ['py.typed']},
-    cmdclass={
-        'build_py': unasync.cmdclass_build_py(
-            rules=[
-                unasync.Rule(
-                    fromdir='/ahk/_async/',
-                    todir='/ahk/_sync/',
-                    additional_replacements={
-                        'AsyncAHK': 'AHK',
-                        'AsyncTransport': 'Transport',
-                        'AsyncWindow': 'Window',
-                        'AsyncDaemonProcessTransport': 'DaemonProcessTransport',
-                        '_AIOP': '_SIOP',
-                        'async_create_process': 'sync_create_process',
-                        'adrain_stdin': 'drain_stdin',
-                        # "__aenter__": "__aenter__",
-                    },
-                ),
-            ]
-        )
-    },
-)
+setup()
