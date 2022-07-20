@@ -15,6 +15,8 @@ from typing import Protocol
 from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
+from typing import TYPE_CHECKING
+
 
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
@@ -61,7 +63,7 @@ def is_winget_response_type(
     Union[
         'StringResponseMessage',
         'IntegerResponseMessage',
-        'WindowIDListResponseMessage',
+        'WindowListResponseMessage',
         'WindowControlListResponseMessage',
     ]
 ]:
@@ -69,7 +71,7 @@ def is_winget_response_type(
         return True
     elif isinstance(obj, IntegerResponseMessage):
         return True
-    elif isinstance(obj, WindowIDListResponseMessage):
+    elif isinstance(obj, WindowListResponseMessage):
         return True
     elif isinstance(obj, WindowControlListResponseMessage):
         return True
@@ -105,9 +107,9 @@ class ResponseMessage:
         assert cls.type is not None, f'must assign a type for class {cls!r}'
         super().__init_subclass__(**kwargs)
 
-    def __init__(self, raw_content: bytes):
-        self._raw_content: bytes
-        self._raw_content = raw_content
+    def __init__(self, raw_content: bytes, engine: Optional[Union[AsyncAHK, AHK]] = None):
+        self._raw_content: bytes = raw_content
+        self._engine: Optional[Union[AsyncAHK, AHK]] = engine
 
     def __repr__(self) -> str:
         return f'ResponseMessage<type={self.type!r}>'
@@ -120,10 +122,12 @@ class ResponseMessage:
         return klass
 
     @classmethod
-    def from_bytes(cls: Type[T_ResponseMessageType], b: bytes) -> 'ResponseMessageTypes':
+    def from_bytes(
+        cls: Type[T_ResponseMessageType], b: bytes, engine: Optional[Union[AsyncAHK, AHK]] = None
+    ) -> 'ResponseMessageTypes':
         tom, _, message_bytes = b.split(b'\n', 2)
         klass = cls._tom_lookup(tom)
-        return klass(raw_content=message_bytes)
+        return klass(raw_content=message_bytes, engine=engine)
 
     def to_bytes(self) -> bytes:
         content_lines = self._raw_content.count(b'\n')
@@ -185,13 +189,26 @@ class StringResponseMessage(ResponseMessage):
         return self._raw_content.decode('utf-8')
 
 
-class WindowIDListResponseMessage(ResponseMessage):
-    type = 'windowidlist'
+class WindowListResponseMessage(ResponseMessage):
+    type = 'windowlist'
 
-    def unpack(self) -> List[str]:
+    def unpack(self) -> Union[List[Window], List[AsyncWindow]]:
+        from ._async.engine import AsyncAHK
+        from ._async.window import AsyncWindow, AsyncControl
+        from ._sync.window import Window, SyncControl
+        from ._sync.engine import AHK
+
         s = self._raw_content.decode(encoding='utf-8')
         s = s.rstrip(',')
-        return s.split(',')
+        window_ids = s.split(',')
+        if isinstance(self._engine, AsyncAHK):
+            async_ret = [AsyncWindow(engine=self._engine, ahk_id=ahk_id) for ahk_id in window_ids]
+            return async_ret
+        elif isinstance(self._engine, AHK):
+            ret = [Window(engine=self._engine, ahk_id=ahk_id) for ahk_id in window_ids]
+            return ret
+        else:
+            raise ValueError(f'Invalid engine: {self._engine!r}')
 
 
 class NoValueResponseMessage(ResponseMessage):
@@ -217,11 +234,52 @@ class ExceptionResponseMessage(ResponseMessage):
 class WindowControlListResponseMessage(ResponseMessage):
     type = 'windowcontrollist'
 
-    def unpack(self) -> Tuple[str, List[Tuple[str, str]]]:
+    def unpack(self) -> Union[List[AsyncControl], List[SyncControl]]:
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
         assert is_window_control_list_response(val)
-        return val
+        assert self._engine is not None
+        assert val is not None
+        ahkid, controls = val
+        if isinstance(self._engine, AsyncAHK):
+            ret_async: List[AsyncControl] = []
+            async_window = AsyncWindow(engine=self._engine, ahk_id=ahkid)
+            for control in controls:
+                hwnd, classname = control
+                async_ctrl = AsyncControl(window=async_window, hwnd=hwnd, control_class=classname)
+                ret_async.append(async_ctrl)
+            return ret_async
+        elif isinstance(self._engine, AHK):
+            ret_sync: List[SyncControl] = []
+            window = Window(engine=self._engine, ahk_id=ahkid)
+            for control in controls:
+                hwnd, classname = control
+                ctrl = SyncControl(window=window, hwnd=hwnd, control_class=classname)
+                ret_sync.append(ctrl)
+            return ret_sync
+        else:
+            raise ValueError(f'Invalid engine: {self._engine!r}')
+
+
+class WindowResponseMessage(ResponseMessage):
+    type = 'window'
+
+    def unpack(self) -> Union[Window, AsyncWindow]:
+        from ._async.engine import AsyncAHK
+        from ._async.window import AsyncWindow, AsyncControl
+        from ._sync.window import Window, SyncControl
+        from ._sync.engine import AHK
+
+        s = self._raw_content.decode(encoding='utf-8')
+        ahk_id = s.strip()
+        if isinstance(self._engine, AsyncAHK):
+            async_ret = AsyncWindow(engine=self._engine, ahk_id=ahk_id)
+            return async_ret
+        elif isinstance(self._engine, AHK):
+            ret = Window(engine=self._engine, ahk_id=ahk_id)
+            return ret
+        else:
+            raise ValueError(f'Invalid engine: {self._engine!r}')
 
 
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')
@@ -240,7 +298,7 @@ ResponseMessageTypes = Union[
     IntegerResponseMessage,
     BooleanResponseMessage,
     StringResponseMessage,
-    WindowIDListResponseMessage,
+    WindowListResponseMessage,
     NoValueResponseMessage,
     WindowControlListResponseMessage,
     ExceptionResponseMessage,
@@ -251,9 +309,14 @@ ResponseMessageClassTypes = Union[
     Type[IntegerResponseMessage],
     Type[BooleanResponseMessage],
     Type[StringResponseMessage],
-    Type[WindowIDListResponseMessage],
+    Type[WindowListResponseMessage],
     Type[NoValueResponseMessage],
     Type[WindowControlListResponseMessage],
     Type[ExceptionResponseMessage],
     Type[ResponseMessage],
 ]
+if TYPE_CHECKING:
+    from ._async.engine import AsyncAHK
+    from ._async.window import AsyncWindow, AsyncControl
+    from ._sync.window import Window, SyncControl
+    from ._sync.engine import AHK

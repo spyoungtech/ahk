@@ -62,7 +62,7 @@ class AsyncWindow:
             )
         return path
 
-    async def get_minmax(self) -> Union[Literal[0], Literal[1], Literal[-1]]:
+    async def get_minmax(self) -> int:
         minmax = await self._engine.win_get_minmax(title=f'ahk_id {self._ahk_id}')
         if minmax is None:
             raise WindowNotFoundException(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 from typing import Callable
 from typing import Iterable
@@ -13,13 +14,8 @@ from typing import Type
 from typing import TYPE_CHECKING
 from typing import Union
 
-from ..message import IntegerResponseMessage
-from ..message import is_winget_response_type
-from ..message import NoValueResponseMessage
-from ..message import StringResponseMessage
-from ..message import WindowControlListResponseMessage
-from ..message import WindowIDListResponseMessage
 from .transport import AsyncDaemonProcessTransport
+from .transport import AsyncFutureResult
 from .transport import AsyncTransport
 from .window import AsyncControl
 from .window import AsyncWindow
@@ -66,51 +62,32 @@ class AsyncAHK:
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
-    async def list_windows(self) -> List[AsyncWindow]:
-        resp = await self._transport.function_call('WindowList')
-        window_ids = resp.unpack()
-        ret = [AsyncWindow(engine=self, ahk_id=ahk_id) for ahk_id in window_ids]
-        return ret
+    async def list_windows(self) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]:
+        resp = await self._transport.function_call('WindowList', engine=self)
+        return resp
 
-    async def get_mouse_position(self) -> Tuple[int, int]:
-        resp = await self._transport.function_call('MouseGetPos')
-        return resp.unpack()
-
+    # fmt: off
     @overload
-    async def mouse_move(
-        self,
-        x: Optional[Union[str, int]] = None,
-        y: Optional[Union[str, int]] = None,
-        *,
-        speed: Optional[int] = None,
-        relative: bool = False,
-    ) -> None:
-        ...
-
+    async def get_mouse_position(self, *, blocking: Literal[True]) -> Tuple[int, int]: ...
     @overload
-    async def mouse_move(
-        self,
-        x: Optional[Union[str, int]] = None,
-        y: Optional[Union[str, int]] = None,
-        *,
-        blocking: Literal[True],
-        speed: Optional[int] = None,
-        relative: bool = False,
-    ) -> None:
-        ...
-
+    async def get_mouse_position(self, *, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
     @overload
-    async def mouse_move(
-        self,
-        x: Optional[Union[str, int]] = None,
-        y: Optional[Union[str, int]] = None,
-        *,
-        blocking: Literal[False],
-        speed: Optional[int] = None,
-        relative: bool = False,
-    ) -> FutureResult:
-        ...
+    async def get_mouse_position(self) -> Tuple[int, int]: ...
+    # fmt: on
+    async def get_mouse_position(
+        self, *, blocking: bool = True
+    ) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]:
+        resp = await self._transport.function_call('MouseGetPos', blocking=blocking)
+        return resp
 
+    # fmt: off
+    @overload
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False) -> None: ...
+    @overload
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[True], speed: Optional[int] = None, relative: bool = False) -> None: ...
+    @overload
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[False], speed: Optional[int] = None, relative: bool = False, ) -> AsyncFutureResult[None]: ...
+    # fmt: on
     async def mouse_move(
         self,
         x: Optional[Union[str, int]] = None,
@@ -118,8 +95,8 @@ class AsyncAHK:
         *,
         speed: Optional[int] = None,
         relative: bool = False,
-        blocking: Optional[Union[Literal[True], Literal[False]]] = None,
-    ) -> Union[None, FutureResult]:
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
         if relative and (x is None or y is None):
             x = x or 0
             y = y or 0
@@ -133,14 +110,8 @@ class AsyncAHK:
         args = [str(x), str(y), str(speed)]
         if relative:
             args.append('R')
-        if blocking in (True, None):
-            resp = await self._transport.function_call('MouseMove', args)
-            resp.unpack()
-            return None
-        elif blocking is False:
-            return FutureResult()
-        else:
-            raise ValueError(f'Invalid value for argument blocking: {blocking!r}')
+        resp = await self._transport.function_call('MouseMove', args, blocking=blocking)
+        return resp
 
     async def a_run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
@@ -309,168 +280,138 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[StringResponseMessage, NoValueResponseMessage]: ...
+    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[AsyncWindow, None]: ...
     @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetIDLast'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
     @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetPID'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[IntegerResponseMessage, NoValueResponseMessage]: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetProcessName'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetProcessPath'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[NoValueResponseMessage, StringResponseMessage]: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetCount'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetList'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowIDListResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetMinMax'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetControlList'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowControlListResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetControlListHwnd'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> WindowControlListResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetTransparent'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> IntegerResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetTransColor'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetStyle'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
-    @overload
-    async def _win_get(self, subcommand_function: Literal['AHKWinGetExStyle'], /, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> StringResponseMessage: ...
+    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
     # fmt: on
-
-    async def _win_get(
-        self,
-        subcommand_function: WinGetFunctions,
-        /,
-        title: str = '',
-        text: str = '',
-        exclude_title: str = '',
-        exclude_text: str = '',
-    ) -> Union[
-        StringResponseMessage,
-        IntegerResponseMessage,
-        WindowIDListResponseMessage,
-        WindowControlListResponseMessage,
-        NoValueResponseMessage,
-    ]:
-
+    async def win_get(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[None, AsyncWindow]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
-        resp = await self._transport.function_call(subcommand_function, args)
-        if TYPE_CHECKING:
-            assert is_winget_response_type(resp), f'Unexpected response: {resp!r}'
+        resp = await self._transport.function_call('AHKWinGetID', args, blocking=blocking, engine=self)
         return resp
 
-    async def win_get(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> Union[AsyncWindow, None]:
-        resp = await self._win_get(
-            'AHKWinGetID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        win_id = resp.unpack()
-        if win_id is None:
-            return None
-        else:
-            return AsyncWindow(engine=self, ahk_id=win_id)
-
+    # fmt: off
+    @overload
+    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[AsyncWindow, None]: ...
+    @overload
+    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
+    @overload
+    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
+    # fmt: on
     async def win_get_idlast(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> Union[AsyncWindow, None]:
-        resp = await self._win_get(
-            'AHKWinGetIDLast', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        win_id = resp.unpack()
-        if win_id is None:
-            return None
-        else:
-            return AsyncWindow(engine=self, ahk_id=win_id)
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[AsyncWindow, None]]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetIDLast', args, blocking=blocking)
+        return resp
 
+    # fmt: off
+    @overload
+    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[int, None]: ...
+    @overload
+    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[int, None]]: ...
+    @overload
+    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[int, None]: ...
+    # fmt: on
     async def win_get_pid(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> Union[int, None]:
-        resp = await self._win_get(
-            'AHKWinGetPID', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        pid = resp.unpack()
-        if pid is None:
-            return None
-        else:
-            return pid
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[int, None, AsyncFutureResult[Union[int, None]]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetPID', args, blocking=blocking)
+        return resp
 
+    # fmt: off
+    @overload
+    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[str, None]: ...
+    @overload
+    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[str, None]]: ...
+    @overload
+    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[str, None]: ...
+    # fmt: on
     async def win_get_process_name(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> Union[str, None]:
-        resp = await self._win_get(
-            'AHKWinGetProcessName', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        process_name = resp.unpack()
-        if process_name is None:
-            return None
-        else:
-            return process_name
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[None, str, AsyncFutureResult[Optional[str]]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetProcessName', args, blocking=blocking)
+        return resp
 
+    # fmt: off
+    @overload
+    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[str, None]: ...
+    @overload
+    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[str, None]]: ...
+    @overload
+    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[str, None]: ...
+    # fmt: on
     async def win_get_process_path(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> Union[str, None]:
-        resp = await self._win_get(
-            'AHKWinGetProcessPath', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        process_path = resp.unpack()
-        if process_path is None:
-            return None
-        else:
-            return process_path
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[str, None, Union[None, str, AsyncFutureResult[Optional[str]]]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetProcessPath', args, blocking=blocking)
+        return resp
 
+    # fmt: off
+    @overload
+    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> int: ...
+    @overload
+    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[int]: ...
+    @overload
+    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> int: ...
+    # fmt: on
     async def win_get_count(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> int:
-        resp = await self._win_get(
-            'AHKWinGetCount', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        return resp.unpack()
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[int, AsyncFutureResult[int]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetCount', args, blocking=blocking)
+        return resp
 
+    # fmt: off
+    @overload
+    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[int, None]: ...
+    @overload
+    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[int, None]]: ...
+    @overload
+    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[int, None]: ...
+    # fmt: on
     async def win_get_minmax(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> Union[Literal[0], Literal[1], Literal[-1], None]:
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[None, int, AsyncFutureResult[Optional[int]]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetMinMax', args, blocking=blocking)
+        return resp
 
-        resp = await self._win_get(
-            'AHKWinGetMinMax', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        val = resp.unpack()
-        if val is None:
-            return None
-        if val == -1:
-            return -1
-        elif val == 0:
-            return 0
-        elif val == 1:
-            return 1
-        else:
-            raise ValueError(f'Unexpected value for minmax: {val!r}')
-
+    # fmt: off
+    @overload
+    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[List[AsyncControl], None]: ...
+    @overload
+    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[List[AsyncControl], None]]: ...
+    @overload
+    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[List[AsyncControl], None]: ...
+    # fmt: on
     async def win_get_control_list(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> Union[Sequence[AsyncControl], None]:
-        resp = await self._win_get(
-            'AHKWinGetControlList', title=title, text=text, exclude_title=exclude_title, exclude_text=exclude_text
-        )
-        val = resp.unpack()
-        if val is None:
-            return None
-        ahkid, controls = val
-        window = AsyncWindow(engine=self, ahk_id=ahkid)
-        ret = []
-        for control in controls:
-            hwnd, classname = control
-            ctrl = AsyncControl(window=window, hwnd=hwnd, control_class=classname)
-            ret.append(ctrl)
-        return ret
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[List[AsyncControl], None, AsyncFutureResult[Optional[List[AsyncControl]]]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetControlList', args, blocking=blocking)
+        return resp
 
+    # fmt: off
+    @overload
+    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> bool: ...
+    @overload
+    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    @overload
+    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> bool: ...
+    # fmt: on
     async def win_exists(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = ''
-    ) -> bool:
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+    ) -> Union[bool, AsyncFutureResult[bool]]:
         args = [title, text, exclude_title, exclude_text]
-        resp = await self._transport.function_call('AHKWinExist', args)
-        return resp.unpack()
+        resp = await self._transport.function_call('AHKWinExist', args, blocking=blocking)
+        return resp
 
     async def win_set(self, subcommand: str, *args: Any, blocking: bool = True) -> None:
         # TODO: type hint subcommand literals
@@ -505,7 +446,7 @@ class AsyncAHK:
         scale_width: Optional[int] = None,
         transparent: Optional[str] = None,
         icon: Optional[int] = None,
-    ) -> Union[Tuple[int, int], None]:
+    ) -> Union[Tuple[int, int], None, AsyncFutureResult[Optional[Tuple[int, int]]]]:
         """
         https://www.autohotkey.com/docs/commands/ImageSearch.htm
         """
@@ -547,7 +488,7 @@ class AsyncAHK:
         else:
             args.append(image_path)
         resp = await self._transport.function_call('ImageSearch', args)
-        return resp.unpack()
+        return resp
 
     async def mouse_drag(
         self,
@@ -600,9 +541,8 @@ class AsyncAHK:
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
-    ) -> None:
+    ) -> Union[None, AsyncFutureResult[None]]:
         args: List[str]
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
         resp = await self._transport.function_call('AHKWinClose', args=args)
-        resp.unpack()
-        return None
+        return resp
