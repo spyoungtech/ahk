@@ -189,7 +189,7 @@ from ahk import AHK
 
 ahk = AHK()
 ahk.show_tooltip("hello4", second=2, x=10, y=10)                              # ToolTip
-ahk.show_info_traytip("Info", "It's also info", slient=False, blocking=True)  # Default info traytip
+ahk.show_info_traytip("Info", "It's also info", silent=False, blocking=True)  # Default info traytip
 ahk.show_warning_traytip("Warning", "It's warning")                           # Warning traytip
 ahk.show_error_traytip("Error", "It's error")                                 # Error trytip
 ```
