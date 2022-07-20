@@ -518,7 +518,14 @@ AHKWinWait(ByRef command) {
     timeout := command[4]
     extitle := command[5]
     extext := command[6]
-    WinWait,%title%,%text%,%timeout%,%extitle%,%extext%
+    exact := command[7]
+    if (exact) {
+        WinWait,%title%,%text%,%timeout%,%extitle%,%extext%
+    } else {
+        SetTitleMatchMode 2
+        WinWait,%title%,%text%,%timeout%,%extitle%,%extext%
+        SetTitleMatchMode 1
+    }
     if !ErrorLevel
     {
            WinGet, output, ID

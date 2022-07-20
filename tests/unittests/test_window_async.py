@@ -123,7 +123,11 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
             win = await self.ahk.win_wait(title='This should not exist')
 
     async def test_winwait_existing_window(self):
-        win = await self.ahk.win_wait(title='Untitled - Notepad')
+        win = await self.ahk.win_wait(title='Notepad')
+        assert win.id == self.win.id
+
+    async def test_winwait_existing_window_with_exact(self):
+        win = await self.ahk.win_wait(title='Untitled - Notepad', exact=True)
         assert win.id == self.win.id
 
     def tearDown(self):

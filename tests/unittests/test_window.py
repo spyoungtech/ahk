@@ -119,9 +119,12 @@ class TestWindow(TestCase):
             win = self.ahk.win_wait(title='This should not exist')
 
     def test_winwait_existing_window(self):
-        win = self.ahk.win_wait(title='Untitled - Notepad')
+        win = self.ahk.win_wait(title='Notepad')
         assert win.id == self.win.id
 
+    def test_winwait_existing_window_with_exact(self):
+        win = self.ahk.win_wait(title='Untitled - Notepad', exact=True)
+        assert win.id == self.win.id
 
 class TestWindowDaemon(TestWindow):
     def setUp(self):
