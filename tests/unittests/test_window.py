@@ -126,6 +126,7 @@ class TestWindow(TestCase):
         win = self.ahk.win_wait(title='Untitled - Notepad', exact=True)
         assert win.id == self.win.id
 
+
 class TestWindowDaemon(TestWindow):
     def setUp(self):
         self.ahk = AHKDaemon()

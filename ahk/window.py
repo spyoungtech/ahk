@@ -648,7 +648,9 @@ class WindowMixin(ScriptEngine):
             return None
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
-    def win_wait(self, *, title='', text='', exclude_title='', timeout=0.5, exclude_text='', encoding=None, exact=False):
+    def win_wait(
+        self, *, title='', text='', exclude_title='', timeout=0.5, exclude_text='', encoding=None, exact=False
+    ):
         """
         WinWait
         Wait for a window. If found within the timeout (in seconds), returns a Window object.
@@ -1087,7 +1089,9 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
         async for window in self.find_windows_by_class(*args, **kwargs):
             return window
 
-    async def win_wait(self, *, title='', text='', exclude_title='', timeout=0.5, exclude_text='', encoding=None, exact=False):
+    async def win_wait(
+        self, *, title='', text='', exclude_title='', timeout=0.5, exclude_text='', encoding=None, exact=False
+    ):
         script = self.render_template(
             'window/win_wait.ahk',
             title=title,
