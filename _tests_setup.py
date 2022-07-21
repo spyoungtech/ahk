@@ -29,7 +29,8 @@ setuptools.setup(
                         'adrain_stdin': 'drain_stdin',
                         'IsolatedAsyncioTestCase': 'TestCase',
                         'asyncSetUp': 'setUp',
-                        'asyncTearDown': 'tearDown'
+                        'asyncTearDown': 'tearDown',
+                        'async_sleep': 'sleep',
                         # "__aenter__": "__aenter__",
                     },
                 ),
