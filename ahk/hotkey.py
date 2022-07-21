@@ -126,19 +126,25 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
     def stop(self) -> None:
         assert self._proc is not None
         self._running = False
-        self._proc.kill()
 
         self._callback_queue.empty()
         self._callback_queue.put_nowait(STOP)
         print('Waiting for stop...')
         if self._dispatcher_thread is not None:
-            self._dispatcher_thread.join()
+            try:
+                self._dispatcher_thread.join(timeout=3)
+            except TimeoutError:
+                print('DISPATCHER JOIN TIMED OUT!')
             self._dispatcher_thread = None
-
+        print('Waiting for callback stop...')
         self._callback_queue.join()
         if self._listener_thread is not None:
-            self._listener_thread.join()
+            try:
+                self._listener_thread.join(timeout=3)
+            except TimeoutError:
+                print('LISTENER JOIN TIMED OUT!')
             self._listener_thread = None
+        self._proc.kill()
 
     def restart(self) -> None:
         self.stop()

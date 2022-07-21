@@ -27,6 +27,7 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
             self.ahk.add_hotkey('a', callback=m)
             self.ahk.start_hotkeys()
             await self.ahk.key_down('a')
+            await async_sleep(1)
             m.assert_called()
 
     async def test_hotkey_ex_handler(self):
@@ -38,4 +39,5 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
             self.ahk.add_hotkey('a', callback=mock_cb, ex_handler=mock_ex_handler)
             self.ahk.start_hotkeys()
             await self.ahk.key_down('a')
+            await async_sleep(1)
             mock_ex_handler.assert_called()
