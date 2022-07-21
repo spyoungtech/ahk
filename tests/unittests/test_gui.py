@@ -24,5 +24,5 @@ class TestGuiMixin:
         ahk.show_info_traytip('Info', "It's also info")
         ahk.show_warning_traytip('Warning', "It's warning")
         ahk.show_error_traytip('Error', "It's error")
-        ahk._show_traytip('Slient - Info', "It's info", type_id=ahk.TRAYTIP_INFO, slient=True)
+        ahk._show_traytip('silent - Info', "It's info", type_id=ahk.TRAYTIP_INFO, silent=True)
         ahk.show_info_traytip('Unicode Threaded', 'şüğı', blocking=False)  # Need help

@@ -36,7 +36,7 @@ class GUIMixin(ScriptEngine):
         return self.run_script(script, blocking=blocking) or None
 
     def _show_traytip(
-        self, title: str, text: str, second=1.0, type_id=1, slient=False, large_icon=False, blocking=True
+        self, title: str, text: str, second=1.0, type_id=1, silent=False, large_icon=False, blocking=True
     ):
         """Show TrayTip (Windows 10 toast notification)
 
@@ -50,21 +50,21 @@ class GUIMixin(ScriptEngine):
         :type second: float, optional
         :param type_id: Notification type `TRAYTIP_<type>`, defaults to 1
         :type type_id: int, optional
-        :param slient: Shows toast without sound, defaults to False
-        :type slient: bool, optional
+        :param silent: Shows toast without sound, defaults to False
+        :type silent: bool, optional
         :param large_icon: Shows toast with large icon, defaults to False
         :type large_icon: bool, optional
         """
 
         encoded_title = '% ' + ''.join([f'Chr({hex(ord(char))})' for char in title])
         encoded_text = '% ' + ''.join([f'Chr({hex(ord(char))})' for char in text])
-        option = type_id + (16 if slient else 0) + (32 if large_icon else 0)
+        option = type_id + (16 if silent else 0) + (32 if large_icon else 0)
         script = self.render_template(
             'gui/traytip.ahk', title=encoded_title, text=encoded_text, second=second, option=option
         )
         return self.run_script(script, blocking=blocking) or None
 
-    def show_info_traytip(self, title: str, text: str, second=1.0, slient=False, large_icon=False, blocking=True):
+    def show_info_traytip(self, title: str, text: str, second=1.0, silent=False, large_icon=False, blocking=True):
         """Show TrayTip with info icon (Windows 10 toast notification)
 
         https://www.autohotkey.com/docs/commands/TrayTip.htm
@@ -75,16 +75,16 @@ class GUIMixin(ScriptEngine):
         :type text: str
         :param second: Wait time (s) to be disappeared, defaults to 1.0
         :type second: float, optional
-        :param slient: Shows toast without sound, defaults to False
-        :type slient: bool, optional
+        :param silent: Shows toast without sound, defaults to False
+        :type silent: bool, optional
         :param large_icon: Shows toast with large icon, defaults to False
         :type large_icon: bool, optional
         :param blocked: Block program, defaults to True
         :type blocked: bool, optional
         """
-        return self._show_traytip(title, text, second, self.TRAYTIP_INFO, slient, large_icon, blocking)
+        return self._show_traytip(title, text, second, self.TRAYTIP_INFO, silent, large_icon, blocking)
 
-    def show_warning_traytip(self, title: str, text: str, second=1.0, slient=False, large_icon=False, blocking=True):
+    def show_warning_traytip(self, title: str, text: str, second=1.0, silent=False, large_icon=False, blocking=True):
         """Show TrayTip with warning icon (Windows 10 toast notification)
 
         https://www.autohotkey.com/docs/commands/TrayTip.htm
@@ -95,16 +95,16 @@ class GUIMixin(ScriptEngine):
         :type text: str
         :param second: Wait time (s) to be disappeared, defaults to 1.0
         :type second: float, optional
-        :param slient: Shows toast without sound, defaults to False
-        :type slient: bool, optional
+        :param silent: Shows toast without sound, defaults to False
+        :type silent: bool, optional
         :param large_icon: Shows toast with large icon, defaults to False
         :type large_icon: bool, optional
         :param blocked: Block program, defaults to True
         :type blocked: bool, optional
         """
-        return self._show_traytip(title, text, second, self.TRAYTIP_WARNING, slient, large_icon, blocking)
+        return self._show_traytip(title, text, second, self.TRAYTIP_WARNING, silent, large_icon, blocking)
 
-    def show_error_traytip(self, title: str, text: str, second=1.0, slient=False, large_icon=False, blocking=True):
+    def show_error_traytip(self, title: str, text: str, second=1.0, silent=False, large_icon=False, blocking=True):
         """Show TrayTip with error icon (Windows 10 toast notification)
 
         https://www.autohotkey.com/docs/commands/TrayTip.htm
@@ -115,14 +115,14 @@ class GUIMixin(ScriptEngine):
         :type text: str
         :param second: Wait time (s) to be disappeared, defaults to 1.0
         :type second: float, optional
-        :param slient: Shows toast without sound, defaults to False
-        :type slient: bool, optional
+        :param silent: Shows toast without sound, defaults to False
+        :type silent: bool, optional
         :param large_icon: Shows toast with large icon, defaults to False
         :type large_icon: bool, optional
         :param blocked: Block program, defaults to True
         :type blocked: bool, optional
         """
-        return self._show_traytip(title, text, second, self.TRAYTIP_ERROR, slient, large_icon, blocking)
+        return self._show_traytip(title, text, second, self.TRAYTIP_ERROR, silent, large_icon, blocking)
 
 
 class AsyncGUIMixin(AsyncScriptEngine, GUIMixin):
