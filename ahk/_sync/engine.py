@@ -62,8 +62,16 @@ class AHK:
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
-    def list_windows(self) -> Union[List[Window], SyncFutureResult[List[Window]]]:
-        resp = self._transport.function_call('WindowList', engine=self)
+    # fmt: off
+    @overload
+    def list_windows(self) -> List[Window]: ...
+    @overload
+    def list_windows(self, *, blocking: Literal[False]) -> Union[List[Window], SyncFutureResult[List[Window]]]: ...
+    @overload
+    def list_windows(self, *, blocking: Literal[True]) -> List[Window]: ...
+    # fmt: on
+    def list_windows(self, blocking: bool = True) -> Union[List[Window], SyncFutureResult[List[Window]]]:
+        resp = self._transport.function_call('WindowList', engine=self, blocking=blocking)
         return resp
 
     # fmt: off
@@ -434,6 +442,14 @@ class AHK:
     ) -> None:
         raise NotImplementedError()
 
+    # fmt: off
+    @overload
+    def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None) -> Optional[Tuple[int, int]]: ...
+    @overload
+    def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[False]) -> SyncFutureResult[Optional[Tuple[int, int]]]: ...
+    @overload
+    def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[True]) -> Optional[Tuple[int, int]]: ...
+    # fmt: on
     def image_search(
         self,
         image_path: str,
@@ -446,6 +462,7 @@ class AHK:
         scale_width: Optional[int] = None,
         transparent: Optional[str] = None,
         icon: Optional[int] = None,
+        blocking: bool = True,
     ) -> Union[Tuple[int, int], None, SyncFutureResult[Optional[Tuple[int, int]]]]:
         """
         https://www.autohotkey.com/docs/commands/ImageSearch.htm
@@ -533,6 +550,13 @@ class AHK:
     ) -> None:
         raise NotImplementedError()
 
+    @overload
+    def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[True]) -> None: ...
+    @overload
+    def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[False]) -> SyncFutureResult[None]: ...
+
     def win_close(
         self,
         title: str = '',
@@ -541,8 +565,9 @@ class AHK:
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
+        blocking: bool = True
     ) -> Union[None, SyncFutureResult[None]]:
         args: List[str]
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
-        resp = self._transport.function_call('AHKWinClose', args=args)
+        resp = self._transport.function_call('AHKWinClose', args=args, blocking=blocking)
         return resp

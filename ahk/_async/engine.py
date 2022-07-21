@@ -62,8 +62,18 @@ class AsyncAHK:
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
-    async def list_windows(self) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]:
-        resp = await self._transport.function_call('WindowList', engine=self)
+    # fmt: off
+    @overload
+    async def list_windows(self) -> List[AsyncWindow]: ...
+    @overload
+    async def list_windows(self, *, blocking: Literal[False]) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
+    @overload
+    async def list_windows(self, *, blocking: Literal[True]) -> List[AsyncWindow]: ...
+    # fmt: on
+    async def list_windows(
+        self, blocking: bool = True
+    ) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]:
+        resp = await self._transport.function_call('WindowList', engine=self, blocking=blocking)
         return resp
 
     # fmt: off
@@ -434,6 +444,14 @@ class AsyncAHK:
     ) -> None:
         raise NotImplementedError()
 
+    # fmt: off
+    @overload
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None) -> Optional[Tuple[int, int]]: ...
+    @overload
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[Optional[Tuple[int, int]]]: ...
+    @overload
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[True]) -> Optional[Tuple[int, int]]: ...
+    # fmt: on
     async def image_search(
         self,
         image_path: str,
@@ -446,6 +464,7 @@ class AsyncAHK:
         scale_width: Optional[int] = None,
         transparent: Optional[str] = None,
         icon: Optional[int] = None,
+        blocking: bool = True,
     ) -> Union[Tuple[int, int], None, AsyncFutureResult[Optional[Tuple[int, int]]]]:
         """
         https://www.autohotkey.com/docs/commands/ImageSearch.htm
@@ -533,6 +552,14 @@ class AsyncAHK:
     ) -> None:
         raise NotImplementedError()
 
+    # fmt: off
+    @overload
+    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[True]) -> None: ...
+    @overload
+    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    # fmt: on
     async def win_close(
         self,
         title: str = '',
@@ -541,8 +568,9 @@ class AsyncAHK:
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
+        blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         args: List[str]
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
-        resp = await self._transport.function_call('AHKWinClose', args=args)
+        resp = await self._transport.function_call('AHKWinClose', args=args, blocking=blocking)
         return resp
