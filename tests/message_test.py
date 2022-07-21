@@ -9,7 +9,7 @@ from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import StringResponseMessage
 from ahk.message import TupleResponseMessage
-from ahk.message import WindowIDListResponseMessage
+from ahk.message import WindowListResponseMessage
 
 
 def test_novalue_response_raises_exception_when_sentinel_not_present() -> None:

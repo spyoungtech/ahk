@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import os
 import subprocess
 import sys
@@ -13,6 +14,8 @@ from typing import Deque
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Protocol
+from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
@@ -123,19 +126,25 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
     def stop(self) -> None:
         assert self._proc is not None
         self._running = False
-        self._proc.kill()
 
         self._callback_queue.empty()
         self._callback_queue.put_nowait(STOP)
         print('Waiting for stop...')
         if self._dispatcher_thread is not None:
-            self._dispatcher_thread.join()
+            try:
+                self._dispatcher_thread.join(timeout=3)
+            except TimeoutError:
+                print('DISPATCHER JOIN TIMED OUT!')
             self._dispatcher_thread = None
-
+        print('Waiting for callback stop...')
         self._callback_queue.join()
         if self._listener_thread is not None:
-            self._listener_thread.join()
+            try:
+                self._listener_thread.join(timeout=3)
+            except TimeoutError:
+                print('LISTENER JOIN TIMED OUT!')
             self._listener_thread = None
+        self._proc.kill()
 
     def restart(self) -> None:
         self.stop()
@@ -206,11 +215,28 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+            atexit.register(kill, self._proc)
             while self._running:
                 assert self._proc.stdout is not None
                 line = self._proc.stdout.readline()
                 if line.rstrip(b'\n') == _KEEPALIVE_SENTINEL:
                     logging.debug('keepalive received')
                     continue
+                if not line.strip():
+                    print('Listener: Process probably died, exiting')
+                    break
                 logging.debug(f'Received {line!r}')
                 self._callback_queue.put_nowait(line.decode('UTF-8').strip())
+
+
+@runtime_checkable
+class Killable(Protocol):
+    def kill(self) -> None:
+        ...
+
+
+def kill(proc: Killable) -> None:
+    try:
+        proc.kill()
+    except:
+        pass

@@ -12,7 +12,7 @@ WINDOWIDLISTRESPONSEMESSAGE := "006" ; WindowIDListResponseMessage
 NOVALUERESPONSEMESSAGE := "007" ; NoValueResponseMessage
 EXCEPTIONRESPONSEMESSAGE := "008" ; ExceptionResponseMessage
 WINDOWCONTROLLISTRESPONSEMESSAGE := "009" ; WindowControlListResponseMessage
-
+WINDOWRESPONSEMESSAGE := "00a" ; WindowResponseMessage
 NOVALUE_SENTINEL := Chr(57344)
 
 FormatResponse(MessageType, payload) {
@@ -52,7 +52,7 @@ AHKWinClose(ByRef command) {
 }
 
 AHKWinGetID(ByRef command) {
-    global STRINGRESPONSEMESSAGE
+    global WINDOWRESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -61,14 +61,14 @@ AHKWinGetID(ByRef command) {
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
     }
 
     return response
 }
 
 AHKWinGetIDLast(ByRef command) {
-    global STRINGRESPONSEMESSAGE
+    global WINDOWRESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -77,7 +77,7 @@ AHKWinGetIDLast(ByRef command) {
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
     }
     return response
 }
@@ -361,14 +361,12 @@ AHKKeyState(ByRef command) {
 }
 
 MouseMove(ByRef command) {
-    global NOVALUERESPONSEMESSAGE
-    global NOVALUE_SENTINEL
     if (command.Length() = 5) {
     MouseMove, command[2], command[3], command[4], R
     } else {
     MouseMove, command[2], command[3], command[4]
     }
-    resp := FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+    resp := FormatNoValueResponse()
     return resp
 }
 
@@ -466,6 +464,7 @@ Send(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     Send,% str
+    return FormatNoValueResponse()
 }
 
 SendRaw(ByRef command) {
@@ -473,6 +472,7 @@ SendRaw(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendRaw,% str
+    return FormatNoValueResponse()
 }
 
 SendInput(ByRef command) {
@@ -480,6 +480,7 @@ SendInput(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendInput,% str
+    return FormatNoValueResponse()
 }
 
 
@@ -488,6 +489,7 @@ SendEvent(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendEvent,% str
+    return FormatNoValueResponse()
 }
 
 SendPlay(ByRef command) {
@@ -495,6 +497,7 @@ SendPlay(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendPlay,% str
+    return FormatNoValueResponse()
 }
 
 SetCapsLockState(ByRef command) {
@@ -504,6 +507,7 @@ SetCapsLockState(ByRef command) {
         state := command[2]
         SetCapsLockState, %state%
     }
+    return FormatNoValueResponse()
 }
 
 HideTrayTip(ByRef command) {
