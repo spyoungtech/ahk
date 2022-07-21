@@ -361,14 +361,12 @@ AHKKeyState(ByRef command) {
 }
 
 MouseMove(ByRef command) {
-    global NOVALUERESPONSEMESSAGE
-    global NOVALUE_SENTINEL
     if (command.Length() = 5) {
     MouseMove, command[2], command[3], command[4], R
     } else {
     MouseMove, command[2], command[3], command[4]
     }
-    resp := FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+    resp := FormatNoValueResponse()
     return resp
 }
 
