@@ -1,4 +1,5 @@
 import asyncio
+import subprocess
 import time
 from unittest import mock
 from unittest import TestCase
@@ -19,12 +20,14 @@ class TestMouseAsync(TestCase):
     def tearDown(self) -> None:
         self.ahk.stop_hotkeys()
         self.ahk._transport._proc.kill()
+        subprocess.run(['TASKKILL', '/F', '/IM', 'AutoHotkey.exe'])
 
     def test_hotkey(self):
         with mock.MagicMock(return_value=None) as m:
             self.ahk.add_hotkey('a', callback=m)
             self.ahk.start_hotkeys()
             self.ahk.key_down('a')
+            self.ahk.key_press('a')
             sleep(1)
             m.assert_called()
 
@@ -37,5 +40,6 @@ class TestMouseAsync(TestCase):
             self.ahk.add_hotkey('a', callback=mock_cb, ex_handler=mock_ex_handler)
             self.ahk.start_hotkeys()
             self.ahk.key_down('a')
+            self.ahk.key_press('a')
             sleep(1)
             mock_ex_handler.assert_called()

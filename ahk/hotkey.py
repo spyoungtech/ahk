@@ -222,6 +222,9 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 if line.rstrip(b'\n') == _KEEPALIVE_SENTINEL:
                     logging.debug('keepalive received')
                     continue
+                if not line.strip():
+                    print('Listener: Process probably died, exiting')
+                    break
                 logging.debug(f'Received {line!r}')
                 self._callback_queue.put_nowait(line.decode('UTF-8').strip())
 

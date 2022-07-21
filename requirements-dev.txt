@@ -7,3 +7,4 @@ coverage
 mypy==0.961
 typing_extensions
 jinja2
+pytest-rerunfailures
