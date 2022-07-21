@@ -53,7 +53,10 @@ def _copyfunc(src, dst, *, follow_symlinks=True):
             changes += 1
             print('MODIFIED', dst)
             shutil.copy2(src, dst, follow_symlinks=follow_symlinks)
-
+    else:
+        changes += 1
+        print('ADDED', dst)
+        shutil.copy2(src, dst, follow_symlinks=follow_symlinks)
     return dst
 
 

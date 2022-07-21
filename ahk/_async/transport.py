@@ -237,6 +237,12 @@ class AsyncTransport(ABC):
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._hotkey_transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
+    def start_hotkeys(self) -> None:
+        return self._hotkey_transport.start()
+
+    def stop_hotkeys(self) -> None:
+        return self._hotkey_transport.stop()
+
     async def init(self) -> None:
         self._started = True
         return None

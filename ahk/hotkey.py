@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import os
 import subprocess
 import sys
@@ -13,6 +14,8 @@ from typing import Deque
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Protocol
+from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
 from typing import TypeVar
@@ -206,6 +209,7 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
+            atexit.register(kill, self._proc)
             while self._running:
                 assert self._proc.stdout is not None
                 line = self._proc.stdout.readline()
@@ -214,3 +218,16 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                     continue
                 logging.debug(f'Received {line!r}')
                 self._callback_queue.put_nowait(line.decode('UTF-8').strip())
+
+
+@runtime_checkable
+class Killable(Protocol):
+    def kill(self) -> None:
+        ...
+
+
+def kill(proc: Killable) -> None:
+    try:
+        proc.kill()
+    except:
+        pass

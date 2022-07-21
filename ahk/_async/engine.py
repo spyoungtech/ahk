@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 from typing import Callable
+from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Literal
@@ -14,6 +15,7 @@ from typing import Type
 from typing import TYPE_CHECKING
 from typing import Union
 
+from ..keys import Key
 from .transport import AsyncDaemonProcessTransport
 from .transport import AsyncFutureResult
 from .transport import AsyncTransport
@@ -47,11 +49,18 @@ CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]
 
 
 class AsyncAHK:
-    def __init__(self, *, TransportClass: Optional[Type[AsyncTransport]] = None, **transport_kwargs: Any):
+    def __init__(
+        self,
+        *,
+        TransportClass: Optional[Type[AsyncTransport]] = None,
+        transport_options: Optional[Dict[str, Any]] = None,
+    ):
+        if transport_options is None:
+            transport_options = {}
         if TransportClass is None:
             TransportClass = AsyncDaemonProcessTransport
         assert TransportClass is not None
-        transport = TransportClass(**transport_kwargs)
+        transport = TransportClass(**transport_options)
         self._transport: AsyncTransport = transport
 
     def add_hotkey(
@@ -61,6 +70,12 @@ class AsyncAHK:
 
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
+
+    def start_hotkeys(self) -> None:
+        return self._transport.start_hotkeys()
+
+    def stop_hotkeys(self) -> None:
+        return self._transport.stop_hotkeys()
 
     # fmt: off
     @overload
@@ -146,20 +161,77 @@ class AsyncAHK:
     async def get_volume(self, device_number: int = 1) -> float:
         raise NotImplementedError()
 
-    async def key_down(self, key: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def key_down(self, key: Union[str, Key]) -> None: ...
+    @overload
+    async def key_down(self, key: Union[str, Key], *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def key_down(self, key: Union[str, Key], *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    # fmt: on
+    async def key_down(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        if isinstance(key, str):
+            key = Key(key_name=key)
+        if blocking:
+            return await self.send_input(key.DOWN, blocking=True)
+        else:
+            return await self.send_input(key.DOWN, blocking=False)
 
-    async def key_press(self, key: str, release: bool = True, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def key_press(self, key: Union[str, Key], *, release: bool = True) -> None: ...
+    @overload
+    async def key_press(self, key: Union[str, Key], *, blocking: Literal[True], release: bool = True) -> None: ...
+    @overload
+    async def key_press(self, key: Union[str, Key], *, blocking: Literal[False], release: bool = True) -> AsyncFutureResult[None]: ...
+    # fmt: on
+    async def key_press(
+        self, key: Union[str, Key], *, release: bool = True, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        if blocking:
+            d = await self.key_down(key, blocking=True)
+            if release:
+                return await self.key_up(key, blocking=True)
+            else:
+                return d
+        else:
+            await self.key_down(key, blocking=False)
+            if release:
+                await self.key_up(key, blocking=False)
+            return None
 
-    async def key_release(self, key: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def key_release(self, key: Union[str, Key]) -> None: ...
+    @overload
+    async def key_release(self, key: Union[str, Key], *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def key_release(self, key: Union[str, Key], *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    # fmt: on
+    async def key_release(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        if blocking:
+            return await self.key_up(key=key, blocking=True)
+        else:
+            return await self.key_up(key=key, blocking=False)
 
     async def key_state(self, key_name: str, mode: Optional[Union[Literal['P'], Literal['T']]] = None) -> bool:
         raise NotImplementedError()
 
-    async def key_up(self, key: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def key_up(self, key: Union[str, Key]) -> None: ...
+    @overload
+    async def key_up(self, key: Union[str, Key], *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def key_up(self, key: Union[str, Key], *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    # fmt: on
+    async def key_up(self, key: Union[str, Key], blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        if isinstance(key, str):
+            key = Key(key_name=key)
+        if blocking:
+            return await self.send_input(key.UP, blocking=True)
+        else:
+            return await self.send_input(key.UP, blocking=False)
 
     async def key_wait(
         self, key_name: str, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False
@@ -197,14 +269,40 @@ class AsyncAHK:
     async def run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
 
-    async def send(self, s: str, raw: bool = False, delay: Optional[int] = None, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def send(self, s: str) -> None: ...
+    @overload
+    async def send(self, s: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def send(self, s: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    # fmt: on
+    async def send(
+        self, s: str, raw: bool = False, delay: Optional[int] = None, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [s]
+        if raw:
+            raw_resp = await self._transport.function_call('SendRaw', args=args, blocking=blocking)
+            return raw_resp
+        else:
+            resp = await self._transport.function_call('Send', args=args, blocking=blocking)
+            return resp
 
     async def send_event(self, s: str, delay: Optional[int] = None) -> None:
         raise NotImplementedError()
 
-    async def send_input(self, s: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def send_input(self, s: str) -> None: ...
+    @overload
+    async def send_input(self, s: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def send_input(self, s: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    # fmt: on
+    async def send_input(self, s: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        args = [s]
+        resp = await self._transport.function_call('SendInput', args, blocking=blocking)
+        return resp
 
     async def send_play(self, s: str) -> None:
         raise NotImplementedError()

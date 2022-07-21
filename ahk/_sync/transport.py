@@ -120,7 +120,9 @@ def kill(proc: Killable) -> None:
 
 def async_assert_send_nonblocking_type_correct(
     obj: Any,
-) -> TypeGuard[Future[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]]]:
+) -> TypeGuard[
+    Future[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]]
+]:
     return True
 
 
@@ -223,6 +225,12 @@ class Transport(ABC):
 
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._hotkey_transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
+
+    def start_hotkeys(self) -> None:
+        return self._hotkey_transport.start()
+
+    def stop_hotkeys(self) -> None:
+        return self._hotkey_transport.stop()
 
     def init(self) -> None:
         self._started = True

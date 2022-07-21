@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any
 from typing import Callable
+from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Literal
@@ -14,6 +15,7 @@ from typing import Type
 from typing import TYPE_CHECKING
 from typing import Union
 
+from ..keys import Key
 from .transport import DaemonProcessTransport
 from .transport import SyncFutureResult
 from .transport import Transport
@@ -47,11 +49,18 @@ CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]
 
 
 class AHK:
-    def __init__(self, *, TransportClass: Optional[Type[Transport]] = None, **transport_kwargs: Any):
+    def __init__(
+        self,
+        *,
+        TransportClass: Optional[Type[Transport]] = None,
+        transport_options: Optional[Dict[str, Any]] = None,
+    ):
+        if transport_options is None:
+            transport_options = {}
         if TransportClass is None:
             TransportClass = DaemonProcessTransport
         assert TransportClass is not None
-        transport = TransportClass(**transport_kwargs)
+        transport = TransportClass(**transport_options)
         self._transport: Transport = transport
 
     def add_hotkey(
@@ -62,6 +71,12 @@ class AHK:
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
+    def start_hotkeys(self) -> None:
+        return self._transport.start_hotkeys()
+
+    def stop_hotkeys(self) -> None:
+        return self._transport.stop_hotkeys()
+
     # fmt: off
     @overload
     def list_windows(self) -> List[Window]: ...
@@ -70,7 +85,9 @@ class AHK:
     @overload
     def list_windows(self, *, blocking: Literal[True]) -> List[Window]: ...
     # fmt: on
-    def list_windows(self, blocking: bool = True) -> Union[List[Window], SyncFutureResult[List[Window]]]:
+    def list_windows(
+        self, blocking: bool = True
+    ) -> Union[List[Window], SyncFutureResult[List[Window]]]:
         resp = self._transport.function_call('WindowList', engine=self, blocking=blocking)
         return resp
 
@@ -144,20 +161,77 @@ class AHK:
     def get_volume(self, device_number: int = 1) -> float:
         raise NotImplementedError()
 
-    def key_down(self, key: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    def key_down(self, key: Union[str, Key]) -> None: ...
+    @overload
+    def key_down(self, key: Union[str, Key], *, blocking: Literal[True]) -> None: ...
+    @overload
+    def key_down(self, key: Union[str, Key], *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    # fmt: on
+    def key_down(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+        if isinstance(key, str):
+            key = Key(key_name=key)
+        if blocking:
+            return self.send_input(key.DOWN, blocking=True)
+        else:
+            return self.send_input(key.DOWN, blocking=False)
 
-    def key_press(self, key: str, release: bool = True, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    def key_press(self, key: Union[str, Key], *, release: bool = True) -> None: ...
+    @overload
+    def key_press(self, key: Union[str, Key], *, blocking: Literal[True], release: bool = True) -> None: ...
+    @overload
+    def key_press(self, key: Union[str, Key], *, blocking: Literal[False], release: bool = True) -> SyncFutureResult[None]: ...
+    # fmt: on
+    def key_press(
+        self, key: Union[str, Key], *, release: bool = True, blocking: bool = True
+    ) -> Union[None, SyncFutureResult[None]]:
+        if blocking:
+            d = self.key_down(key, blocking=True)
+            if release:
+                return self.key_up(key, blocking=True)
+            else:
+                return d
+        else:
+            self.key_down(key, blocking=False)
+            if release:
+                self.key_up(key, blocking=False)
+            return None
 
-    def key_release(self, key: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    def key_release(self, key: Union[str, Key]) -> None: ...
+    @overload
+    def key_release(self, key: Union[str, Key], *, blocking: Literal[True]) -> None: ...
+    @overload
+    def key_release(self, key: Union[str, Key], *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    # fmt: on
+    def key_release(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+        if blocking:
+            return self.key_up(key=key, blocking=True)
+        else:
+            return self.key_up(key=key, blocking=False)
 
     def key_state(self, key_name: str, mode: Optional[Union[Literal['P'], Literal['T']]] = None) -> bool:
         raise NotImplementedError()
 
-    def key_up(self, key: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    def key_up(self, key: Union[str, Key]) -> None: ...
+    @overload
+    def key_up(self, key: Union[str, Key], *, blocking: Literal[True]) -> None: ...
+    @overload
+    def key_up(self, key: Union[str, Key], *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    # fmt: on
+    def key_up(self, key: Union[str, Key], blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+        if isinstance(key, str):
+            key = Key(key_name=key)
+        if blocking:
+            return self.send_input(key.UP, blocking=True)
+        else:
+            return self.send_input(key.UP, blocking=False)
 
     def key_wait(
         self, key_name: str, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False
@@ -195,14 +269,40 @@ class AHK:
     def run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
 
-    def send(self, s: str, raw: bool = False, delay: Optional[int] = None, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    def send(self, s: str) -> None: ...
+    @overload
+    def send(self, s: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def send(self, s: str, *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    # fmt: on
+    def send(
+        self, s: str, raw: bool = False, delay: Optional[int] = None, blocking: bool = True
+    ) -> Union[None, SyncFutureResult[None]]:
+        args = [s]
+        if raw:
+            raw_resp = self._transport.function_call('SendRaw', args=args, blocking=blocking)
+            return raw_resp
+        else:
+            resp = self._transport.function_call('Send', args=args, blocking=blocking)
+            return resp
 
     def send_event(self, s: str, delay: Optional[int] = None) -> None:
         raise NotImplementedError()
 
-    def send_input(self, s: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    def send_input(self, s: str) -> None: ...
+    @overload
+    def send_input(self, s: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def send_input(self, s: str, *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    # fmt: on
+    def send_input(self, s: str, *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+        args = [s]
+        resp = self._transport.function_call('SendInput', args, blocking=blocking)
+        return resp
 
     def send_play(self, s: str) -> None:
         raise NotImplementedError()
@@ -550,13 +650,14 @@ class AHK:
     ) -> None:
         raise NotImplementedError()
 
+    # fmt: off
     @overload
     def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '') -> None: ...
     @overload
     def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[True]) -> None: ...
     @overload
     def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[False]) -> SyncFutureResult[None]: ...
-
+    # fmt: on
     def win_close(
         self,
         title: str = '',
@@ -565,7 +666,7 @@ class AHK:
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
-        blocking: bool = True
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args: List[str]
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]

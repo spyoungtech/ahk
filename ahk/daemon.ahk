@@ -464,6 +464,7 @@ Send(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     Send,% str
+    return FormatNoValueResponse()
 }
 
 SendRaw(ByRef command) {
@@ -471,6 +472,7 @@ SendRaw(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendRaw,% str
+    return FormatNoValueResponse()
 }
 
 SendInput(ByRef command) {
@@ -478,6 +480,7 @@ SendInput(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendInput,% str
+    return FormatNoValueResponse()
 }
 
 
@@ -486,6 +489,7 @@ SendEvent(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendEvent,% str
+    return FormatNoValueResponse()
 }
 
 SendPlay(ByRef command) {
@@ -493,6 +497,7 @@ SendPlay(ByRef command) {
     s := Join(",", command*)
     str := Unescape(s)
     SendPlay,% str
+    return FormatNoValueResponse()
 }
 
 SetCapsLockState(ByRef command) {
@@ -502,6 +507,7 @@ SetCapsLockState(ByRef command) {
         state := command[2]
         SetCapsLockState, %state%
     }
+    return FormatNoValueResponse()
 }
 
 HideTrayTip(ByRef command) {
