@@ -13,7 +13,8 @@ build_py = unasync.cmdclass_build_py(
                 '_AIOP': '_SIOP',
                 'async_create_process': 'sync_create_process',
                 'adrain_stdin': 'drain_stdin',
-                'a_send_nonblocking': 'send_nonblocking'
+                'a_send_nonblocking': 'send_nonblocking',
+                'async_sleep': 'sleep',
                 # "__aenter__": "__aenter__",
             },
         ),

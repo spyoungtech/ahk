@@ -434,6 +434,7 @@ RegDelete(ByRef command) {
 }
 
 KeyWait(ByRef command) {
+    global INTEGERRESPONSEMESSAGE
     keyname := command[2]
     if (command.Length() = 2) {
         KeyWait,% keyname
@@ -441,7 +442,7 @@ KeyWait(ByRef command) {
         options := command[3]
         KeyWait,% keyname,% options
     }
-    return ErrorLevel
+    return FormatResponse(INTEGERRESPONSEMESSAGE, ErrorLevel)
 }
 
 SetKeyDelay(ByRef command) {

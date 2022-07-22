@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 import asyncio
+import time
 from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Iterable
 from typing import List
 from typing import Literal
+from typing import NoReturn
 from typing import Optional
 from typing import overload
 from typing import Sequence
 from typing import Tuple
 from typing import Type
-from typing import TYPE_CHECKING
 from typing import Union
 
 from ..keys import Key
@@ -23,9 +24,7 @@ from .window import SyncControl
 from .window import Window
 
 
-class FutureResult:
-    ...
-
+sleep = time.sleep
 
 CoordModeTargets = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
 CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
@@ -189,16 +188,15 @@ class AHK:
         self, key: Union[str, Key], *, release: bool = True, blocking: bool = True
     ) -> Union[None, SyncFutureResult[None]]:
         if blocking:
-            d = self.key_down(key, blocking=True)
             if release:
                 return self.key_up(key, blocking=True)
             else:
-                return d
+                return None
         else:
-            self.key_down(key, blocking=False)
+            d = self.key_down(key, blocking=False)
             if release:
-                self.key_up(key, blocking=False)
-            return None
+                return self.key_up(key, blocking=False)
+            return d
 
     # fmt: off
     @overload
@@ -233,10 +231,30 @@ class AHK:
         else:
             return self.send_input(key.UP, blocking=False)
 
+    # fmt: off
+    @overload
+    def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> int: ...
+    @overload
+    def key_wait(self, key_name: str, *, blocking: Literal[True], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> int: ...
+    @overload
+    def key_wait(self, key_name: str, *, blocking: Literal[False], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> SyncFutureResult[int]: ...
+    # fmt: on
     def key_wait(
-        self, key_name: str, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False
-    ) -> None:
-        raise NotImplementedError()
+        self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False, blocking: bool = True
+    ) -> Union[int, SyncFutureResult[int]]:
+        options = ''
+        if not released:
+            options += 'D'
+        if logical_state:
+            options += 'L'
+        if timeout:
+            options += f'T{timeout}'
+        args = [key_name]
+        if options:
+            args.append(options)
+
+        resp = self._transport.function_call('KeyWait', args)
+        return resp
 
     # async def mouse_position(self):
     #     raise NotImplementedError()
@@ -672,3 +690,7 @@ class AHK:
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
         resp = self._transport.function_call('AHKWinClose', args=args, blocking=blocking)
         return resp
+
+    def block_forever(self) -> NoReturn:
+        while True:
+            sleep(1)
