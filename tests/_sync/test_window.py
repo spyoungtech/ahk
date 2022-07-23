@@ -57,3 +57,8 @@ class TestWindowAsync(TestCase):
     def test_win_minmax(self):
         minmax = self.win.get_minmax()
         assert minmax == 0
+
+    def test_win_set_always_on_top(self):
+        assert self.win.is_always_on_top() is False
+        self.win.set_always_on_top('On')
+        assert self.win.is_always_on_top() is True

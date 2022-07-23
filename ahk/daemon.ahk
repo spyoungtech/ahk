@@ -274,6 +274,127 @@ AHKWinGetExStyle(ByRef command) {
     return response
 }
 
+AHKWinSetAlwaysOnTop(ByRef command) {
+    toggle := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinSet, AlwaysOntop, %toggle%, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinSetBottom(ByRef command) {
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinSet, Bottom,, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinSetTop(ByRef command) {
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinSet, Top,, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinSetEnable(ByRef command) {
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinSet, Enable,, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinSetDisable(ByRef command) {
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinSet, Disable,, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinSetRedraw(ByRef command) {
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinSet, Redraw,, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinSetStyle(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    style := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinSet, Style, %style%, %title%, %text%, %extitle%, %extext%
+    if (ErrorLevel = 1) {
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    } else {
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    }
+}
+
+AHKWinSetExStyle(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    style := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinSet, ExStyle, %style%, %title%, %text%, %extitle%, %extext%
+    if (ErrorLevel = 1) {
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    } else {
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    }
+}
+
+AHKWinSetRegion(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    options := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinSet, Region, %options%, %title%, %text%, %extitle%, %extext%
+    if (ErrorLevel = 1) {
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    } else {
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    }
+}
+
+AHKWinSetTransparent(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    transparency := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinSet, Transparent, %transparency%, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
+
+AHKWinSetTransColor(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    color := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    WinSet, TransColor, %color%, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
+}
 
 ImageSearch(ByRef command) {
     global COORDINATERESPONSEMESSAGE
@@ -707,51 +828,57 @@ ControlSend(ByRef command) {
 }
 
 
-BaseCheck(ByRef command) {
-    kommand := command[2]
-    title := command[3]
-    if %kommand%(title) {
-        return 1
-    }
-    else {
-        return 0
-    }
-}
+
+;
+;BaseCheck(ByRef command) {
+;    kommand := command[2]
+;    title := command[3]
+;    if %kommand%(title) {
+;        return 1
+;    }
+;    else {
+;        return 0
+;    }
+;}
 
 FromMouse(ByRef command) {
     MouseGetPos,,, MouseWin
     return MouseWin
 }
 
-WinGet(ByRef command) {
-    title := command[4]
-    text := command[5]
-    extitle := command[6]
-    extext := command[7]
-    WinGet, output,% command[3], %title%, %text%, %extitle%, %extext%
-    return output
-}
+;WinGet(ByRef command) {
+;    title := command[4]
+;    text := command[5]
+;    extitle := command[6]
+;    extext := command[7]
+;    WinGet, output,% command[3], %title%, %text%, %extitle%, %extext%
+;    return output
+;}
 
-WinSet(ByRef command) {
-    subcommand := command[2]
-    title := command[4]
-    value := command[3]
+;WinSet(ByRef command) {
+;    subcommand := command[2]
+;    title := command[4]
+;    value := command[3]
+;
+;    WinSet,%subcommand%,%value%,%title%
+;}
 
-    WinSet,%subcommand%,%value%,%title%
-}
+;WinSetTitle(ByRef command) {
+;    newtitle := command[4]
+;    WinSetTitle,% command[2],, %newtitle%
+;}
 
-WinSetTitle(ByRef command) {
-    newtitle := command[4]
-    WinSetTitle,% command[2],, %newtitle%
-}
-
-WinIsAlwaysOnTop(ByRef command) {
+AHKWinIsAlwaysOnTop(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
     title := command[2]
     WinGet, ExStyle, ExStyle, %title%
+    if (ExStyle = "")
+        return FormatNoValueResponse()
+
     if (ExStyle & 0x8)  ; 0x8 is WS_EX_TOPMOST.
-        return 1
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
     else
-        return 0
+        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
 }
 
 WinClick(ByRef command) {

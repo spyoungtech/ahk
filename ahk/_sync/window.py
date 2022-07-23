@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from typing import Literal
+from typing import Optional
+from typing import overload
 from typing import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
-
 if TYPE_CHECKING:
     from .engine import AHK
+    from .transport import SyncFutureResult
 
 
 class WindowNotFoundException(Exception):
@@ -78,6 +80,37 @@ class Window:
             )
         return controls
 
+    # fmt: off
+    @overload
+    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> None: ...
+    @overload
+    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    @overload
+    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+        if blocking:
+            resp = self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True)
+        else:
+            resp = self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False)
+        return resp
+
+    # fmt: off
+    @overload
+    def is_always_on_top(self) -> bool: ...
+    @overload
+    def is_always_on_top(self, *, blocking: Literal[False]) -> SyncFutureResult[Optional[bool]]: ...
+    @overload
+    def is_always_on_top(self, *, blocking: Literal[True]) -> bool: ...
+    # fmt: on
+    def is_always_on_top(self, *, blocking: bool = True) -> Union[bool, SyncFutureResult[Optional[bool]]]:
+        args = [f'ahk_id {self._ahk_id}']
+        resp = self._engine._transport.function_call('AHKWinIsAlwaysOnTop', args, blocking=blocking)  # XXX: maybe shouldn't access transport directly?
+        if resp is None:
+            raise WindowNotFoundException(
+                f'Error when trying to get always on top style for window {self._ahk_id}. The window may have been closed before the operation could be completed'
+            )
+        return resp
 
 class SyncControl:
     def __init__(self, window: Window, hwnd: str, control_class: str):

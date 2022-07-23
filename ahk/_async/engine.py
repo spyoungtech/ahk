@@ -533,6 +533,19 @@ class AsyncAHK:
 
     # fmt: off
     @overload
+    async def win_get_from_mouse_position(self) -> Union[AsyncWindow, None]: ...
+    @overload
+    async def win_get_from_mouse_position(self, *, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
+    @overload
+    async def win_get_from_mouse_position(self, *, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
+    # fmt: on
+    async def win_get_from_mouse_position(
+        self, *, blocking: bool = True
+    ) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]:
+        raise NotImplementedError()
+
+    # fmt: off
+    @overload
     async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> bool: ...
     @overload
     async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
@@ -540,18 +553,239 @@ class AsyncAHK:
     async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> bool: ...
     # fmt: on
     async def win_exists(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
     ) -> Union[bool, AsyncFutureResult[bool]]:
         args = [title, text, exclude_title, exclude_text]
         resp = await self._transport.function_call('AHKWinExist', args, blocking=blocking)
         return resp
 
-    async def win_set(self, subcommand: str, *args: Any, blocking: bool = True) -> None:
-        # TODO: type hint subcommand literals
+    # fmt: off
+    @overload
+    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    # fmt: on
+    async def win_set_title(
+        self,
+        new_title: str,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
         raise NotImplementedError()
 
-    async def windows(self) -> Sequence[AsyncWindow]:
+    # fmt: off
+    @overload
+    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_always_on_top(
+        self,
+        toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0],
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [str(toggle), title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetAlwaysOnTop', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_bottom(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetBottom', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_top(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetTop', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_disable(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetDisable', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_enable(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetEnable', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_redraw(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetRedraw', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> bool: ...
+    @overload
+    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    @overload
+    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> bool: ...
+    # fmt: on
+    async def win_set_style(
+        self,
+        style: str,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        blocking: bool = True,
+    ) -> Union[bool, AsyncFutureResult[bool]]:
+        args = [style, title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetStyle', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> bool: ...
+    @overload
+    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    @overload
+    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> bool: ...
+    # fmt: on
+    async def win_set_ex_style(
+        self,
+        style: str,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        blocking: bool = True,
+    ) -> Union[bool, AsyncFutureResult[bool]]:
+        args = [style, title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetExStyle', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> bool: ...
+    @overload
+    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    @overload
+    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> bool: ...
+    # fmt: on
+    async def win_set_region(
+        self,
+        options: str,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        blocking: bool = True,
+    ) -> Union[bool, AsyncFutureResult[bool]]:
         raise NotImplementedError()
+
+    # fmt: off
+    @overload
+    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_transparent(
+        self,
+        transparency: Union[int, Literal['Off']],
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [str(transparency), title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetTransparent', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> None: ...
+    @overload
+    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def win_set_trans_color(
+        self,
+        color: Union[int, str],
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [str(color), title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetTransColor', args, blocking=blocking)
+        return resp
+
+    # alias for backwards compatibility
+    windows = list_windows
 
     async def click(
         self,

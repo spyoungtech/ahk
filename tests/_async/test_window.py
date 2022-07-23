@@ -57,3 +57,8 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_win_minmax(self):
         minmax = await self.win.get_minmax()
         assert minmax == 0
+
+    async def test_win_set_always_on_top(self):
+        assert await self.win.is_always_on_top() is False
+        await self.win.set_always_on_top('On')
+        assert await self.win.is_always_on_top() is True
