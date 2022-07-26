@@ -9,8 +9,9 @@ from ahk.script import ScriptEngine, AsyncScriptEngine
 from ahk.utils import escape_sequence_replace, make_logger, async_filter
 
 logger = make_logger(__name__)
-TITLE_MATCH_MODE = Literal[1, 2, 3, "RegEx"]
-TITLE_MATCH_SPEED = Literal["Slow", "Fast"]
+TITLE_MATCH_MODE = Literal[1, 2, 3, 'RegEx']
+TITLE_MATCH_SPEED = Literal['Slow', 'Fast']
+
 
 class WindowNotFoundError(ValueError):
     pass
@@ -651,8 +652,16 @@ class WindowMixin(ScriptEngine):
         return Window(engine=self, ahk_id=ahk_id, encoding=encoding)
 
     def win_wait(
-        self, *, title='', text='', exclude_title='', match_mode: Optional[TITLE_MATCH_MODE]=None,
-        match_speed: Optional[TITLE_MATCH_SPEED]=None, timeout=0.5, exclude_text='', encoding=None
+        self,
+        *,
+        title='',
+        text='',
+        exclude_title='',
+        match_mode: Optional[TITLE_MATCH_MODE] = None,
+        match_speed: Optional[TITLE_MATCH_SPEED] = None,
+        timeout=0.5,
+        exclude_text='',
+        encoding=None,
     ):
         """
         WinWait
@@ -1094,8 +1103,16 @@ class AsyncWindowMixin(AsyncScriptEngine, WindowMixin):
             return window
 
     async def win_wait(
-        self, *, title='', text='', exclude_title='', match_mode: Optional[TITLE_MATCH_MODE]=None,
-        match_speed: Optional[TITLE_MATCH_SPEED]=None, timeout=0.5, exclude_text='', encoding=None
+        self,
+        *,
+        title='',
+        text='',
+        exclude_title='',
+        match_mode: Optional[TITLE_MATCH_MODE] = None,
+        match_speed: Optional[TITLE_MATCH_SPEED] = None,
+        timeout=0.5,
+        exclude_text='',
+        encoding=None,
     ):
         script = self.render_template(
             'window/win_wait.ahk',
