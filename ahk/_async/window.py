@@ -97,14 +97,13 @@ class AsyncWindow:
         self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
         if blocking:
-            resp = await self._engine.win_set_always_on_top(
-                toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True
-            )
+            await self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True)
+            return None
         else:
             resp = await self._engine.win_set_always_on_top(
                 toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False
             )
-        return resp
+            return resp
 
     # fmt: off
     @overload

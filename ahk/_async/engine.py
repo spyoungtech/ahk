@@ -161,7 +161,8 @@ class AsyncAHK:
         if isinstance(key, str):
             key = Key(key_name=key)
         if blocking:
-            return await self.send_input(key.DOWN, blocking=True)
+            await self.send_input(key.DOWN, blocking=True)
+            return None
         else:
             return await self.send_input(key.DOWN, blocking=False)
 
@@ -177,10 +178,10 @@ class AsyncAHK:
         self, key: Union[str, Key], *, release: bool = True, blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
         if blocking:
+            await self.key_down(key, blocking=True)
             if release:
-                return await self.key_up(key, blocking=True)
-            else:
-                return None
+                await self.key_up(key, blocking=True)
+            return None
         else:
             d = await self.key_down(key, blocking=False)
             if release:
@@ -197,7 +198,8 @@ class AsyncAHK:
     # fmt: on
     async def key_release(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         if blocking:
-            return await self.key_up(key=key, blocking=True)
+            await self.key_up(key=key, blocking=True)
+            return None
         else:
             return await self.key_up(key=key, blocking=False)
 
@@ -216,7 +218,8 @@ class AsyncAHK:
         if isinstance(key, str):
             key = Key(key_name=key)
         if blocking:
-            return await self.send_input(key.UP, blocking=True)
+            await self.send_input(key.UP, blocking=True)
+            return None
         else:
             return await self.send_input(key.UP, blocking=False)
 

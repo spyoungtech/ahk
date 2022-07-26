@@ -160,7 +160,8 @@ class AHK:
         if isinstance(key, str):
             key = Key(key_name=key)
         if blocking:
-            return self.send_input(key.DOWN, blocking=True)
+            self.send_input(key.DOWN, blocking=True)
+            return None
         else:
             return self.send_input(key.DOWN, blocking=False)
 
@@ -176,10 +177,10 @@ class AHK:
         self, key: Union[str, Key], *, release: bool = True, blocking: bool = True
     ) -> Union[None, SyncFutureResult[None]]:
         if blocking:
+            self.key_down(key, blocking=True)
             if release:
-                return self.key_up(key, blocking=True)
-            else:
-                return None
+                self.key_up(key, blocking=True)
+            return None
         else:
             d = self.key_down(key, blocking=False)
             if release:
@@ -196,7 +197,8 @@ class AHK:
     # fmt: on
     def key_release(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
         if blocking:
-            return self.key_up(key=key, blocking=True)
+            self.key_up(key=key, blocking=True)
+            return None
         else:
             return self.key_up(key=key, blocking=False)
 
@@ -215,7 +217,8 @@ class AHK:
         if isinstance(key, str):
             key = Key(key_name=key)
         if blocking:
-            return self.send_input(key.UP, blocking=True)
+            self.send_input(key.UP, blocking=True)
+            return None
         else:
             return self.send_input(key.UP, blocking=False)
 
