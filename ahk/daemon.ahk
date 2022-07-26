@@ -67,6 +67,16 @@ AHKWinGetID(ByRef command) {
     return response
 }
 
+AHKWinGetTitle(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    WinGetTitle, text, %title%, %text%, %extitle%, %extext%
+    return FormatResponse(STRINGRESPONSEMESSAGE, text)
+}
+
 AHKWinGetIDLast(ByRef command) {
     global WINDOWRESPONSEMESSAGE
     title := command[2]
@@ -208,9 +218,7 @@ AHKWinGetControlList(ByRef command) {
         output .= Format("('{}', '{}'), ", hwnd, classname)
 
     }
-
     output .= "])"
-    MsgBox,% output
     response := FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, output)
     return response
 }
@@ -641,11 +649,9 @@ HideTrayTip(ByRef command) {
     }
 }
 
-WinGetTitle(ByRef command) {
-    title := command[3]
-    WinGetTitle, text, %title%
-    return text
-}
+
+
+
 WinGetClass(ByRef command) {
     title := command[3]
     WinGetClass, text, %title%
@@ -781,6 +787,14 @@ WinWaitClose(ByRef command) {
 
 WindowList(ByRef command) {
     global WINDOWIDLISTRESPONSEMESSAGE
+
+    previous_setting := Format("{}", A_DetectHiddenWindows)
+
+    detect_hidden_windows := command[2]
+    if (detect_hidden_windows) {
+        DetectHiddenWindows, %detect_hidden_windows%
+    }
+
     WinGet windows, List
     r := ""
     Loop %windows%
@@ -789,6 +803,7 @@ WindowList(ByRef command) {
         r .= id . "`,"
     }
     resp := FormatResponse(WINDOWIDLISTRESPONSEMESSAGE, r)
+    DetectHiddenWindows, %previous_setting%
     return resp
 }
 

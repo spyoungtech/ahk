@@ -9,6 +9,7 @@ build_py = unasync.cmdclass_build_py(
                 'AsyncAHK': 'AHK',
                 'AsyncTransport': 'Transport',
                 'AsyncWindow': 'Window',
+                'AsyncControl': 'Control',
                 'AsyncDaemonProcessTransport': 'DaemonProcessTransport',
                 '_AIOP': '_SIOP',
                 'async_create_process': 'sync_create_process',

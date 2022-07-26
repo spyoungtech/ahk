@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING
 from typing import Union
 
 if TYPE_CHECKING:
-    from ahk import SyncControl
+    from ahk import Control
     from ahk import Window
 
 if sys.version_info < (3, 10):
@@ -64,7 +64,7 @@ FunctionName = Literal[
     Literal['SendEvent'],
     Literal['SendPlay'],
     Literal['SetCapsLockState'],
-    Literal['WinGetTitle'],
+    Literal['AHKWinGetTitle'],
     Literal['WinGetClass'],
     Literal['WinGetText'],
     Literal['WinActivate'],
@@ -95,6 +95,7 @@ FunctionName = Literal[
     Literal['AHKWinSetTransColor'],
     Literal['AHKWinSetStyle'],
     Literal['AHKWinSetExStyle'],
+    Literal['AHKWinSetRegion'],
     Literal['WinIsAlwaysOnTop'],
     Literal['WinClick'],
     Literal['AHKWinMove'],
@@ -132,7 +133,7 @@ def kill(proc: Killable) -> None:
 def async_assert_send_nonblocking_type_correct(
     obj: Any,
 ) -> TypeGuard[
-    Future[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]]
+    Future[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]]
 ]:
     return True
 
@@ -285,7 +286,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['SetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, SyncFutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, SyncFutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, SyncFutureResult[str]]: ...
     @overload
     def function_call(self, function_name: Literal['WinGetClass'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, SyncFutureResult[str]]: ...
     @overload
@@ -349,7 +350,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinGetMinMax'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, int], SyncFutureResult[Union[None, int]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetControlList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[List[SyncControl], None, SyncFutureResult[Union[List[SyncControl], None]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetControlList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[List[Control], None, SyncFutureResult[Union[List[Control], None]]]: ...
     # @overload
     # async def function_call(self, function_name: Literal['AHKWinGetControlListHwnd'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[List[AsyncControl], AsyncFutureResult[List[AsyncControl]]]: ...
     @overload
@@ -377,6 +378,8 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKWinSetStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, SyncFutureResult[bool]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinSetExStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, SyncFutureResult[bool]]: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKWinSetRegion'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, SyncFutureResult[bool]]: ...
 
     @overload
     def function_call(self, function_name: Literal['AHKWinSetTransparent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, SyncFutureResult[None]]: ...
@@ -424,7 +427,7 @@ class Transport(ABC):
     @abstractmethod
     def send(
         self, request: RequestMessage, engine: Optional[AHK] = None
-    ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]:
+    ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         return NotImplemented
 
 
@@ -432,7 +435,7 @@ class Transport(ABC):
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AHK] = None
     ) -> SyncFutureResult[
-        Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]
+        Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]
     ]:
         return NotImplemented
 
@@ -464,7 +467,7 @@ class DaemonProcessTransport(Transport):
 
     def _send_nonblocking(
         self, request: RequestMessage, engine: Optional[AHK] = None
-    ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]:
+    ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         newline = '\n'
 
         msg = f"{request.function_name}{',' if request.args else ''}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode(
@@ -497,7 +500,7 @@ class DaemonProcessTransport(Transport):
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AHK] = None
     ) -> SyncFutureResult[
-        Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]
+        Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]
     ]:
         # this is only used by the sync implementation
         pool = ThreadPoolExecutor(max_workers=1)
@@ -510,7 +513,7 @@ class DaemonProcessTransport(Transport):
 
     def send(
         self, request: RequestMessage, engine: Optional[AHK] = None
-    ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[SyncControl]]:
+    ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         newline = '\n'
 
         msg = f"{request.function_name}{',' if request.args else ''}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode(

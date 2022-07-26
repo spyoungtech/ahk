@@ -20,7 +20,7 @@ from ..keys import Key
 from .transport import DaemonProcessTransport
 from .transport import SyncFutureResult
 from .transport import Transport
-from .window import SyncControl
+from .window import Control
 from .window import Window
 
 
@@ -28,22 +28,7 @@ sleep = time.sleep
 
 CoordModeTargets = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
 CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
-WinGetFunctions = Literal[
-    Literal['AHKWinGetID'],
-    Literal['AHKWinGetIDLast'],
-    Literal['AHKWinGetPID'],
-    Literal['AHKWinGetProcessName'],
-    Literal['AHKWinGetProcessPath'],
-    Literal['AHKWinGetCount'],
-    Literal['AHKWinGetList'],
-    Literal['AHKWinGetMinMax'],
-    Literal['AHKWinGetControlList'],
-    Literal['AHKWinGetControlListHwnd'],
-    Literal['AHKWinGetTransparent'],
-    Literal['AHKWinGetTransColor'],
-    Literal['AHKWinGetStyle'],
-    Literal['AHKWinGetExStyle'],
-]
+
 CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
 
@@ -78,16 +63,19 @@ class AHK:
 
     # fmt: off
     @overload
-    def list_windows(self) -> List[Window]: ...
+    def list_windows(self, *, detect_hidden_windows: bool = False) -> List[Window]: ...
     @overload
-    def list_windows(self, *, blocking: Literal[False]) -> Union[List[Window], SyncFutureResult[List[Window]]]: ...
+    def list_windows(self, *, detect_hidden_windows: bool = False, blocking: Literal[False]) -> Union[List[Window], SyncFutureResult[List[Window]]]: ...
     @overload
-    def list_windows(self, *, blocking: Literal[True]) -> List[Window]: ...
+    def list_windows(self, *, detect_hidden_windows: bool = False, blocking: Literal[True]) -> List[Window]: ...
     # fmt: on
     def list_windows(
-        self, blocking: bool = True
+        self, *, detect_hidden_windows: bool = False, blocking: bool = True
     ) -> Union[List[Window], SyncFutureResult[List[Window]]]:
-        resp = self._transport.function_call('WindowList', engine=self, blocking=blocking)
+        args = []
+        if detect_hidden_windows:
+            args.append('On')
+        resp = self._transport.function_call('WindowList', args, engine=self, blocking=blocking)
         return resp
 
     # fmt: off
@@ -427,6 +415,21 @@ class AHK:
 
     # fmt: off
     @overload
+    def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> str: ...
+    @overload
+    def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> SyncFutureResult[str]: ...
+    @overload
+    def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> str: ...
+    # fmt: on
+    def win_get_title(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[str, SyncFutureResult[str]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = self._transport.function_call('AHKWinGetTitle', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
     def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[Window, None]: ...
     @overload
     def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> SyncFutureResult[Union[Window, None]]: ...
@@ -517,17 +520,17 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[List[SyncControl], None]: ...
+    def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[List[Control], None]: ...
     @overload
-    def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> SyncFutureResult[Union[List[SyncControl], None]]: ...
+    def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> SyncFutureResult[Union[List[Control], None]]: ...
     @overload
-    def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[List[SyncControl], None]: ...
+    def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> Union[List[Control], None]: ...
     # fmt: on
     def win_get_control_list(
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
-    ) -> Union[List[SyncControl], None, SyncFutureResult[Optional[List[SyncControl]]]]:
+    ) -> Union[List[Control], None, SyncFutureResult[Optional[List[Control]]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
-        resp = self._transport.function_call('AHKWinGetControlList', args, blocking=blocking)
+        resp = self._transport.function_call('AHKWinGetControlList', args, blocking=blocking, engine=self)
         return resp
 
     # fmt: off
@@ -737,7 +740,9 @@ class AHK:
         *,
         blocking: bool = True,
     ) -> Union[bool, SyncFutureResult[bool]]:
-        raise NotImplementedError()
+        args = [options, title, text, exclude_title, exclude_text]
+        resp = self._transport.function_call('AHKWinSetRegion', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload

@@ -195,7 +195,7 @@ class WindowListResponseMessage(ResponseMessage):
     def unpack(self) -> Union[List[Window], List[AsyncWindow]]:
         from ._async.engine import AsyncAHK
         from ._async.window import AsyncWindow, AsyncControl
-        from ._sync.window import Window, SyncControl
+        from ._sync.window import Window, Control
         from ._sync.engine import AHK
 
         s = self._raw_content.decode(encoding='utf-8')
@@ -234,7 +234,12 @@ class ExceptionResponseMessage(ResponseMessage):
 class WindowControlListResponseMessage(ResponseMessage):
     type = 'windowcontrollist'
 
-    def unpack(self) -> Union[List[AsyncControl], List[SyncControl]]:
+    def unpack(self) -> Union[List[AsyncControl], List[Control]]:
+        from ._async.engine import AsyncAHK
+        from ._async.window import AsyncWindow, AsyncControl
+        from ._sync.window import Window, Control
+        from ._sync.engine import AHK
+
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
         assert is_window_control_list_response(val)
@@ -250,11 +255,11 @@ class WindowControlListResponseMessage(ResponseMessage):
                 ret_async.append(async_ctrl)
             return ret_async
         elif isinstance(self._engine, AHK):
-            ret_sync: List[SyncControl] = []
+            ret_sync: List[Control] = []
             window = Window(engine=self._engine, ahk_id=ahkid)
             for control in controls:
                 hwnd, classname = control
-                ctrl = SyncControl(window=window, hwnd=hwnd, control_class=classname)
+                ctrl = Control(window=window, hwnd=hwnd, control_class=classname)
                 ret_sync.append(ctrl)
             return ret_sync
         else:
@@ -267,7 +272,7 @@ class WindowResponseMessage(ResponseMessage):
     def unpack(self) -> Union[Window, AsyncWindow]:
         from ._async.engine import AsyncAHK
         from ._async.window import AsyncWindow, AsyncControl
-        from ._sync.window import Window, SyncControl
+        from ._sync.window import Window, Control
         from ._sync.engine import AHK
 
         s = self._raw_content.decode(encoding='utf-8')
@@ -318,5 +323,5 @@ ResponseMessageClassTypes = Union[
 if TYPE_CHECKING:
     from ._async.engine import AsyncAHK
     from ._async.window import AsyncWindow, AsyncControl
-    from ._sync.window import Window, SyncControl
+    from ._sync.window import Window, Control
     from ._sync.engine import AHK

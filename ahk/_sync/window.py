@@ -6,6 +6,7 @@ from typing import overload
 from typing import Sequence
 from typing import TYPE_CHECKING
 from typing import Union
+
 if TYPE_CHECKING:
     from .engine import AHK
     from .transport import SyncFutureResult
@@ -72,7 +73,11 @@ class Window:
             )
         return minmax
 
-    def list_controls(self) -> Sequence['SyncControl']:
+    def get_title(self) -> str:
+        title = self._engine.win_get_title(title=f'ahk_id {self._ahk_id}')
+        return title
+
+    def list_controls(self) -> Sequence['Control']:
         controls = self._engine.win_get_control_list(title=f'ahk_id {self._ahk_id}')
         if controls is None:
             raise WindowNotFoundException(
@@ -88,11 +93,17 @@ class Window:
     @overload
     def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[True]) -> None: ...
     # fmt: on
-    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+    def set_always_on_top(
+        self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True
+    ) -> Union[None, SyncFutureResult[None]]:
         if blocking:
-            resp = self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True)
+            resp = self._engine.win_set_always_on_top(
+                toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True
+            )
         else:
-            resp = self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False)
+            resp = self._engine.win_set_always_on_top(
+                toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False
+            )
         return resp
 
     # fmt: off
@@ -105,14 +116,17 @@ class Window:
     # fmt: on
     def is_always_on_top(self, *, blocking: bool = True) -> Union[bool, SyncFutureResult[Optional[bool]]]:
         args = [f'ahk_id {self._ahk_id}']
-        resp = self._engine._transport.function_call('AHKWinIsAlwaysOnTop', args, blocking=blocking)  # XXX: maybe shouldn't access transport directly?
+        resp = self._engine._transport.function_call(
+            'AHKWinIsAlwaysOnTop', args, blocking=blocking
+        )  # XXX: maybe shouldn't access transport directly?
         if resp is None:
             raise WindowNotFoundException(
                 f'Error when trying to get always on top style for window {self._ahk_id}. The window may have been closed before the operation could be completed'
             )
         return resp
 
-class SyncControl:
+
+class Control:
     def __init__(self, window: Window, hwnd: str, control_class: str):
         self.window: Window = window
         self.hwnd: str = hwnd

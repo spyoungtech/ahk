@@ -62,3 +62,8 @@ class TestWindowAsync(TestCase):
         assert self.win.is_always_on_top() is False
         self.win.set_always_on_top('On')
         assert self.win.is_always_on_top() is True
+
+    def test_window_list_controls(self):
+        controls = self.win.list_controls()
+        assert isinstance(controls, list)
+        assert len(controls) == 2

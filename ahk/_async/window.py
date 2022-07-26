@@ -73,6 +73,10 @@ class AsyncWindow:
             )
         return minmax
 
+    async def get_title(self) -> str:
+        title = await self._engine.win_get_title(title=f'ahk_id {self._ahk_id}')
+        return title
+
     async def list_controls(self) -> Sequence['AsyncControl']:
         controls = await self._engine.win_get_control_list(title=f'ahk_id {self._ahk_id}')
         if controls is None:

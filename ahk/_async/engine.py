@@ -29,22 +29,7 @@ sleep = time.sleep
 
 CoordModeTargets = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
 CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
-WinGetFunctions = Literal[
-    Literal['AHKWinGetID'],
-    Literal['AHKWinGetIDLast'],
-    Literal['AHKWinGetPID'],
-    Literal['AHKWinGetProcessName'],
-    Literal['AHKWinGetProcessPath'],
-    Literal['AHKWinGetCount'],
-    Literal['AHKWinGetList'],
-    Literal['AHKWinGetMinMax'],
-    Literal['AHKWinGetControlList'],
-    Literal['AHKWinGetControlListHwnd'],
-    Literal['AHKWinGetTransparent'],
-    Literal['AHKWinGetTransColor'],
-    Literal['AHKWinGetStyle'],
-    Literal['AHKWinGetExStyle'],
-]
+
 CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
 
@@ -79,16 +64,19 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def list_windows(self) -> List[AsyncWindow]: ...
+    async def list_windows(self, *, detect_hidden_windows: bool = False) -> List[AsyncWindow]: ...
     @overload
-    async def list_windows(self, *, blocking: Literal[False]) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
+    async def list_windows(self, *, detect_hidden_windows: bool = False, blocking: Literal[False]) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
     @overload
-    async def list_windows(self, *, blocking: Literal[True]) -> List[AsyncWindow]: ...
+    async def list_windows(self, *, detect_hidden_windows: bool = False, blocking: Literal[True]) -> List[AsyncWindow]: ...
     # fmt: on
     async def list_windows(
-        self, blocking: bool = True
+        self, *, detect_hidden_windows: bool = False, blocking: bool = True
     ) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]:
-        resp = await self._transport.function_call('WindowList', engine=self, blocking=blocking)
+        args = []
+        if detect_hidden_windows:
+            args.append('On')
+        resp = await self._transport.function_call('WindowList', args, engine=self, blocking=blocking)
         return resp
 
     # fmt: off
@@ -428,6 +416,21 @@ class AsyncAHK:
 
     # fmt: off
     @overload
+    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> str: ...
+    @overload
+    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[True]) -> str: ...
+    # fmt: on
+    async def win_get_title(
+        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True
+    ) -> Union[str, AsyncFutureResult[str]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinGetTitle', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
     async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '') -> Union[AsyncWindow, None]: ...
     @overload
     async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
@@ -528,7 +531,7 @@ class AsyncAHK:
         self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', blocking: bool = True
     ) -> Union[List[AsyncControl], None, AsyncFutureResult[Optional[List[AsyncControl]]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
-        resp = await self._transport.function_call('AHKWinGetControlList', args, blocking=blocking)
+        resp = await self._transport.function_call('AHKWinGetControlList', args, blocking=blocking, engine=self)
         return resp
 
     # fmt: off
@@ -738,7 +741,9 @@ class AsyncAHK:
         *,
         blocking: bool = True,
     ) -> Union[bool, AsyncFutureResult[bool]]:
-        raise NotImplementedError()
+        args = [options, title, text, exclude_title, exclude_text]
+        resp = await self._transport.function_call('AHKWinSetRegion', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload

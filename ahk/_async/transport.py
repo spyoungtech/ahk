@@ -66,7 +66,7 @@ FunctionName = Literal[
     Literal['SendEvent'],
     Literal['SendPlay'],
     Literal['SetCapsLockState'],
-    Literal['WinGetTitle'],
+    Literal['AHKWinGetTitle'],
     Literal['WinGetClass'],
     Literal['WinGetText'],
     Literal['WinActivate'],
@@ -97,6 +97,7 @@ FunctionName = Literal[
     Literal['AHKWinSetTransColor'],
     Literal['AHKWinSetStyle'],
     Literal['AHKWinSetExStyle'],
+    Literal['AHKWinSetRegion'],
     Literal['WinIsAlwaysOnTop'],
     Literal['WinClick'],
     Literal['AHKWinMove'],
@@ -296,7 +297,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['SetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['WinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
+    async def function_call(self, function_name: Literal['AHKWinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
     async def function_call(self, function_name: Literal['WinGetClass'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
@@ -388,6 +389,8 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKWinSetStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[bool, AsyncFutureResult[bool]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKWinSetExStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[bool, AsyncFutureResult[bool]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKWinSetRegion'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[bool, AsyncFutureResult[bool]]: ...
 
     @overload
     async def function_call(self, function_name: Literal['AHKWinSetTransparent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...

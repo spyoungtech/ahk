@@ -62,3 +62,8 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         assert await self.win.is_always_on_top() is False
         await self.win.set_always_on_top('On')
         assert await self.win.is_always_on_top() is True
+
+    async def test_window_list_controls(self):
+        controls = await self.win.list_controls()
+        assert isinstance(controls, list)
+        assert len(controls) == 2
