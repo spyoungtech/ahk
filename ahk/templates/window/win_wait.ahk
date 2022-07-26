@@ -1,12 +1,12 @@
 {% extends "base.ahk" %}
 {% block body %}
-{% if exact %}
-WinWait,{{title}},{{text}},{{timeout}},{{exclude_title}},{{exclude_text}}
-{% else %}
-SetTitleMatchMode 2
-WinWait,{{title}},{{text}},{{timeout}},{{exclude_title}},{{exclude_text}}
-SetTitleMatchMode 1
+{% if match_mode %}
+SetTitleMatchMode, {{ match_mode }}
 {% endif %}
+{% if match_speed %}
+SetTitleMatchMode, {{ match_speed }}
+{% endif %}
+WinWait,{{title}},{{text}},{{timeout}},{{exclude_title}},{{exclude_text}}
 if !ErrorLevel
 {
        WinGet, output, ID
