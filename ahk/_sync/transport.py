@@ -47,6 +47,7 @@ SyncFutureResult: TypeAlias = Future
 
 FunctionName = Literal[
     Literal['AHKSetDetectHiddenWindows'],
+    Literal['AHKWinSetTitle'],
     Literal['AHKWinExist'],
     Literal['ImageSearch'],
     Literal['PixelGetColor'],
@@ -389,7 +390,8 @@ class Transport(ABC):
 
     @overload
     def function_call(self, function_name: Literal['AHKSetDetectHiddenWindows'], args: Optional[List[str]] = None) -> None: ...
-
+    @overload
+    def function_call(self, function_name: Literal['AHKWinSetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]: ...
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     # @overload

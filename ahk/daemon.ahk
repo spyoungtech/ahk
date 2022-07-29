@@ -417,6 +417,23 @@ AHKWinGetExStyle(ByRef command) {
     return response
 }
 
+AHKWinSetTitle(ByRef command) {
+    new_title := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+    WinSetTitle, %title%, %text%, %new_title%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
+    return FormatNoValueResponse()
+}
+
 AHKWinSetAlwaysOnTop(ByRef command) {
     toggle := command[2]
     title := command[3]

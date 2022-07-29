@@ -761,7 +761,18 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
-        raise NotImplementedError()
+        args = [new_title, title, text, exclude_title, exclude_text]
+        if detect_hidden_windows is not None:
+            if detect_hidden_windows is True:
+                args.append('On')
+            elif detect_hidden_windows is False:
+                args.append('Off')
+            else:
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
+        resp = self._transport.function_call('AHKWinSetTitle', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload
