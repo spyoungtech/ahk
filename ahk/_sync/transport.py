@@ -46,6 +46,7 @@ SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 SyncFutureResult: TypeAlias = Future
 
 FunctionName = Literal[
+    Literal['AHKSetDetectHiddenWindows'],
     Literal['AHKWinExist'],
     Literal['ImageSearch'],
     Literal['PixelGetColor'],
@@ -385,6 +386,9 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKWinSetTransparent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, SyncFutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinSetTransColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, SyncFutureResult[None]]: ...
+
+    @overload
+    def function_call(self, function_name: Literal['AHKSetDetectHiddenWindows'], args: Optional[List[str]] = None) -> None: ...
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
