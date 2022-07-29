@@ -86,9 +86,10 @@ class Window:
         return controls
 
     def set_title(self, new_title: str) -> None:
-        self._engine.win_set_title(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, new_title=new_title)
+        self._engine.win_set_title(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, new_title=new_title
+        )
         return None
-
 
     # fmt: off
     @overload
@@ -128,6 +129,38 @@ class Window:
                 f'Error when trying to get always on top style for window {self._ahk_id}. The window may have been closed before the operation could be completed'
             )
         return resp
+
+    # fmt: off
+    @overload
+    def send(self, keys: str) -> None: ...
+    @overload
+    def send(self, keys: str, *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    @overload
+    def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    def send(self, keys: str, *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+        if blocking:
+            self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True)
+            return None
+        else:
+            resp = self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=False)
+            return resp
+
+    # fmt: off
+    @overload
+    def get_text(self) -> Optional[str]: ...
+    @overload
+    def get_text(self, *, blocking: Literal[False]) -> SyncFutureResult[Optional[str]]: ...
+    @overload
+    def get_text(self, *, blocking: Literal[True]) -> Optional[str]: ...
+    # fmt: on
+    def get_text(self, *, blocking: bool = True) -> Union[Optional[str], SyncFutureResult[Optional[str]]]:
+        if blocking:
+            resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True)
+            return resp
+        else:
+            nonblocking_resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=False)
+            return nonblocking_resp
 
 
 class Control:

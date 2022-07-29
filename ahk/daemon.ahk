@@ -417,6 +417,38 @@ AHKWinGetExStyle(ByRef command) {
     return response
 }
 
+AHKWinGetText(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    WinGetText, output, %title%, %text%, %extitle%, %extext%
+
+    if (ErrorLevel = 1) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window text")
+    }
+
+    if (output = 0 || output = "") {
+        response := FormatNoValueResponse()
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    DetectHiddenWindows, %current_detect_hw%
+    return response
+}
+
+
+
 AHKWinSetTitle(ByRef command) {
     new_title := command[2]
     title := command[3]
@@ -838,7 +870,7 @@ Unescape(HayStack) {
     return ReplacedStr
 }
 
-Send(ByRef command) {
+AHKSend(ByRef command) {
     command.RemoveAt(1)
     s := Join(",", command*)
     str := Unescape(s)
@@ -846,17 +878,17 @@ Send(ByRef command) {
     return FormatNoValueResponse()
 }
 
-SendRaw(ByRef command) {
+AHKSendRaw(ByRef command) {
     command.RemoveAt(1)
-    s := Join(",", command*)
+    s := Join(",", command*) ; TODO: remove after better input handling is implemented
     str := Unescape(s)
     SendRaw,% str
     return FormatNoValueResponse()
 }
 
-SendInput(ByRef command) {
+AHKSendInput(ByRef command) {
     command.RemoveAt(1)
-    s := Join(",", command*)
+    s := Join(",", command*) ; TODO: remove after better input handling is implemented
     str := Unescape(s)
     SendInput,% str
     return FormatNoValueResponse()
@@ -904,11 +936,6 @@ HideTrayTip(ByRef command) {
 WinGetClass(ByRef command) {
     title := command[3]
     WinGetClass, text, %title%
-    return text
-}
-WinGetText(ByRef command) {
-    title := command[3]
-    WinGetText, text, %title%
     return text
 }
 
@@ -1074,7 +1101,7 @@ WinSendRaw(ByRef command) {
     ControlSendRaw,,% keys, %title%
 }
 
-ControlSend(ByRef command) {
+AHKControlSend(ByRef command) {
     ctrl := command[2]
     title := command[3]
     text := command[4]
@@ -1094,10 +1121,12 @@ ControlSend(ByRef command) {
     command.RemoveAt(1)
     command.RemoveAt(1)
     command.RemoveAt(1)
+    command.RemoveAt(1)
     str := Join(",", command*)
     keys := Unescape(str)
     DetectHiddenWindows, %current_detect_hw%
     ControlSend, %ctrl%,% keys, %title%, %text%, %extitle%, %extext%
+    return FormatNoValueResponse()
 }
 
 

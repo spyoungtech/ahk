@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 import time
+import warnings
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -11,10 +13,14 @@ from typing import Literal
 from typing import NoReturn
 from typing import Optional
 from typing import overload
-from typing import Sequence
 from typing import Tuple
 from typing import Type
 from typing import Union
+
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
 
 from ..keys import Key
 from .transport import AsyncDaemonProcessTransport
@@ -32,6 +38,11 @@ CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Win
 
 CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
+MatchModes: TypeAlias = Literal[1, 2, 3, 'RegEx']
+MatchSpeeds: TypeAlias = Literal['Fast', 'Slow']
+
+TitleMatchMode: TypeAlias = Optional[Union[MatchModes, MatchSpeeds, Tuple[MatchModes, MatchSpeeds]]]
+
 
 class AsyncAHK:
     def __init__(
@@ -48,6 +59,16 @@ class AsyncAHK:
         transport = TransportClass(**transport_options)
         self._transport: AsyncTransport = transport
 
+    def __getattr__(self, item: Any) -> Any:
+        deprecation_replacements: Dict[str, Any] = {'type': self.send_input}
+        if item in deprecation_replacements:
+            warnings.warn(
+                'type is deprecated and will be removed in a future version. Use `send_input` instead.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return deprecation_replacements[item]
+
     def add_hotkey(
         self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
     ) -> None:
@@ -55,6 +76,40 @@ class AsyncAHK:
 
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
+
+    # fmt: off
+    @overload
+    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    @overload
+    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def control_send(
+        self,
+        keys: str,
+        control: str = '',
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [control, title, text, exclude_title, exclude_title, exclude_text]
+        if detect_hidden_windows is not None:
+            if detect_hidden_windows is True:
+                args.append('On')
+            elif detect_hidden_windows is False:
+                args.append('Off')
+            else:
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
+        args.append(keys)
+        resp = await self._transport.function_call('AHKControlSend', args, blocking=blocking)
+        return resp
 
     def start_hotkeys(self) -> None:
         return self._transport.start_hotkeys()
@@ -316,10 +371,10 @@ class AsyncAHK:
     ) -> Union[None, AsyncFutureResult[None]]:
         args = [s]
         if raw:
-            raw_resp = await self._transport.function_call('SendRaw', args=args, blocking=blocking)
+            raw_resp = await self._transport.function_call('AHKSendRaw', args=args, blocking=blocking)
             return raw_resp
         else:
-            resp = await self._transport.function_call('Send', args=args, blocking=blocking)
+            resp = await self._transport.function_call('AHKSend', args=args, blocking=blocking)
             return resp
 
     async def send_event(self, s: str, delay: Optional[int] = None) -> None:
@@ -335,7 +390,7 @@ class AsyncAHK:
     # fmt: on
     async def send_input(self, s: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         args = [s]
-        resp = await self._transport.function_call('SendInput', args, blocking=blocking)
+        resp = await self._transport.function_call('AHKSendInput', args, blocking=blocking)
         return resp
 
     async def send_play(self, s: str) -> None:
@@ -449,6 +504,37 @@ class AsyncAHK:
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
         resp = await self._transport.function_call('AHKWinGetID', args, blocking=blocking, engine=self)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Optional[str]: ...
+    @overload
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Optional[str]]: ...
+    @overload
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Optional[str]: ...
+    # fmt: on
+    async def win_get_text(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[Optional[str], AsyncFutureResult[Optional[str]]]:
+        args = [title, text, exclude_title, exclude_title, exclude_text]
+        if detect_hidden_windows is not None:
+            if detect_hidden_windows is True:
+                args.append('On')
+            elif detect_hidden_windows is False:
+                args.append('Off')
+            else:
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
+        resp = await self._transport.function_call('AHKWinGetText', args, blocking=blocking)
         return resp
 
     # fmt: off

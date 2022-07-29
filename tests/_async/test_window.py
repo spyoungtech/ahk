@@ -105,3 +105,8 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_win_set_title(self):
         await self.win.set_title(new_title='Foo')
         assert await self.win.get_title() == 'Foo'
+
+    async def test_control_send_window(self):
+        await self.win.send('Hello World')
+        text = await self.win.get_text()
+        assert 'Hello World' in text

@@ -130,6 +130,38 @@ class AsyncWindow:
             )
         return resp
 
+    # fmt: off
+    @overload
+    async def send(self, keys: str) -> None: ...
+    @overload
+    async def send(self, keys: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        if blocking:
+            await self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True)
+            return None
+        else:
+            resp = await self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=False)
+            return resp
+
+    # fmt: off
+    @overload
+    async def get_text(self) -> Optional[str]: ...
+    @overload
+    async def get_text(self, *, blocking: Literal[False]) -> AsyncFutureResult[Optional[str]]: ...
+    @overload
+    async def get_text(self, *, blocking: Literal[True]) -> Optional[str]: ...
+    # fmt: on
+    async def get_text(self, *, blocking: bool = True) -> Union[Optional[str], AsyncFutureResult[Optional[str]]]:
+        if blocking:
+            resp = await self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True)
+            return resp
+        else:
+            nonblocking_resp = await self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=False)
+            return nonblocking_resp
+
 
 class AsyncControl:
     def __init__(self, window: AsyncWindow, hwnd: str, control_class: str):
