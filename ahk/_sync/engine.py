@@ -61,7 +61,6 @@ class AHK:
     def stop_hotkeys(self) -> None:
         return self._transport.stop_hotkeys()
 
-
     def set_detect_hidden_windows(self, value: bool) -> None:
         if value not in (True, False):
             raise TypeError(f'detect hidden windows must be a boolean, got object of type {type(value)}')
@@ -72,7 +71,6 @@ class AHK:
             args.append('Off')
         self._transport.function_call('AHKSetDetectHiddenWindows', args=args)
         return None
-
 
     # fmt: off
     @overload
@@ -92,7 +90,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('WindowList', args, engine=self, blocking=blocking)
         return resp
 
@@ -428,7 +428,14 @@ class AHK:
     def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Window, None]: ...
     # fmt: on
     def win_get(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[Window, None, SyncFutureResult[Union[None, Window]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -437,7 +444,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetID', args, blocking=blocking, engine=self)
         return resp
 
@@ -450,7 +459,14 @@ class AHK:
     def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
     # fmt: on
     def win_get_title(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[str, SyncFutureResult[str]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -459,7 +475,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetTitle', args, blocking=blocking)
         return resp
 
@@ -472,7 +490,14 @@ class AHK:
     def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Window, None]: ...
     # fmt: on
     def win_get_idlast(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[Window, None, SyncFutureResult[Union[Window, None]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -481,8 +506,10 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
-        resp = self._transport.function_call('AHKWinGetIDLast', args, blocking=blocking)
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
+        resp = self._transport.function_call('AHKWinGetIDLast', args, blocking=blocking, engine=self)
         return resp
 
     # fmt: off
@@ -494,7 +521,14 @@ class AHK:
     def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[int, None]: ...
     # fmt: on
     def win_get_pid(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[int, None, SyncFutureResult[Union[int, None]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -503,7 +537,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetPID', args, blocking=blocking)
         return resp
 
@@ -516,7 +552,14 @@ class AHK:
     def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[str, None]: ...
     # fmt: on
     def win_get_process_name(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, str, SyncFutureResult[Optional[str]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -525,7 +568,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetProcessName', args, blocking=blocking)
         return resp
 
@@ -538,7 +583,14 @@ class AHK:
     def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[str, None]: ...
     # fmt: on
     def win_get_process_path(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[str, None, Union[None, str, SyncFutureResult[Optional[str]]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -547,7 +599,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetProcessPath', args, blocking=blocking)
         return resp
 
@@ -560,7 +614,14 @@ class AHK:
     def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> int: ...
     # fmt: on
     def win_get_count(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[int, SyncFutureResult[int]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -569,7 +630,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetCount', args, blocking=blocking)
         return resp
 
@@ -582,7 +645,14 @@ class AHK:
     def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[int, None]: ...
     # fmt: on
     def win_get_minmax(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, int, SyncFutureResult[Optional[int]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -591,7 +661,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetMinMax', args, blocking=blocking)
         return resp
 
@@ -604,7 +676,14 @@ class AHK:
     def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[List[Control], None]: ...
     # fmt: on
     def win_get_control_list(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[List[Control], None, SyncFutureResult[Optional[List[Control]]]]:
         args = [title, text, exclude_title, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -613,7 +692,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinGetControlList', args, blocking=blocking, engine=self)
         return resp
 
@@ -639,7 +720,14 @@ class AHK:
     def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
     # fmt: on
     def win_exists(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[bool, SyncFutureResult[bool]]:
         args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -648,7 +736,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinExist', args, blocking=blocking)
         return resp
 
@@ -668,7 +758,8 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
-        detect_hidden_windows: Optional[bool] = None, blocking: bool = True,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         raise NotImplementedError()
 
@@ -688,7 +779,8 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
-        detect_hidden_windows: Optional[bool] = None, blocking: bool = True,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [str(toggle), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -697,7 +789,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetAlwaysOnTop', args, blocking=blocking)
         return resp
 
@@ -710,7 +804,14 @@ class AHK:
     def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     def win_set_bottom(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -719,7 +820,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetBottom', args, blocking=blocking)
         return resp
 
@@ -732,7 +835,14 @@ class AHK:
     def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     def win_set_top(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -741,7 +851,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetTop', args, blocking=blocking)
         return resp
 
@@ -754,7 +866,14 @@ class AHK:
     def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     def win_set_disable(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -763,7 +882,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetDisable', args, blocking=blocking)
         return resp
 
@@ -776,7 +897,14 @@ class AHK:
     def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     def win_set_enable(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -785,7 +913,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetEnable', args, blocking=blocking)
         return resp
 
@@ -798,7 +928,14 @@ class AHK:
     def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     def win_set_redraw(
-        self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -807,7 +944,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetRedraw', args, blocking=blocking)
         return resp
 
@@ -827,7 +966,8 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
-        detect_hidden_windows: Optional[bool] = None, blocking: bool = True,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[bool, SyncFutureResult[bool]]:
         args = [style, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -836,7 +976,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetStyle', args, blocking=blocking)
         return resp
 
@@ -856,7 +998,8 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
-        detect_hidden_windows: Optional[bool] = None, blocking: bool = True,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[bool, SyncFutureResult[bool]]:
         args = [style, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -865,7 +1008,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetExStyle', args, blocking=blocking)
         return resp
 
@@ -885,7 +1030,8 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
-        detect_hidden_windows: Optional[bool] = None, blocking: bool = True,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[bool, SyncFutureResult[bool]]:
         args = [options, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -894,7 +1040,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetRegion', args, blocking=blocking)
         return resp
 
@@ -914,7 +1062,8 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
-        detect_hidden_windows: Optional[bool] = None, blocking: bool = True,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [str(transparency), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -923,7 +1072,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetTransparent', args, blocking=blocking)
         return resp
 
@@ -943,7 +1094,8 @@ class AHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
-        detect_hidden_windows: Optional[bool] = None, blocking: bool = True,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
         args = [str(color), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -952,7 +1104,9 @@ class AHK:
             elif detect_hidden_windows is False:
                 args.append('Off')
             else:
-                raise TypeError(f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}')
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
         resp = self._transport.function_call('AHKWinSetTransColor', args, blocking=blocking)
         return resp
 

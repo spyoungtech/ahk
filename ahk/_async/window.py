@@ -85,6 +85,12 @@ class AsyncWindow:
             )
         return controls
 
+    async def set_title(self, new_title: str) -> None:
+        await self._engine.win_set_title(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, new_title=new_title
+        )
+        return None
+
     # fmt: off
     @overload
     async def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> None: ...

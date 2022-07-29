@@ -74,7 +74,34 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         all_windows = await self.ahk.list_windows()
         assert len(all_windows) > len(non_hidden)
 
-    async def list_windows_hidden(self):
+    async def test_list_windows_hidden(self):
         non_hidden = await self.ahk.list_windows()
         all_windows = await self.ahk.list_windows(detect_hidden_windows=True)
         assert len(all_windows) > len(non_hidden)
+
+    async def test_win_get_title(self):
+        title = await self.win.get_title()
+        assert title == 'Untitled - Notepad'
+
+    async def test_win_get_idlast(self):
+        await self.ahk.win_set_bottom(title='Untitled - Notepad')
+        w = await self.ahk.win_get_idlast(title='Untitled - Notepad')
+        assert w == self.win
+
+    async def test_win_get_count(self):
+        count = await self.ahk.win_get_count(title='Untitled - Notepad')
+        assert count == 1
+
+    # async def test_win_get_count_hidden(self):
+    #     count = await self.ahk.win_get_count()
+    #     all_count = await self.ahk.win_get_count(detect_hidden_windows=True)
+    #     assert all_count > count
+
+    async def test_win_exists(self):
+        assert self.win.exists()
+        await self.win.close()
+        assert not await self.win.exists()
+
+    async def test_win_set_title(self):
+        await self.win.set_title(new_title='Foo')
+        assert await self.win.get_title() == 'Foo'

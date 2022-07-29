@@ -510,7 +510,7 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
-        resp = await self._transport.function_call('AHKWinGetIDLast', args, blocking=blocking)
+        resp = await self._transport.function_call('AHKWinGetIDLast', args, blocking=blocking, engine=self)
         return resp
 
     # fmt: off
