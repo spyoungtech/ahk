@@ -97,7 +97,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
-        args = [control, title, text, exclude_title, exclude_title, exclude_text]
+        args = [control, keys, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -493,7 +493,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[None, AsyncWindow]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -508,11 +508,11 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Optional[str]: ...
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> str: ...
     @overload
-    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Optional[str]]: ...
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
     @overload
-    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Optional[str]: ...
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
     # fmt: on
     async def win_get_text(
         self,
@@ -523,8 +523,8 @@ class AsyncAHK:
         *,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Optional[str], AsyncFutureResult[Optional[str]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+    ) -> Union[str, AsyncFutureResult[str]]:
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -555,7 +555,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, AsyncFutureResult[str]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -586,7 +586,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[AsyncWindow, None]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -617,7 +617,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, None, AsyncFutureResult[Union[int, None]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -648,7 +648,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, str, AsyncFutureResult[Optional[str]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -679,7 +679,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, None, Union[None, str, AsyncFutureResult[Optional[str]]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -710,7 +710,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, AsyncFutureResult[int]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -741,7 +741,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, int, AsyncFutureResult[Optional[int]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -772,7 +772,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[List[AsyncControl], None, AsyncFutureResult[Optional[List[AsyncControl]]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')

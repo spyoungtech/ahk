@@ -96,7 +96,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, SyncFutureResult[None]]:
-        args = [control, title, text, exclude_title, exclude_title, exclude_text]
+        args = [control, keys, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -492,7 +492,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[Window, None, SyncFutureResult[Union[None, Window]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -507,11 +507,11 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Optional[str]: ...
+    def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> str: ...
     @overload
-    def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> SyncFutureResult[Optional[str]]: ...
+    def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> SyncFutureResult[str]: ...
     @overload
-    def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Optional[str]: ...
+    def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
     # fmt: on
     def win_get_text(
         self,
@@ -522,8 +522,8 @@ class AHK:
         *,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Optional[str], SyncFutureResult[Optional[str]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+    ) -> Union[str, SyncFutureResult[str]]:
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -554,7 +554,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, SyncFutureResult[str]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -585,7 +585,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[Window, None, SyncFutureResult[Union[Window, None]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -616,7 +616,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, None, SyncFutureResult[Union[int, None]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -647,7 +647,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, str, SyncFutureResult[Optional[str]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -678,7 +678,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, None, Union[None, str, SyncFutureResult[Optional[str]]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -709,7 +709,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, SyncFutureResult[int]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -740,7 +740,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, int, SyncFutureResult[Optional[int]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -771,7 +771,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[List[Control], None, SyncFutureResult[Optional[List[Control]]]]:
-        args = [title, text, exclude_title, exclude_title, exclude_text]
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')

@@ -425,24 +425,19 @@ AHKWinGetText(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
-    MsgBox, %title%, %text%, %extitle%, %extext%, %detect_hw%
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
-    WinGetText, output,% title
+    DetectHiddenWindows, On
+    WinGetText, output,%title%,%text%,%extitle%,%extext%
 
     if (ErrorLevel = 1) {
         return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window text")
     }
 
-    if (output = 0 || output = "") {
-        response := FormatNoValueResponse()
-    } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
-    }
+    response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
     return response
 }
@@ -771,10 +766,14 @@ AHKKeyState(ByRef command) {
 }
 
 MouseMove(ByRef command) {
-    if (command.Length() = 5) {
-    MouseMove, command[2], command[3], command[4], R
+    x := command[2]
+    y := command[3]
+    speed := command[4]
+    relative := command[5]
+    if (relative != "") {
+    MouseMove, %x%, %y%, %speed%, R
     } else {
-    MouseMove, command[2], command[3], command[4]
+    MouseMove, %x%, %y%, %speed%
     }
     resp := FormatNoValueResponse()
     return resp
@@ -1102,20 +1101,19 @@ WinSendRaw(ByRef command) {
 
 AHKControlSend(ByRef command) {
     ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
+    keys := command[3]
+    title := command[4]
+    text := command[5]
+    extitle := command[6]
+    extext := command[7]
+    detect_hw := command[8]
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
-    keys := command[8]
+    ControlSend, %ctrl%, %keys%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
-    ControlSend, %ctrl%,% keys, %title%, %text%, %extitle%, %extext%
     return FormatNoValueResponse()
 }
 

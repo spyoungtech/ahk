@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio.subprocess
 import atexit
 import os
+import re
 import subprocess
 import sys
 import warnings
@@ -303,7 +304,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['WinGetClass'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
-    async def function_call(self, function_name: Literal['AHKWinGetText'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Optional[str], AsyncFutureResult[Optional[str]]]: ...
+    async def function_call(self, function_name: Literal['AHKWinGetText'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
     async def function_call(self, function_name: Literal['WinActivate'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
@@ -492,11 +493,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
     async def _send_nonblocking(
         self, request: RequestMessage, engine: Optional[AsyncAHK] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]:
-        newline = '\n'
-
-        msg = f"{request.function_name}{',' if request.args else ''}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode(
-            'utf-8'
-        )
+        msg = request.format()
         proc = await self._create_process()
         try:
             proc.write(msg)
@@ -545,11 +542,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
     async def send(
         self, request: RequestMessage, engine: Optional[AsyncAHK] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]:
-        newline = '\n'
-
-        msg = f"{request.function_name}{',' if request.args else ''}{','.join(arg.replace(newline, '`n') for arg in request.args)}\n".encode(
-            'utf-8'
-        )
+        msg = request.format()
         assert self._proc is not None
         self._proc.write(msg)
         await self._proc.adrain_stdin()

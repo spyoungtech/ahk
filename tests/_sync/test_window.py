@@ -21,7 +21,7 @@ class TestWindowAsync(TestCase):
 
     def tearDown(self) -> None:
         try:
-            self.win.close()
+            self.p.kill()
         except Exception:
             pass
         self.ahk._transport._proc.kill()
@@ -110,3 +110,17 @@ class TestWindowAsync(TestCase):
         self.win.send('Hello World')
         text = self.win.get_text()
         assert 'Hello World' in text
+
+    def test_send_literal_comma(self):
+        self.win.send('hello, world')
+        print(self.win)
+        text = self.win.get_text()
+        assert 'hello, world' in text
+
+    def test_send_literal_tilde_n(self):
+        expected_text = '```nim\nimport std/strformat\n```'
+        self.win.send(expected_text)
+        text = self.win.get_text()
+        assert '```nim' in text
+        assert '\nimport std/strformat' in text
+        assert '\n```' in text
