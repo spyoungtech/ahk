@@ -85,6 +85,12 @@ class AsyncWindow:
             )
         return controls
 
+    async def set_title(self, new_title: str) -> None:
+        await self._engine.win_set_title(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, new_title=new_title
+        )
+        return None
+
     # fmt: off
     @overload
     async def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> None: ...
@@ -123,6 +129,38 @@ class AsyncWindow:
                 f'Error when trying to get always on top style for window {self._ahk_id}. The window may have been closed before the operation could be completed'
             )
         return resp
+
+    # fmt: off
+    @overload
+    async def send(self, keys: str) -> None: ...
+    @overload
+    async def send(self, keys: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        if blocking:
+            await self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True)
+            return None
+        else:
+            resp = await self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=False)
+            return resp
+
+    # fmt: off
+    @overload
+    async def get_text(self) -> str: ...
+    @overload
+    async def get_text(self, *, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def get_text(self, *, blocking: Literal[True]) -> str: ...
+    # fmt: on
+    async def get_text(self, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
+        if blocking:
+            resp = await self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True)
+            return resp
+        else:
+            nonblocking_resp = await self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=False)
+            return nonblocking_resp
 
 
 class AsyncControl:

@@ -5,6 +5,7 @@ import itertools
 import string
 import sys
 from abc import abstractmethod
+from base64 import b64encode
 from typing import Any
 from typing import cast
 from typing import Generator
@@ -16,7 +17,6 @@ from typing import runtime_checkable
 from typing import Tuple
 from typing import Type
 from typing import TYPE_CHECKING
-
 
 if sys.version_info >= (3, 10):
     from typing import TypeGuard
@@ -294,6 +294,11 @@ class RequestMessage:
     def __init__(self, function_name: str, args: Optional[List[str]] = None):
         self.function_name: str = function_name
         self.args: List[str] = args or []
+
+    def format(self) -> bytes:
+        arg_binary = b'|'.join(b64encode(bytes(arg, 'UTF-8')) for arg in self.args)
+        ret = bytes(self.function_name, 'UTF-8') + b'|' + arg_binary + b'\n'
+        return ret
 
 
 ResponseMessageTypes = Union[

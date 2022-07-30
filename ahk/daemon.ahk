@@ -27,12 +27,26 @@ FormatNoValueResponse() {
     return FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
 }
 
+AHKSetDetectHiddenWindows(ByRef command) {
+    value := command[2]
+    DetectHiddenWindows, %value%
+    return FormatNoValueResponse()
+}
+
 AHKWinExist(ByRef command) {
     global BOOLEANRESPONSEMESSAGE
     title := command[2]
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     if WinExist(title, text, extitle, extext) {
         resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
     } else {
@@ -47,6 +61,14 @@ AHKWinClose(ByRef command) {
     secondstowait := command[4]
     extitle := command[5]
     extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
     WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
     return FormatNoValueResponse()
 }
@@ -57,13 +79,21 @@ AHKWinGetID(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, ID, %title%, %text%, %extitle%, %extext%
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
         response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
     }
-
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 
@@ -73,7 +103,17 @@ AHKWinGetTitle(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGetTitle, text, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
+
     return FormatResponse(STRINGRESPONSEMESSAGE, text)
 }
 
@@ -83,12 +123,21 @@ AHKWinGetIDLast(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, IDLast, %title%, %text%, %extitle%, %extext%
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
         response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
     }
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 
@@ -99,12 +148,21 @@ AHKWinGetPID(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, PID, %title%, %text%, %extitle%, %extext%
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
         response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     }
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 
@@ -115,12 +173,21 @@ AHKWinGetProcessName(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, ProcessName, %title%, %text%, %extitle%, %extext%
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
         response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     }
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 
@@ -130,12 +197,21 @@ AHKWinGetProcessPath(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, ProcessPath, %title%, %text%, %extitle%, %extext%
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
         response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     }
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 
@@ -146,27 +222,24 @@ AHKWinGetCount(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, Count, %title%, %text%, %extitle%, %extext%
     if (output = 0) {
         response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     } else {
         response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     }
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 
-;WinGetList(ByRef command) {
-;    global STRINGRESPONSEMESSAGE
-;    global INTEGERRESPONSEMESSAGE
-;    global NOVALUERESPONSEMESSAGE
-;    title := command[2]
-;    text := command[3]
-;    extitle := command[4]
-;    extext := command[5]
-;    WinGet, output, List, %title%, %text%, %extitle%, %extext%
-;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
-;    return response
-;}
 
 
 AHKWinGetMinMax(ByRef command) {
@@ -175,12 +248,21 @@ AHKWinGetMinMax(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, MinMax, %title%, %text%, %extitle%, %extext%
     if (output = "") {
         response := FormatNoValueResponse()
     } else {
         response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     }
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 
@@ -191,6 +273,14 @@ AHKWinGetControlList(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
 
     WinGet, ahkid, ID, %title%, %text%, %extitle%, %extext%
 
@@ -220,6 +310,7 @@ AHKWinGetControlList(ByRef command) {
     }
     output .= "])"
     response := FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, output)
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 ;AHKWinGetControlListHwnd(ByRef command) {
@@ -230,8 +321,16 @@ AHKWinGetControlList(ByRef command) {
 ;    text := command[3]
 ;    extitle := command[4]
 ;    extext := command[5]
+;    detect_hw := command[6]
+;
+;    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+;
+;if (detect_hw != "") {
+;    DetectHiddenWindows, %detect_hw%
+;}
 ;    WinGet, output, ControlListHwnd, %title%, %text%, %extitle%, %extext%
 ;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+;    DetectHiddenWindows, %current_detect_hw%
 ;    return response
 ;}
 
@@ -241,8 +340,17 @@ AHKWinGetTransparent(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, Transparent, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 AHKWinGetTransColor(ByRef command) {
@@ -253,8 +361,17 @@ AHKWinGetTransColor(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, TransColor, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 AHKWinGetStyle(ByRef command) {
@@ -265,8 +382,17 @@ AHKWinGetStyle(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, Style, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    DetectHiddenWindows, %current_detect_hw%
     return response
 }
 AHKWinGetExStyle(ByRef command) {
@@ -277,9 +403,62 @@ AHKWinGetExStyle(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinGet, output, ExStyle, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    DetectHiddenWindows, %current_detect_hw%
     return response
+}
+
+AHKWinGetText(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+    DetectHiddenWindows, On
+    WinGetText, output,%title%,%text%,%extitle%,%extext%
+
+    if (ErrorLevel = 1) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window text")
+    }
+
+    response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    DetectHiddenWindows, %current_detect_hw%
+    return response
+}
+
+
+
+AHKWinSetTitle(ByRef command) {
+    new_title := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+    WinSetTitle, %title%, %text%, %new_title%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
+    return FormatNoValueResponse()
 }
 
 AHKWinSetAlwaysOnTop(ByRef command) {
@@ -288,7 +467,15 @@ AHKWinSetAlwaysOnTop(ByRef command) {
     text := command[4]
     extitle := command[5]
     extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinSet, AlwaysOntop, %toggle%, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     return FormatNoValueResponse()
 }
 
@@ -297,7 +484,16 @@ AHKWinSetBottom(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinSet, Bottom,, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     return FormatNoValueResponse()
 }
 
@@ -306,7 +502,16 @@ AHKWinSetTop(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinSet, Top,, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     return FormatNoValueResponse()
 }
 
@@ -315,7 +520,16 @@ AHKWinSetEnable(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinSet, Enable,, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     return FormatNoValueResponse()
 }
 
@@ -324,7 +538,16 @@ AHKWinSetDisable(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinSet, Disable,, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     return FormatNoValueResponse()
 }
 
@@ -333,7 +556,16 @@ AHKWinSetRedraw(ByRef command) {
     text := command[3]
     extitle := command[4]
     extext := command[5]
+    detect_hw := command[6]
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
     WinSet, Redraw,, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     return FormatNoValueResponse()
 }
 
@@ -344,7 +576,16 @@ AHKWinSetStyle(ByRef command) {
     text := command[4]
     extitle := command[5]
     extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
     WinSet, Style, %style%, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     if (ErrorLevel = 1) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
     } else {
@@ -359,7 +600,16 @@ AHKWinSetExStyle(ByRef command) {
     text := command[4]
     extitle := command[5]
     extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
     WinSet, ExStyle, %style%, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     if (ErrorLevel = 1) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
     } else {
@@ -374,7 +624,16 @@ AHKWinSetRegion(ByRef command) {
     text := command[4]
     extitle := command[5]
     extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
     WinSet, Region, %options%, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     if (ErrorLevel = 1) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
     } else {
@@ -389,7 +648,16 @@ AHKWinSetTransparent(ByRef command) {
     text := command[4]
     extitle := command[5]
     extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
     WinSet, Transparent, %transparency%, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
     return FormatNoValueResponse()
 }
 
@@ -400,6 +668,14 @@ AHKWinSetTransColor(ByRef command) {
     text := command[4]
     extitle := command[5]
     extext := command[6]
+    detect_hw := command[7]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
     WinSet, TransColor, %color%, %title%, %text%, %extitle%, %extext%
     return FormatNoValueResponse()
 }
@@ -490,10 +766,14 @@ AHKKeyState(ByRef command) {
 }
 
 MouseMove(ByRef command) {
-    if (command.Length() = 5) {
-    MouseMove, command[2], command[3], command[4], R
+    x := command[2]
+    y := command[3]
+    speed := command[4]
+    relative := command[5]
+    if (relative != "") {
+    MouseMove, %x%, %y%, %speed%, R
     } else {
-    MouseMove, command[2], command[3], command[4]
+    MouseMove, %x%, %y%, %speed%
     }
     resp := FormatNoValueResponse()
     return resp
@@ -589,7 +869,7 @@ Unescape(HayStack) {
     return ReplacedStr
 }
 
-Send(ByRef command) {
+AHKSend(ByRef command) {
     command.RemoveAt(1)
     s := Join(",", command*)
     str := Unescape(s)
@@ -597,18 +877,17 @@ Send(ByRef command) {
     return FormatNoValueResponse()
 }
 
-SendRaw(ByRef command) {
+AHKSendRaw(ByRef command) {
     command.RemoveAt(1)
-    s := Join(",", command*)
+    s := Join(",", command*) ; TODO: remove after better input handling is implemented
     str := Unescape(s)
     SendRaw,% str
     return FormatNoValueResponse()
 }
 
-SendInput(ByRef command) {
-    command.RemoveAt(1)
-    s := Join(",", command*)
-    str := Unescape(s)
+AHKSendInput(ByRef command) {
+
+    str := command[2]
     SendInput,% str
     return FormatNoValueResponse()
 }
@@ -655,11 +934,6 @@ HideTrayTip(ByRef command) {
 WinGetClass(ByRef command) {
     title := command[3]
     WinGetClass, text, %title%
-    return text
-}
-WinGetText(ByRef command) {
-    title := command[3]
-    WinGetText, text, %title%
     return text
 }
 
@@ -825,21 +1099,22 @@ WinSendRaw(ByRef command) {
     ControlSendRaw,,% keys, %title%
 }
 
-ControlSend(ByRef command) {
+AHKControlSend(ByRef command) {
     ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    str := Join(",", command*)
-    keys := Unescape(str)
-    ControlSend, %ctrl%,% keys, %title%, %text%, %extitle%, %extext%
+    keys := command[3]
+    title := command[4]
+    text := command[5]
+    extitle := command[6]
+    extext := command[7]
+    detect_hw := command[8]
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+    ControlSend, %ctrl%, %keys%, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
+    return FormatNoValueResponse()
 }
 
 
@@ -951,14 +1226,69 @@ CountNewlines(ByRef s) {
     return count
 }
 
+AHKEcho(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    return FormatResponse(STRINGRESPONSEMESSAGE, command)
+}
+
+
+b64decode(ByRef pszString) {
+
+    ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
+    ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
+    ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.
+    ;  [in]      DWORD  dwFlags,    Indicates the format of the string to be converted. (see table in link above)
+    ;  [in]      BYTE   *pbBinary,  A pointer to a buffer that receives the returned sequence of bytes. If this parameter is NULL, the function calculates the length of the buffer needed and returns the size, in bytes, of required memory in the DWORD pointed to by pcbBinary.
+    ;  [in, out] DWORD  *pcbBinary, A pointer to a DWORD variable that, on entry, contains the size, in bytes, of the pbBinary buffer. After the function returns, this variable contains the number of bytes copied to the buffer. If this value is not large enough to contain all of the data, the function fails and GetLastError returns ERROR_MORE_DATA.
+    ;  [out]     DWORD  *pdwSkip,   A pointer to a DWORD value that receives the number of characters skipped to reach the beginning of the -----BEGIN ...----- header. If no header is present, then the DWORD is set to zero. This parameter is optional and can be NULL if it is not needed.
+    ;  [out]     DWORD  *pdwFlags   A pointer to a DWORD value that receives the flags actually used in the conversion. These are the same flags used for the dwFlags parameter. In many cases, these will be the same flags that were passed in the dwFlags parameter. If dwFlags contains one of the following flags, this value will receive a flag that indicates the actual format of the string. This parameter is optional and can be NULL if it is not needed.
+
+    cchString := StrLen(pszString)
+    dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
+    getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
+    buff_size := 0 ; The function will write to this variable on our first call
+    pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
+    pdwFlags := 0 ; We don't need this, so make it null
+
+
+    ; The first call calculates the required size. The result is written to pbBinary
+    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    if (success = 0) {
+        return ""
+    }
+
+    ; We're going to give a pointer to a variable to the next call, but first we want to make the buffer the correct size using VarSetCapacity using the previous return value
+    VarSetCapacity(ret, buff_size, 0)
+
+    ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
+
+    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "Ptr", &ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    if (success=0) {
+        return ""
+    }
+
+    return StrGet(&ret, "UTF-8")
+}
+
+CommandArrayFromQuery(ByRef text) {
+    decoded_commands := []
+    encoded_array := StrSplit(text, "|")
+    function_name := encoded_array[1]
+    encoded_array.RemoveAt(1)
+    decoded_commands.push(function_name)
+    for index, encoded_value in encoded_array {
+        decoded_value := b64decode(encoded_value)
+        decoded_commands.push(decoded_value)
+    }
+    return decoded_commands
+}
 
 stdin  := FileOpen("*", "r `n", "UTF-8")  ; Requires [v1.1.17+]
 response := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
-    commandArray := StrSplit(query, ",")
-
+    commandArray := CommandArrayFromQuery(query)
     try {
         func := commandArray[1]
         response := %func%(commandArray)

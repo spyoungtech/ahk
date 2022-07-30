@@ -21,7 +21,7 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
 
     async def asyncTearDown(self) -> None:
         try:
-            await self.win.close()
+            self.p.kill()
         except Exception:
             pass
         self.ahk._transport._proc.kill()
@@ -67,3 +67,60 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         controls = await self.win.list_controls()
         assert isinstance(controls, list)
         assert len(controls) == 2
+
+    async def test_set_detect_hidden_windows(self):
+        non_hidden = await self.ahk.list_windows()
+        await self.ahk.set_detect_hidden_windows(True)
+        all_windows = await self.ahk.list_windows()
+        assert len(all_windows) > len(non_hidden)
+
+    async def test_list_windows_hidden(self):
+        non_hidden = await self.ahk.list_windows()
+        all_windows = await self.ahk.list_windows(detect_hidden_windows=True)
+        assert len(all_windows) > len(non_hidden)
+
+    async def test_win_get_title(self):
+        title = await self.win.get_title()
+        assert title == 'Untitled - Notepad'
+
+    async def test_win_get_idlast(self):
+        await self.ahk.win_set_bottom(title='Untitled - Notepad')
+        w = await self.ahk.win_get_idlast(title='Untitled - Notepad')
+        assert w == self.win
+
+    async def test_win_get_count(self):
+        count = await self.ahk.win_get_count(title='Untitled - Notepad')
+        assert count == 1
+
+    # async def test_win_get_count_hidden(self):
+    #     count = await self.ahk.win_get_count()
+    #     all_count = await self.ahk.win_get_count(detect_hidden_windows=True)
+    #     assert all_count > count
+
+    async def test_win_exists(self):
+        assert self.win.exists()
+        await self.win.close()
+        assert not await self.win.exists()
+
+    async def test_win_set_title(self):
+        await self.win.set_title(new_title='Foo')
+        assert await self.win.get_title() == 'Foo'
+
+    async def test_control_send_window(self):
+        await self.win.send('Hello World')
+        text = await self.win.get_text()
+        assert 'Hello World' in text
+
+    async def test_send_literal_comma(self):
+        await self.win.send('hello, world')
+        print(self.win)
+        text = await self.win.get_text()
+        assert 'hello, world' in text
+
+    async def test_send_literal_tilde_n(self):
+        expected_text = '```nim\nimport std/strformat\n```'
+        await self.win.send(expected_text)
+        text = await self.win.get_text()
+        assert '```nim' in text
+        assert '\nimport std/strformat' in text
+        assert '\n```' in text
