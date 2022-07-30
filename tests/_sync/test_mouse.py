@@ -55,4 +55,4 @@ class TestMouseAsync(TestCase):
         pos = self.ahk.get_mouse_position()
         assert pos != current_pos
         assert pos != (500, 500)
-        sleep(1)
+        res.result()

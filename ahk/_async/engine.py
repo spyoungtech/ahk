@@ -38,10 +38,12 @@ CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Win
 
 CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
-MatchModes: TypeAlias = Literal[1, 2, 3, 'RegEx']
-MatchSpeeds: TypeAlias = Literal['Fast', 'Slow']
+MatchModes: TypeAlias = Literal[1, 2, 3, 'RegEx', '']
+MatchSpeeds: TypeAlias = Literal['Fast', 'Slow', '']
 
-TitleMatchMode: TypeAlias = Optional[Union[MatchModes, MatchSpeeds, Tuple[MatchModes, MatchSpeeds]]]
+TitleMatchMode: TypeAlias = Optional[
+    Union[MatchModes, MatchSpeeds, Tuple[Union[MatchModes, MatchSpeeds], Union[MatchSpeeds, MatchModes]]]
+]
 
 
 class AsyncAHK:
@@ -77,13 +79,32 @@ class AsyncAHK:
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
+    async def set_title_match_mode(self, title_match_mode: TitleMatchMode, /) -> Union[None, AsyncFutureResult[None]]:
+        args = []
+        if isinstance(title_match_mode, tuple):
+            (match_mode, match_speed) = title_match_mode
+        elif title_match_mode in (1, 2, 3, 'RegEx'):
+            match_mode = title_match_mode
+            match_speed = ''
+        elif title_match_mode in ('Fast', 'Slow'):
+            match_mode = ''
+            match_speed = title_match_mode
+        else:
+            raise ValueError(
+                f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+            )
+        args.append(str(match_mode))
+        args.append(str(match_speed))
+        resp = await self._transport.function_call('AHKSetTitleMatchMode', args)
+        return resp
+
     # fmt: off
     @overload
-    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def control_send(self, keys: str, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def control_send(
         self,
@@ -94,6 +115,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -107,7 +129,26 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
-        args.append(keys)
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKControlSend', args, blocking=blocking)
         return resp
 
@@ -130,14 +171,18 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def list_windows(self, *, detect_hidden_windows: Optional[bool] = None) -> List[AsyncWindow]: ...
+    async def list_windows(self, *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[AsyncWindow]: ...
     @overload
-    async def list_windows(self, *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
+    async def list_windows(self, *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
     @overload
-    async def list_windows(self, *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[AsyncWindow]: ...
+    async def list_windows(self, *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[AsyncWindow]: ...
     # fmt: on
     async def list_windows(
-        self, *, detect_hidden_windows: Optional[bool] = None, blocking: bool = True
+        self,
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
     ) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]:
         args = []
         if detect_hidden_windows is not None:
@@ -149,6 +194,26 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('WindowList', args, engine=self, blocking=blocking)
         return resp
 
@@ -477,11 +542,11 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '',*, detect_hidden_windows: Optional[bool] = None) -> Union[AsyncWindow, None]: ...
+    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '',*, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[AsyncWindow, None]: ...
     @overload
-    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
+    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
     @overload
-    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
+    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
     # fmt: on
     async def win_get(
         self,
@@ -490,6 +555,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[None, AsyncWindow]]]:
@@ -503,16 +569,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetID', args, blocking=blocking, engine=self)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> str: ...
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> str: ...
     @overload
-    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
     @overload
-    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
+    async def win_get_text(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
     # fmt: on
     async def win_get_text(
         self,
@@ -521,6 +607,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, AsyncFutureResult[str]]:
@@ -534,16 +621,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetText', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> str: ...
+    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> str: ...
     @overload
-    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
     @overload
-    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
+    async def win_get_title(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
     # fmt: on
     async def win_get_title(
         self,
@@ -552,6 +659,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, AsyncFutureResult[str]]:
@@ -565,16 +673,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetTitle', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Union[AsyncWindow, None]: ...
+    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[AsyncWindow, None]: ...
     @overload
-    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
+    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
     @overload
-    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
+    async def win_get_idlast(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
     # fmt: on
     async def win_get_idlast(
         self,
@@ -583,6 +711,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[AsyncWindow, None]]]:
@@ -596,16 +725,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetIDLast', args, blocking=blocking, engine=self)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Union[int, None]: ...
+    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[int, None]: ...
     @overload
-    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[int, None]]: ...
+    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[int, None]]: ...
     @overload
-    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[int, None]: ...
+    async def win_get_pid(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[int, None]: ...
     # fmt: on
     async def win_get_pid(
         self,
@@ -614,6 +763,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, None, AsyncFutureResult[Union[int, None]]]:
@@ -627,16 +777,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetPID', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Union[str, None]: ...
+    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[str, None]: ...
     @overload
-    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[str, None]]: ...
+    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[str, None]]: ...
     @overload
-    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[str, None]: ...
+    async def win_get_process_name(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[str, None]: ...
     # fmt: on
     async def win_get_process_name(
         self,
@@ -645,6 +815,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, str, AsyncFutureResult[Optional[str]]]:
@@ -658,16 +829,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetProcessName', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Union[str, None]: ...
+    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[str, None]: ...
     @overload
-    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[str, None]]: ...
+    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[str, None]]: ...
     @overload
-    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[str, None]: ...
+    async def win_get_process_path(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[str, None]: ...
     # fmt: on
     async def win_get_process_path(
         self,
@@ -676,6 +867,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, None, Union[None, str, AsyncFutureResult[Optional[str]]]]:
@@ -689,16 +881,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetProcessPath', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> int: ...
+    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> int: ...
     @overload
-    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[int]: ...
+    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[int]: ...
     @overload
-    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> int: ...
+    async def win_get_count(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> int: ...
     # fmt: on
     async def win_get_count(
         self,
@@ -707,6 +919,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, AsyncFutureResult[int]]:
@@ -720,16 +933,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetCount', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Union[int, None]: ...
+    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[int, None]: ...
     @overload
-    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[int, None]]: ...
+    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[int, None]]: ...
     @overload
-    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[int, None]: ...
+    async def win_get_minmax(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[int, None]: ...
     # fmt: on
     async def win_get_minmax(
         self,
@@ -738,6 +971,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, int, AsyncFutureResult[Optional[int]]]:
@@ -751,16 +985,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetMinMax', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> Union[List[AsyncControl], None]: ...
+    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[List[AsyncControl], None]: ...
     @overload
-    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[List[AsyncControl], None]]: ...
+    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[List[AsyncControl], None]]: ...
     @overload
-    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[List[AsyncControl], None]: ...
+    async def win_get_control_list(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[List[AsyncControl], None]: ...
     # fmt: on
     async def win_get_control_list(
         self,
@@ -769,6 +1023,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[List[AsyncControl], None, AsyncFutureResult[Optional[List[AsyncControl]]]]:
@@ -782,6 +1037,26 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinGetControlList', args, blocking=blocking, engine=self)
         return resp
 
@@ -800,11 +1075,11 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> bool: ...
+    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> bool: ...
     @overload
-    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
     @overload
-    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
+    async def win_exists(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
     # fmt: on
     async def win_exists(
         self,
@@ -813,6 +1088,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, AsyncFutureResult[bool]]:
@@ -826,16 +1102,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinExist', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_title(self, new_title: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     # fmt: on
     async def win_set_title(
         self,
@@ -845,6 +1141,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -858,16 +1155,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetTitle', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_always_on_top(
         self,
@@ -877,6 +1194,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -890,16 +1208,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetAlwaysOnTop', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_bottom(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_bottom(
         self,
@@ -908,6 +1246,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -921,16 +1260,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetBottom', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_top(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_top(
         self,
@@ -939,6 +1298,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -952,16 +1312,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetTop', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_disable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_disable(
         self,
@@ -970,6 +1350,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -983,16 +1364,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetDisable', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_enable(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_enable(
         self,
@@ -1001,6 +1402,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -1014,16 +1416,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetEnable', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_redraw(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_redraw(
         self,
@@ -1032,6 +1454,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -1045,16 +1468,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetRedraw', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> bool: ...
+    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> bool: ...
     @overload
-    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
     @overload
-    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
+    async def win_set_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
     # fmt: on
     async def win_set_style(
         self,
@@ -1064,6 +1507,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, AsyncFutureResult[bool]]:
@@ -1077,16 +1521,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetStyle', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> bool: ...
+    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> bool: ...
     @overload
-    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
     @overload
-    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
+    async def win_set_ex_style(self, style: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
     # fmt: on
     async def win_set_ex_style(
         self,
@@ -1096,6 +1560,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, AsyncFutureResult[bool]]:
@@ -1109,16 +1574,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetExStyle', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> bool: ...
+    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> bool: ...
     @overload
-    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
     @overload
-    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
+    async def win_set_region(self, options: str, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
     # fmt: on
     async def win_set_region(
         self,
@@ -1128,6 +1613,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, AsyncFutureResult[bool]]:
@@ -1141,16 +1627,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetRegion', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_transparent(self, transparency: Union[int, Literal['Off']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_transparent(
         self,
@@ -1160,6 +1666,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -1173,16 +1680,36 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetTransparent', args, blocking=blocking)
         return resp
 
     # fmt: off
     @overload
-    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_set_trans_color(self, color: Union[int, str], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     # fmt: on
     async def win_set_trans_color(
         self,
@@ -1192,6 +1719,7 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         *,
+        title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -1205,6 +1733,26 @@ class AsyncAHK:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
                 )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
         resp = await self._transport.function_call('AHKWinSetTransColor', args, blocking=blocking)
         return resp
 
@@ -1273,12 +1821,7 @@ class AsyncAHK:
         else:
             x2, y2 = ('A_ScreenWidth', 'A_ScreenHeight')
 
-        args = [
-            str(x1),
-            str(y1),
-            str(x2),
-            str(y2),
-        ]
+        args = [str(x1), str(y1), str(x2), str(y2)]
         if options:
             s = ''
             for opt in options:

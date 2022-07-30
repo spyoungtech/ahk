@@ -98,7 +98,7 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     #     assert all_count > count
 
     async def test_win_exists(self):
-        assert self.win.exists()
+        assert await self.win.exists()
         await self.win.close()
         assert not await self.win.exists()
 

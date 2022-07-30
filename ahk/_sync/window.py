@@ -9,7 +9,7 @@ from typing import Union
 
 if TYPE_CHECKING:
     from .engine import AHK
-    from .transport import SyncFutureResult
+    from .transport import FutureResult
 
 
 class WindowNotFoundException(Exception):
@@ -95,13 +95,13 @@ class Window:
     @overload
     def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> None: ...
     @overload
-    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
     def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[True]) -> None: ...
     # fmt: on
     def set_always_on_top(
         self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True
-    ) -> Union[None, SyncFutureResult[None]]:
+    ) -> Union[None, FutureResult[None]]:
         if blocking:
             self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True)
             return None
@@ -115,11 +115,11 @@ class Window:
     @overload
     def is_always_on_top(self) -> bool: ...
     @overload
-    def is_always_on_top(self, *, blocking: Literal[False]) -> SyncFutureResult[Optional[bool]]: ...
+    def is_always_on_top(self, *, blocking: Literal[False]) -> FutureResult[Optional[bool]]: ...
     @overload
     def is_always_on_top(self, *, blocking: Literal[True]) -> bool: ...
     # fmt: on
-    def is_always_on_top(self, *, blocking: bool = True) -> Union[bool, SyncFutureResult[Optional[bool]]]:
+    def is_always_on_top(self, *, blocking: bool = True) -> Union[bool, FutureResult[Optional[bool]]]:
         args = [f'ahk_id {self._ahk_id}']
         resp = self._engine._transport.function_call(
             'AHKWinIsAlwaysOnTop', args, blocking=blocking
@@ -134,11 +134,11 @@ class Window:
     @overload
     def send(self, keys: str) -> None: ...
     @overload
-    def send(self, keys: str, *, blocking: Literal[False]) -> SyncFutureResult[None]: ...
+    def send(self, keys: str, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
     def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
     # fmt: on
-    def send(self, keys: str, *, blocking: bool = True) -> Union[None, SyncFutureResult[None]]:
+    def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         if blocking:
             self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True)
             return None
@@ -150,11 +150,11 @@ class Window:
     @overload
     def get_text(self) -> str: ...
     @overload
-    def get_text(self, *, blocking: Literal[False]) -> SyncFutureResult[str]: ...
+    def get_text(self, *, blocking: Literal[False]) -> FutureResult[str]: ...
     @overload
     def get_text(self, *, blocking: Literal[True]) -> str: ...
     # fmt: on
-    def get_text(self, *, blocking: bool = True) -> Union[str, SyncFutureResult[str]]:
+    def get_text(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
         if blocking:
             resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True)
             return resp
