@@ -425,14 +425,14 @@ AHKWinGetText(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
-
+    MsgBox, %title%, %text%, %extitle%, %extext%, %detect_hw%
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
 
-    WinGetText, output, %title%, %text%, %extitle%, %extext%
+    WinGetText, output,% title
 
     if (ErrorLevel = 1) {
         return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window text")
@@ -887,9 +887,8 @@ AHKSendRaw(ByRef command) {
 }
 
 AHKSendInput(ByRef command) {
-    command.RemoveAt(1)
-    s := Join(",", command*) ; TODO: remove after better input handling is implemented
-    str := Unescape(s)
+
+    str := command[2]
     SendInput,% str
     return FormatNoValueResponse()
 }
@@ -1114,16 +1113,7 @@ AHKControlSend(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
-
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    str := Join(",", command*)
-    keys := Unescape(str)
+    keys := command[8]
     DetectHiddenWindows, %current_detect_hw%
     ControlSend, %ctrl%,% keys, %title%, %text%, %extitle%, %extext%
     return FormatNoValueResponse()
@@ -1238,14 +1228,69 @@ CountNewlines(ByRef s) {
     return count
 }
 
+AHKEcho(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    return FormatResponse(STRINGRESPONSEMESSAGE, command)
+}
+
+
+b64decode(ByRef pszString) {
+
+    ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
+    ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
+    ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.
+    ;  [in]      DWORD  dwFlags,    Indicates the format of the string to be converted. (see table in link above)
+    ;  [in]      BYTE   *pbBinary,  A pointer to a buffer that receives the returned sequence of bytes. If this parameter is NULL, the function calculates the length of the buffer needed and returns the size, in bytes, of required memory in the DWORD pointed to by pcbBinary.
+    ;  [in, out] DWORD  *pcbBinary, A pointer to a DWORD variable that, on entry, contains the size, in bytes, of the pbBinary buffer. After the function returns, this variable contains the number of bytes copied to the buffer. If this value is not large enough to contain all of the data, the function fails and GetLastError returns ERROR_MORE_DATA.
+    ;  [out]     DWORD  *pdwSkip,   A pointer to a DWORD value that receives the number of characters skipped to reach the beginning of the -----BEGIN ...----- header. If no header is present, then the DWORD is set to zero. This parameter is optional and can be NULL if it is not needed.
+    ;  [out]     DWORD  *pdwFlags   A pointer to a DWORD value that receives the flags actually used in the conversion. These are the same flags used for the dwFlags parameter. In many cases, these will be the same flags that were passed in the dwFlags parameter. If dwFlags contains one of the following flags, this value will receive a flag that indicates the actual format of the string. This parameter is optional and can be NULL if it is not needed.
+
+    cchString := StrLen(pszString)
+    dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
+    getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
+    buff_size := 0 ; The function will write to this variable on our first call
+    pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
+    pdwFlags := 0 ; We don't need this, so make it null
+
+
+    ; The first call calculates the required size. The result is written to pbBinary
+    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    if (success = 0) {
+        return ""
+    }
+
+    ; We're going to give a pointer to a variable to the next call, but first we want to make the buffer the correct size using VarSetCapacity using the previous return value
+    VarSetCapacity(ret, buff_size, 0)
+
+    ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
+
+    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "Ptr", &ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    if (success=0) {
+        return ""
+    }
+
+    return StrGet(&ret, "UTF-8")
+}
+
+CommandArrayFromQuery(ByRef text) {
+    decoded_commands := []
+    encoded_array := StrSplit(text, "|")
+    function_name := encoded_array[1]
+    encoded_array.RemoveAt(1)
+    decoded_commands.push(function_name)
+    for index, encoded_value in encoded_array {
+        decoded_value := b64decode(encoded_value)
+        decoded_commands.push(decoded_value)
+    }
+    return decoded_commands
+}
 
 stdin  := FileOpen("*", "r `n", "UTF-8")  ; Requires [v1.1.17+]
 response := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
-    commandArray := StrSplit(query, ",")
-
+    commandArray := CommandArrayFromQuery(query)
     try {
         func := commandArray[1]
         response := %func%(commandArray)
