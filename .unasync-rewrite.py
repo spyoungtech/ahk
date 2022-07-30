@@ -10,6 +10,8 @@ from tokenize_rt import reversed_enumerate
 from tokenize_rt import src_to_tokens
 from tokenize_rt import tokens_to_src
 
+GIT_EXECUTABLE = shutil.which('git')
+
 changes = 0
 
 
@@ -57,6 +59,10 @@ def _copyfunc(src, dst, *, follow_symlinks=True):
         changes += 1
         print('ADDED', dst)
         shutil.copy2(src, dst, follow_symlinks=follow_symlinks)
+        if GIT_EXECUTABLE is None:
+            print('WARNING could not find git!', file=sys.stderr)
+        else:
+            subprocess.run([GIT_EXECUTABLE, 'add', '--intent-to-add', dst])
     return dst
 
 
