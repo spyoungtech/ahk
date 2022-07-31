@@ -50,8 +50,8 @@ class AsyncFutureResult(Generic[T_AsyncFuture]):  # unasync: remove
     def __init__(self, task: asyncio.Task[T_AsyncFuture]):
         self._task: asyncio.Task[T_AsyncFuture] = task
 
-    async def result(self) -> Awaitable[T_AsyncFuture]:
-        return self._task
+    async def result(self) -> T_AsyncFuture:
+        return await self._task
 
 
 class FutureResult(Generic[T_SyncFuture]):
