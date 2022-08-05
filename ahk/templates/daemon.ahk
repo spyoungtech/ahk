@@ -520,6 +520,8 @@ AHKWinWait(ByRef command) {
     extext := command[6]
     match_mode:= command[7]
     match_speed := command[8]
+    previous_match_mode := A_TitleMatchMode
+    previous_match_speed := A_TitleMatchModeSpeed
     if (match_mode != "None") {
         SetTitleMatchMode %match_mode%
     }
@@ -527,6 +529,9 @@ AHKWinWait(ByRef command) {
         SetTitleMatchMode %match_speed%
     }
     WinWait,%title%,%text%,%timeout%,%extitle%,%extext%
+    ; Revert to original match modes
+    SetTitleMatchMode %previous_match_mode%
+    SetTitleMatchMode %previous_match_speed%
     if !ErrorLevel
     {
            WinGet, output, ID

@@ -125,6 +125,9 @@ class TestWindow(TestCase):
     def test_winwait_existing_window_with_matchmode(self):
         win = self.ahk.win_wait(title='Notepad', match_mode=2)
         assert win.id == self.win.id
+        # Check the previous mode
+        with pytest.raises(TimeoutError):
+            self.ahk.win_wait(title='Notepad')
 
 
 class TestWindowDaemon(TestWindow):
