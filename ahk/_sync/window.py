@@ -35,7 +35,9 @@ class Window:
         return hash(self._ahk_id)
 
     def close(self) -> None:
-        self._engine.win_close(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+        self._engine.win_close(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         return None
 
     def exists(self) -> bool:
@@ -120,11 +122,21 @@ class Window:
         self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
         if blocking:
-            self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+            self._engine.win_set_always_on_top(
+                toggle=toggle,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=True,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
             return None
         else:
             resp = self._engine.win_set_always_on_top(
-                toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+                toggle=toggle,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=False,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
             )
             return resp
 
@@ -157,10 +169,22 @@ class Window:
     # fmt: on
     def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         if blocking:
-            self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+            self._engine.control_send(
+                keys=keys,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=True,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
             return None
         else:
-            resp = self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+            resp = self._engine.control_send(
+                keys=keys,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=False,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
             return resp
 
     # fmt: off
@@ -173,10 +197,14 @@ class Window:
     # fmt: on
     def get_text(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
         if blocking:
-            resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+            resp = self._engine.win_get_text(
+                title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+            )
             return resp
         else:
-            nonblocking_resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+            nonblocking_resp = self._engine.win_get_text(
+                title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+            )
             return nonblocking_resp
 
 
@@ -185,6 +213,37 @@ class Control:
         self.window: Window = window
         self.hwnd: str = hwnd
         self.control_class: str = control_class
+        self._engine = window._engine
+
+    # fmt: off
+    @overload
+    def send(self, keys: str) -> None: ...
+    @overload
+    def send(self, keys: str, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        if blocking:
+            self._engine.control_send(
+                keys=keys,
+                control=self.control_class,
+                title=f'ahk_id {self.window._ahk_id}',
+                blocking=True,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
+            return None
+        else:
+            resp = self._engine.control_send(
+                keys=keys,
+                control=self.control_class,
+                title=f'ahk_id {self.window._ahk_id}',
+                blocking=False,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
+            return resp
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} window={self.window!r}, control_hwnd={self.hwnd!r}, control_class={self.control_class!r}>'

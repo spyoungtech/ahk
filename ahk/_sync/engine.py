@@ -32,10 +32,10 @@ from .window import Window
 
 sleep = time.sleep
 
-CoordModeTargets = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
-CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
+CoordModeTargets: TypeAlias = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
+CoordModeRelativeTo: TypeAlias = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
 
-CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
+CoordMode: TypeAlias = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
 MatchModes: TypeAlias = Literal[1, 2, 3, 'RegEx', '']
 MatchSpeeds: TypeAlias = Literal['Fast', 'Slow', '']
@@ -1920,7 +1920,7 @@ class AHK:
             args.append(s)
         else:
             args.append(image_path)
-        resp = self._transport.function_call('ImageSearch', args)
+        resp = self._transport.function_call('ImageSearch', args, blocking=blocking)
         return resp
 
     def mouse_drag(
@@ -1982,7 +1982,9 @@ class AHK:
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
-        blocking: bool = True, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None
+        blocking: bool = True,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
     ) -> Union[None, FutureResult[None]]:
         args: List[str]
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]

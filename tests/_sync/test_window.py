@@ -141,3 +141,10 @@ class TestWindowAsync(TestCase):
         self.ahk.set_title_match_mode('Slow')
         speed = self.ahk.get_title_match_speed()
         assert speed == 'Slow'
+
+    def test_control_send_from_control(self):
+        controls = self.win.list_controls()
+        edit_control = controls[0]
+        edit_control.send('hello world')
+        text = self.win.get_text()
+        assert 'hello world' in text

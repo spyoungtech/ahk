@@ -33,10 +33,12 @@ from .window import AsyncWindow
 async_sleep = asyncio.sleep  # unasync: remove
 sleep = time.sleep
 
-CoordModeTargets = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
-CoordModeRelativeTo = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
+CoordModeTargets: TypeAlias = Union[
+    Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']
+]
+CoordModeRelativeTo: TypeAlias = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
 
-CoordMode = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
+CoordMode: TypeAlias = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
 MatchModes: TypeAlias = Literal[1, 2, 3, 'RegEx', '']
 MatchSpeeds: TypeAlias = Literal['Fast', 'Slow', '']
@@ -1921,7 +1923,7 @@ class AsyncAHK:
             args.append(s)
         else:
             args.append(image_path)
-        resp = await self._transport.function_call('ImageSearch', args)
+        resp = await self._transport.function_call('ImageSearch', args, blocking=blocking)
         return resp
 
     async def mouse_drag(

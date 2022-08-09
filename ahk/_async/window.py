@@ -213,6 +213,37 @@ class AsyncControl:
         self.window: AsyncWindow = window
         self.hwnd: str = hwnd
         self.control_class: str = control_class
+        self._engine = window._engine
+
+    # fmt: off
+    @overload
+    async def send(self, keys: str) -> None: ...
+    @overload
+    async def send(self, keys: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    # fmt: on
+    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        if blocking:
+            await self._engine.control_send(
+                keys=keys,
+                control=self.control_class,
+                title=f'ahk_id {self.window._ahk_id}',
+                blocking=True,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
+            return None
+        else:
+            resp = await self._engine.control_send(
+                keys=keys,
+                control=self.control_class,
+                title=f'ahk_id {self.window._ahk_id}',
+                blocking=False,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
+            return resp
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} window={self.window!r}, control_hwnd={self.hwnd!r}, control_class={self.control_class!r}>'
