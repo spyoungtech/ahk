@@ -37,8 +37,22 @@ AHKSetTitleMatchMode(ByRef command) {
     val1 := command[2]
     val2 := command[3]
     if (val1 != "") {
-
+        SetTitleMatchMode, %val1%
     }
+    if (val2 != "") {
+        SetTitleMatchMode, %val2%
+    }
+    return FormatNoValueResponse()
+}
+
+AHKGetTitleMatchMode(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchMode)
+}
+
+AHKGetTitleMatchSpeed(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchModeSpeed)
 }
 
 AHKWinExist(ByRef command) {
@@ -1605,7 +1619,7 @@ AHKEcho(ByRef command) {
 
 
 b64decode(ByRef pszString) {
-
+    ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
     ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
     ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.

@@ -60,6 +60,8 @@ SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
 
 FunctionName = Literal[
+Literal['AHKGetTitleMatchMode'],
+Literal['AHKGetTitleMatchSpeed'],
     Literal['AHKSetDetectHiddenWindows'],
     Literal['AHKSetTitleMatchMode'],
     Literal['AHKWinSetTitle'],
@@ -408,8 +410,11 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinSetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKSetTitleMatchMode'], args: Optional[List[str]] = None) -> Union[None, FutureResult[None]]: ...
-
+    def function_call(self, function_name: Literal['AHKSetTitleMatchMode'], args: Optional[List[str]] = None) -> None: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKGetTitleMatchMode']) -> str: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKGetTitleMatchSpeed']) -> str: ...
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     # @overload
@@ -458,9 +463,7 @@ class Transport(ABC):
     @abstractmethod
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AHK] = None
-    ) -> FutureResult[
-        Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]
-    ]:
+    ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]]:
         return NotImplemented
 
 
@@ -519,9 +522,7 @@ class DaemonProcessTransport(Transport):
 
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AHK] = None
-    ) -> FutureResult[
-        Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]
-    ]:
+    ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]]:
         # this is only used by the sync implementation
         pool = ThreadPoolExecutor(max_workers=1)
         fut = pool.submit(self._send_nonblocking, request=request, engine=engine)

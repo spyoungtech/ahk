@@ -124,3 +124,20 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         assert '```nim' in text
         assert '\nimport std/strformat' in text
         assert '\n```' in text
+
+    async def test_set_title_match_mode_and_speed(self):
+        await self.ahk.set_title_match_mode(('RegEx', 'Slow'))
+        speed = await self.ahk.get_title_match_speed()
+        mode = await self.ahk.get_title_match_mode()
+        assert mode == 'RegEx'
+        assert speed == 'Slow'
+
+    async def test_set_title_match_mode(self):
+        await self.ahk.set_title_match_mode('RegEx')
+        mode = await self.ahk.get_title_match_mode()
+        assert mode == 'RegEx'
+
+    async def test_set_title_match_speed(self):
+        await self.ahk.set_title_match_mode('Slow')
+        speed = await self.ahk.get_title_match_speed()
+        assert speed == 'Slow'

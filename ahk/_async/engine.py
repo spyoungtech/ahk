@@ -74,12 +74,52 @@ class AsyncAHK:
     def add_hotkey(
         self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
     ) -> None:
+        """
+        Register a function to be called when a hotkey is pressed.
+
+        Key notes:
+
+        - You must call the `start_hotkeys` method for the hotkeys to be active
+        - All hotkeys run in a single AHK process instance (but Python callbacks also get their own thread and can run simultaneously)
+        - If you add a hotkey after the hotkey thread/instance is active, it will be restarted automatically
+        - `async` functions are not directly supported as callbacks, however you may write a synchronous function that calls `asyncio.run`/`loop.create_task` etc.
+
+        :param hotkey: the hotkey that should trigger the callback. For example the string '#n' for Win+n
+        :param callback: A callable (e.g., a function) to run when the hotkey is triggered.
+        :param ex_handler: An exception handler callable that runs when your callback fails. The exception handler must accept two positional arguments.
+                           The first argument is a string representing the hotkey that failed and the second is the exception instance that was raised during the execution of your callback.
+                           If you do not provide an exception handler, a default handler is used.
+        """
         return self._transport.add_hotkey(hotkey=hotkey, callback=callback, ex_handler=ex_handler)
 
     def add_hotstring(self, trigger_string: str, replacement: str) -> None:
+        """
+        Register a hotstring, e.g., `::btw::by the way`
+
+        Key notes:
+
+        - You must call the `start_hotkeys` method for registered hotstrings to be active
+        - All hotstrings (and hotkeys) run in a single AHK process instance
+
+        :param trigger_string: The 'abbreviation' part of the hotstring. e.g., `btw`
+        :param replacement: The text to replace when the trigger fires. e.g., `by the way`
+        """
         return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
 
-    async def set_title_match_mode(self, title_match_mode: TitleMatchMode, /) -> Union[None, AsyncFutureResult[None]]:
+    async def set_title_match_mode(self, title_match_mode: TitleMatchMode, /) -> None:
+        """
+        Sets the default title match mode
+
+        Has no effect for `Window`/`Control` instance methods (these always use hwnd)
+
+        Does not affect methods called with `blocking=True` (because these run in a separate AHK process)
+
+        Reference: https://www.autohotkey.com/docs/commands/SetTitleMatchMode.htm
+
+        :param title_match_mode: the match mode (and/or match speed) to set as the default title match mode. Can be 1, 2, 3, 'Regex', 'Fast', 'Slow' or a tuple of these.
+        :return: None
+        """
+
         args = []
         if isinstance(title_match_mode, tuple):
             (match_mode, match_speed) = title_match_mode
@@ -95,7 +135,27 @@ class AsyncAHK:
             )
         args.append(str(match_mode))
         args.append(str(match_speed))
-        resp = await self._transport.function_call('AHKSetTitleMatchMode', args)
+        await self._transport.function_call('AHKSetTitleMatchMode', args)
+        return None
+
+    async def get_title_match_mode(self) -> str:
+        """
+        Get the title match mode.
+
+        I.E. the current value of `A_TitleMatchMode`
+
+        """
+        resp = await self._transport.function_call('AHKGetTitleMatchMode')
+        return resp
+
+    async def get_title_match_speed(self) -> str:
+        """
+        Get the title match mode speed.
+
+        I.E. the current value of `A_TitleMatchModeSpeed`
+
+        """
+        resp = await self._transport.function_call('AHKGetTitleMatchSpeed')
         return resp
 
     # fmt: off
@@ -119,6 +179,22 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
+        """
+        Analog for ControlSend
+
+        Reference: https://www.autohotkey.com/docs/commands/ControlSend.htm
+
+        :param keys:
+        :param control:
+        :param title:
+        :param text:
+        :param exclude_title:
+        :param exclude_text:
+        :param title_match_mode:
+        :param detect_hidden_windows:
+        :param blocking:
+        :return:
+        """
         args = [control, keys, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -153,12 +229,27 @@ class AsyncAHK:
         return resp
 
     def start_hotkeys(self) -> None:
+        """
+        Start the Autohotkey process for triggering hotkeys
+
+        """
         return self._transport.start_hotkeys()
 
     def stop_hotkeys(self) -> None:
+        """
+        Stop the Autohotkey process for triggering hotkeys
+
+        """
         return self._transport.stop_hotkeys()
 
     async def set_detect_hidden_windows(self, value: bool) -> None:
+        """
+        Analog for AutoHotkey's `DetectHiddenWindows`
+
+        :param value: The setting value. `True` to turn on hidden window detection, `False` to turn it off.
+
+        """
+
         if value not in (True, False):
             raise TypeError(f'detect hidden windows must be a boolean, got object of type {type(value)}')
         args = []
@@ -1878,11 +1969,11 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '') -> None: ...
+    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[True]) -> None: ...
+    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     # fmt: on
     async def win_close(
         self,
@@ -1893,9 +1984,41 @@ class AsyncAHK:
         exclude_title: str = '',
         exclude_text: str = '',
         blocking: bool = True,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
     ) -> Union[None, AsyncFutureResult[None]]:
         args: List[str]
         args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
+        if detect_hidden_windows is not None:
+            if detect_hidden_windows is True:
+                args.append('On')
+            elif detect_hidden_windows is False:
+                args.append('Off')
+            else:
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
+
         resp = await self._transport.function_call('AHKWinClose', args=args, blocking=blocking)
         return resp
 

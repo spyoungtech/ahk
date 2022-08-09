@@ -35,14 +35,20 @@ class AsyncWindow:
         return hash(self._ahk_id)
 
     async def close(self) -> None:
-        await self._engine.win_close(title=f'ahk_id {self._ahk_id}')
+        await self._engine.win_close(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         return None
 
     async def exists(self) -> bool:
-        return await self._engine.win_exists(title=f'ahk_id {self._ahk_id}')
+        return await self._engine.win_exists(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
 
     async def get_pid(self) -> int:
-        pid = await self._engine.win_get_pid(title=f'ahk_id {self._ahk_id}')
+        pid = await self._engine.win_get_pid(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if pid is None:
             raise WindowNotFoundException(
                 f'Error when trying to get PID of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
@@ -50,7 +56,9 @@ class AsyncWindow:
         return pid
 
     async def get_process_name(self) -> str:
-        name = await self._engine.win_get_process_name(title=f'ahk_id {self._ahk_id}')
+        name = await self._engine.win_get_process_name(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if name is None:
             raise WindowNotFoundException(
                 f'Error when trying to get process name of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
@@ -58,7 +66,9 @@ class AsyncWindow:
         return name
 
     async def get_process_path(self) -> str:
-        path = await self._engine.win_get_process_path(title=f'ahk_id {self._ahk_id}')
+        path = await self._engine.win_get_process_path(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if path is None:
             raise WindowNotFoundException(
                 f'Error when trying to get process path of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
@@ -66,7 +76,9 @@ class AsyncWindow:
         return path
 
     async def get_minmax(self) -> int:
-        minmax = await self._engine.win_get_minmax(title=f'ahk_id {self._ahk_id}')
+        minmax = await self._engine.win_get_minmax(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if minmax is None:
             raise WindowNotFoundException(
                 f'Error when trying to get minmax state of window {self._ahk_id}. The window may have been closed before the operation could be completed'
@@ -74,11 +86,15 @@ class AsyncWindow:
         return minmax
 
     async def get_title(self) -> str:
-        title = await self._engine.win_get_title(title=f'ahk_id {self._ahk_id}')
+        title = await self._engine.win_get_title(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         return title
 
     async def list_controls(self) -> Sequence['AsyncControl']:
-        controls = await self._engine.win_get_control_list(title=f'ahk_id {self._ahk_id}')
+        controls = await self._engine.win_get_control_list(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if controls is None:
             raise WindowNotFoundException(
                 f'Error when trying to enumerate controls for window {self._ahk_id}. The window may have been closed before the operation could be completed'
@@ -87,7 +103,10 @@ class AsyncWindow:
 
     async def set_title(self, new_title: str) -> None:
         await self._engine.win_set_title(
-            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, new_title=new_title
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            new_title=new_title,
+            title_match_mode=(1, 'Fast'),
         )
         return None
 
@@ -103,11 +122,21 @@ class AsyncWindow:
         self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
         if blocking:
-            await self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True)
+            await self._engine.win_set_always_on_top(
+                toggle=toggle,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=True,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
             return None
         else:
             resp = await self._engine.win_set_always_on_top(
-                toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False
+                toggle=toggle,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=False,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
             )
             return resp
 
@@ -140,10 +169,22 @@ class AsyncWindow:
     # fmt: on
     async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         if blocking:
-            await self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True)
+            await self._engine.control_send(
+                keys=keys,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=True,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
             return None
         else:
-            resp = await self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=False)
+            resp = await self._engine.control_send(
+                keys=keys,
+                title=f'ahk_id {self._ahk_id}',
+                blocking=False,
+                detect_hidden_windows=True,
+                title_match_mode=(1, 'Fast'),
+            )
             return resp
 
     # fmt: off
@@ -156,10 +197,14 @@ class AsyncWindow:
     # fmt: on
     async def get_text(self, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
         if blocking:
-            resp = await self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True)
+            resp = await self._engine.win_get_text(
+                title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+            )
             return resp
         else:
-            nonblocking_resp = await self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=False)
+            nonblocking_resp = await self._engine.win_get_text(
+                title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+            )
             return nonblocking_resp
 
 

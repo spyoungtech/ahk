@@ -35,14 +35,18 @@ class Window:
         return hash(self._ahk_id)
 
     def close(self) -> None:
-        self._engine.win_close(title=f'ahk_id {self._ahk_id}')
+        self._engine.win_close(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
         return None
 
     def exists(self) -> bool:
-        return self._engine.win_exists(title=f'ahk_id {self._ahk_id}')
+        return self._engine.win_exists(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
 
     def get_pid(self) -> int:
-        pid = self._engine.win_get_pid(title=f'ahk_id {self._ahk_id}')
+        pid = self._engine.win_get_pid(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if pid is None:
             raise WindowNotFoundException(
                 f'Error when trying to get PID of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
@@ -50,7 +54,9 @@ class Window:
         return pid
 
     def get_process_name(self) -> str:
-        name = self._engine.win_get_process_name(title=f'ahk_id {self._ahk_id}')
+        name = self._engine.win_get_process_name(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if name is None:
             raise WindowNotFoundException(
                 f'Error when trying to get process name of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
@@ -58,7 +64,9 @@ class Window:
         return name
 
     def get_process_path(self) -> str:
-        path = self._engine.win_get_process_path(title=f'ahk_id {self._ahk_id}')
+        path = self._engine.win_get_process_path(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if path is None:
             raise WindowNotFoundException(
                 f'Error when trying to get process path of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
@@ -66,7 +74,9 @@ class Window:
         return path
 
     def get_minmax(self) -> int:
-        minmax = self._engine.win_get_minmax(title=f'ahk_id {self._ahk_id}')
+        minmax = self._engine.win_get_minmax(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if minmax is None:
             raise WindowNotFoundException(
                 f'Error when trying to get minmax state of window {self._ahk_id}. The window may have been closed before the operation could be completed'
@@ -74,11 +84,15 @@ class Window:
         return minmax
 
     def get_title(self) -> str:
-        title = self._engine.win_get_title(title=f'ahk_id {self._ahk_id}')
+        title = self._engine.win_get_title(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         return title
 
     def list_controls(self) -> Sequence['Control']:
-        controls = self._engine.win_get_control_list(title=f'ahk_id {self._ahk_id}')
+        controls = self._engine.win_get_control_list(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         if controls is None:
             raise WindowNotFoundException(
                 f'Error when trying to enumerate controls for window {self._ahk_id}. The window may have been closed before the operation could be completed'
@@ -87,7 +101,10 @@ class Window:
 
     def set_title(self, new_title: str) -> None:
         self._engine.win_set_title(
-            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, new_title=new_title
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            new_title=new_title,
+            title_match_mode=(1, 'Fast'),
         )
         return None
 
@@ -103,11 +120,11 @@ class Window:
         self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
         if blocking:
-            self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True)
+            self._engine.win_set_always_on_top(toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
             return None
         else:
             resp = self._engine.win_set_always_on_top(
-                toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False
+                toggle=toggle, title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
             )
             return resp
 
@@ -140,10 +157,10 @@ class Window:
     # fmt: on
     def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         if blocking:
-            self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True)
+            self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
             return None
         else:
-            resp = self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=False)
+            resp = self._engine.control_send(keys=keys, title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
             return resp
 
     # fmt: off
@@ -156,10 +173,10 @@ class Window:
     # fmt: on
     def get_text(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
         if blocking:
-            resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True)
+            resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
             return resp
         else:
-            nonblocking_resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=False)
+            nonblocking_resp = self._engine.win_get_text(title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
             return nonblocking_resp
 
 
