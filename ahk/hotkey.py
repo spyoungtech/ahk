@@ -10,7 +10,6 @@ from abc import abstractmethod
 from textwrap import dedent
 from typing import Any
 from typing import Callable
-from typing import Deque
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -25,7 +24,6 @@ if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
     from typing_extensions import ParamSpec
-import traceback
 import logging
 import tempfile
 from jinja2 import Environment, BaseLoader
@@ -201,8 +199,6 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         return ret
 
     def listener(self) -> None:
-        last_keepalive_received: Optional[float] = None
-
         hotkey_script_contents = self._render_hotkey_tempate()
         logging.debug('hotkey script contents:\n%s', hotkey_script_contents)
         with tempfile.TemporaryDirectory(prefix='python-ahk') as tmpdirname:

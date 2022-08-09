@@ -271,8 +271,8 @@ class WindowResponseMessage(ResponseMessage):
 
     def unpack(self) -> Union[Window, AsyncWindow]:
         from ._async.engine import AsyncAHK
-        from ._async.window import AsyncWindow, AsyncControl
-        from ._sync.window import Window, Control
+        from ._async.window import AsyncWindow
+        from ._sync.window import Window
         from ._sync.engine import AHK
 
         s = self._raw_content.decode(encoding='utf-8')

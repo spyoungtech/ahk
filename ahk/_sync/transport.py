@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio.subprocess
 import atexit
 import os
-import re
 import subprocess
 import sys
 import warnings
@@ -13,9 +12,7 @@ from io import BytesIO
 from shutil import which
 from typing import Any
 from typing import AnyStr
-from typing import Awaitable
 from typing import Callable
-from typing import Coroutine
 from typing import Generic
 from typing import List
 from typing import Literal
@@ -60,8 +57,8 @@ SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
 
 FunctionName = Literal[
-Literal['AHKGetTitleMatchMode'],
-Literal['AHKGetTitleMatchSpeed'],
+    Literal['AHKGetTitleMatchMode'],
+    Literal['AHKGetTitleMatchSpeed'],
     Literal['AHKSetDetectHiddenWindows'],
     Literal['AHKSetTitleMatchMode'],
     Literal['AHKWinSetTitle'],
@@ -558,4 +555,3 @@ from ahk.message import ResponseMessage
 
 if TYPE_CHECKING:
     from .engine import AHK
-    from ahk import AHK
