@@ -33,6 +33,28 @@ AHKSetDetectHiddenWindows(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKSetTitleMatchMode(ByRef command) {
+    val1 := command[2]
+    val2 := command[3]
+    if (val1 != "") {
+        SetTitleMatchMode, %val1%
+    }
+    if (val2 != "") {
+        SetTitleMatchMode, %val2%
+    }
+    return FormatNoValueResponse()
+}
+
+AHKGetTitleMatchMode(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchMode)
+}
+
+AHKGetTitleMatchSpeed(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchModeSpeed)
+}
+
 AHKWinExist(ByRef command) {
     global BOOLEANRESPONSEMESSAGE
     title := command[2]
@@ -40,6 +62,17 @@ AHKWinExist(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -62,6 +95,17 @@ AHKWinClose(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -80,6 +124,17 @@ AHKWinGetID(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -94,6 +149,8 @@ AHKWinGetID(ByRef command) {
         response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
     }
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -104,6 +161,17 @@ AHKWinGetTitle(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -113,6 +181,8 @@ AHKWinGetTitle(ByRef command) {
 
     WinGetTitle, text, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
 
     return FormatResponse(STRINGRESPONSEMESSAGE, text)
 }
@@ -124,6 +194,17 @@ AHKWinGetIDLast(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -138,6 +219,8 @@ AHKWinGetIDLast(ByRef command) {
         response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
     }
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -149,6 +232,17 @@ AHKWinGetPID(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+if (match_mode != "") {
+    SetTitleMatchMode, %match_mode%
+}
+if (match_speed != "") {
+    SetTitleMatchMode, %match_speed%
+}
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -163,6 +257,8 @@ AHKWinGetPID(ByRef command) {
         response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     }
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -174,6 +270,17 @@ AHKWinGetProcessName(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+if (match_mode != "") {
+    SetTitleMatchMode, %match_mode%
+}
+if (match_speed != "") {
+    SetTitleMatchMode, %match_speed%
+}
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -188,6 +295,8 @@ AHKWinGetProcessName(ByRef command) {
         response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     }
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -198,6 +307,17 @@ AHKWinGetProcessPath(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -212,6 +332,8 @@ AHKWinGetProcessPath(ByRef command) {
         response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     }
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -223,6 +345,17 @@ AHKWinGetCount(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -237,6 +370,8 @@ AHKWinGetCount(ByRef command) {
         response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     }
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -249,6 +384,17 @@ AHKWinGetMinMax(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -263,6 +409,8 @@ AHKWinGetMinMax(ByRef command) {
         response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     }
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -274,6 +422,17 @@ AHKWinGetControlList(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -311,28 +470,10 @@ AHKWinGetControlList(ByRef command) {
     output .= "])"
     response := FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
-;AHKWinGetControlListHwnd(ByRef command) {
-;    global STRINGRESPONSEMESSAGE
-;    global INTEGERRESPONSEMESSAGE
-;    global NOVALUERESPONSEMESSAGE
-;    title := command[2]
-;    text := command[3]
-;    extitle := command[4]
-;    extext := command[5]
-;    detect_hw := command[6]
-;
-;    current_detect_hw := Format("{}", A_DetectHiddenWindows)
-;
-;if (detect_hw != "") {
-;    DetectHiddenWindows, %detect_hw%
-;}
-;    WinGet, output, ControlListHwnd, %title%, %text%, %extitle%, %extext%
-;    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
-;    DetectHiddenWindows, %current_detect_hw%
-;    return response
-;}
 
 AHKWinGetTransparent(ByRef command) {
     global INTEGERRESPONSEMESSAGE
@@ -341,6 +482,17 @@ AHKWinGetTransparent(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -351,6 +503,8 @@ AHKWinGetTransparent(ByRef command) {
     WinGet, output, Transparent, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 AHKWinGetTransColor(ByRef command) {
@@ -362,6 +516,17 @@ AHKWinGetTransColor(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -372,6 +537,8 @@ AHKWinGetTransColor(ByRef command) {
     WinGet, output, TransColor, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 AHKWinGetStyle(ByRef command) {
@@ -383,6 +550,17 @@ AHKWinGetStyle(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -393,6 +571,8 @@ AHKWinGetStyle(ByRef command) {
     WinGet, output, Style, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 AHKWinGetExStyle(ByRef command) {
@@ -404,6 +584,17 @@ AHKWinGetExStyle(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -414,6 +605,8 @@ AHKWinGetExStyle(ByRef command) {
     WinGet, output, ExStyle, %title%, %text%, %extitle%, %extext%
     response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -425,12 +618,23 @@ AHKWinGetText(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-    DetectHiddenWindows, On
+
     WinGetText, output,%title%,%text%,%extitle%,%extext%
 
     if (ErrorLevel = 1) {
@@ -439,6 +643,8 @@ AHKWinGetText(ByRef command) {
 
     response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return response
 }
 
@@ -451,6 +657,17 @@ AHKWinSetTitle(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -458,6 +675,8 @@ AHKWinSetTitle(ByRef command) {
     }
     WinSetTitle, %title%, %text%, %new_title%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -468,6 +687,17 @@ AHKWinSetAlwaysOnTop(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -476,6 +706,8 @@ AHKWinSetAlwaysOnTop(ByRef command) {
 
     WinSet, AlwaysOntop, %toggle%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -485,6 +717,17 @@ AHKWinSetBottom(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -494,6 +737,8 @@ AHKWinSetBottom(ByRef command) {
 
     WinSet, Bottom,, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -503,6 +748,17 @@ AHKWinSetTop(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -512,6 +768,8 @@ AHKWinSetTop(ByRef command) {
 
     WinSet, Top,, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -521,6 +779,17 @@ AHKWinSetEnable(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -530,6 +799,8 @@ AHKWinSetEnable(ByRef command) {
 
     WinSet, Enable,, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -539,6 +810,17 @@ AHKWinSetDisable(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -548,6 +830,8 @@ AHKWinSetDisable(ByRef command) {
 
     WinSet, Disable,, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -557,6 +841,17 @@ AHKWinSetRedraw(ByRef command) {
     extitle := command[4]
     extext := command[5]
     detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -566,6 +861,8 @@ AHKWinSetRedraw(ByRef command) {
 
     WinSet, Redraw,, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -577,6 +874,17 @@ AHKWinSetStyle(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -586,6 +894,8 @@ AHKWinSetStyle(ByRef command) {
 
     WinSet, Style, %style%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     if (ErrorLevel = 1) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
     } else {
@@ -601,6 +911,17 @@ AHKWinSetExStyle(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -610,6 +931,8 @@ AHKWinSetExStyle(ByRef command) {
 
     WinSet, ExStyle, %style%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     if (ErrorLevel = 1) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
     } else {
@@ -625,6 +948,17 @@ AHKWinSetRegion(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -634,6 +968,8 @@ AHKWinSetRegion(ByRef command) {
 
     WinSet, Region, %options%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     if (ErrorLevel = 1) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
     } else {
@@ -649,6 +985,17 @@ AHKWinSetTransparent(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -658,6 +1005,8 @@ AHKWinSetTransparent(ByRef command) {
 
     WinSet, Transparent, %transparency%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -669,6 +1018,17 @@ AHKWinSetTransColor(ByRef command) {
     extitle := command[5]
     extext := command[6]
     detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -1062,11 +1422,22 @@ WinWaitClose(ByRef command) {
 WindowList(ByRef command) {
     global WINDOWIDLISTRESPONSEMESSAGE
 
-    previous_setting := Format("{}", A_DetectHiddenWindows)
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
-    detect_hidden_windows := command[2]
-    if (detect_hidden_windows) {
-        DetectHiddenWindows, %detect_hidden_windows%
+    detect_hw := command[2]
+    match_mode := command[3]
+    match_speed := command[4]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    if (detect_hw) {
+        DetectHiddenWindows, %detect_hw%
     }
 
     WinGet windows, List
@@ -1077,7 +1448,9 @@ WindowList(ByRef command) {
         r .= id . "`,"
     }
     resp := FormatResponse(WINDOWIDLISTRESPONSEMESSAGE, r)
-    DetectHiddenWindows, %previous_setting%
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return resp
 }
 
@@ -1107,6 +1480,17 @@ AHKControlSend(ByRef command) {
     extitle := command[6]
     extext := command[7]
     detect_hw := command[8]
+    match_mode := command[9]
+    match_speed := command[10]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
     if (detect_hw != "") {
@@ -1114,6 +1498,8 @@ AHKControlSend(ByRef command) {
     }
     ControlSend, %ctrl%, %keys%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
 }
 
@@ -1233,7 +1619,7 @@ AHKEcho(ByRef command) {
 
 
 b64decode(ByRef pszString) {
-
+    ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
     ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
     ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.

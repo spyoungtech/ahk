@@ -56,6 +56,4 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
         pos = await self.ahk.get_mouse_position()
         assert pos != current_pos
         assert pos != (500, 500)
-        await res  # unasync: remove
-        return  # unasync: remove
-        sleep(1)
+        await res.result()

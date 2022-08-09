@@ -16,6 +16,7 @@ build_py = unasync.cmdclass_build_py(
                 'adrain_stdin': 'drain_stdin',
                 'a_send_nonblocking': 'send_nonblocking',
                 'async_sleep': 'sleep',
+                'AsyncFutureResult': 'FutureResult',
                 # "__aenter__": "__aenter__",
             },
         ),

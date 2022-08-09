@@ -13,8 +13,10 @@ from io import BytesIO
 from shutil import which
 from typing import Any
 from typing import AnyStr
+from typing import Awaitable
 from typing import Callable
 from typing import Coroutine
+from typing import Generic
 from typing import List
 from typing import Literal
 from typing import Optional
@@ -23,6 +25,7 @@ from typing import Protocol
 from typing import runtime_checkable
 from typing import Tuple
 from typing import TYPE_CHECKING
+from typing import TypeVar
 from typing import Union
 
 if TYPE_CHECKING:
@@ -39,17 +42,36 @@ from concurrent.futures import Future, ThreadPoolExecutor
 
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
+T_AsyncFuture = TypeVar('T_AsyncFuture')  # unasync: remove
+T_SyncFuture = TypeVar('T_SyncFuture')
+
+
+class AsyncFutureResult(Generic[T_AsyncFuture]):  # unasync: remove
+    def __init__(self, task: asyncio.Task[T_AsyncFuture]):
+        self._task: asyncio.Task[T_AsyncFuture] = task
+
+    async def result(self) -> T_AsyncFuture:
+        return await self._task
+
+
+class FutureResult(Generic[T_SyncFuture]):
+    def __init__(self, future: Future[T_SyncFuture]):
+        self._fut: Future[T_SyncFuture] = future
+
+    def result(self, timeout: Optional[float] = None) -> T_SyncFuture:
+        return self._fut.result(timeout=timeout)
+
 
 AsyncIOProcess: TypeAlias = asyncio.subprocess.Process  # unasync: remove
 
 SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
-AsyncFutureResult: TypeAlias = asyncio.Task  # unasync: remove
-
-SyncFutureResult: TypeAlias = Future
 
 FunctionName = Literal[
+    Literal['AHKGetTitleMatchMode'],
+    Literal['AHKGetTitleMatchSpeed'],
     Literal['AHKSetDetectHiddenWindows'],
+    Literal['AHKSetTitleMatchMode'],
     Literal['AHKWinSetTitle'],
     Literal['AHKWinExist'],
     Literal['ImageSearch'],
@@ -404,6 +426,12 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKSetDetectHiddenWindows'], args: Optional[List[str]] = None) -> None: ...
     @overload
     async def function_call(self, function_name: Literal['AHKWinSetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKSetTitleMatchMode'], args: Optional[List[str]] = None) -> None: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKGetTitleMatchMode']) -> str: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKGetTitleMatchSpeed']) -> str: ...
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     # @overload
@@ -459,9 +487,7 @@ class AsyncTransport(ABC):
     @abstractmethod
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AsyncAHK] = None
-    ) -> SyncFutureResult[
-        Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]
-    ]:
+    ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]]:
         return NotImplemented
 
 
@@ -523,13 +549,12 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]
     ]:
         loop = asyncio.get_running_loop()
-        return loop.create_task(self._send_nonblocking(request=request, engine=engine))
+        task = loop.create_task(self._send_nonblocking(request=request, engine=engine))
+        return AsyncFutureResult(task)
 
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AsyncAHK] = None
-    ) -> SyncFutureResult[
-        Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]
-    ]:
+    ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]]:
         # this is only used by the sync implementation
         pool = ThreadPoolExecutor(max_workers=1)
         fut = pool.submit(self._send_nonblocking, request=request, engine=engine)
@@ -537,7 +562,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         assert async_assert_send_nonblocking_type_correct(
             fut
         )  # workaround to get mypy correctness in sync and async implementation
-        return fut
+        return FutureResult(fut)
 
     async def send(
         self, request: RequestMessage, engine: Optional[AsyncAHK] = None
