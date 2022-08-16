@@ -7,6 +7,8 @@ from unittest import TestCase
 
 from ahk import AsyncAHK
 from ahk import AsyncWindow
+from ahk.hotkey import Hotkey
+
 
 async_sleep = asyncio.sleep  # unasync: remove
 
@@ -25,8 +27,9 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
         subprocess.run(['TASKKILL', '/F', '/IM', 'AutoHotkey.exe'])
 
     async def test_hotkey(self):
+
         with mock.MagicMock(return_value=None) as m:
-            self.ahk.add_hotkey('a', callback=m)
+            self.ahk.add_hotkey(Hotkey('a', callback=m))
             self.ahk.start_hotkeys()
             await self.ahk.key_down('a')
             await self.ahk.key_press('a')
@@ -39,7 +42,7 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
 
         with mock.MagicMock() as mock_cb, mock.MagicMock() as mock_ex_handler:
             mock_cb.side_effect = side_effect
-            self.ahk.add_hotkey('a', callback=mock_cb, ex_handler=mock_ex_handler)
+            self.ahk.add_hotkey(Hotkey('a', callback=mock_cb, ex_handler=mock_ex_handler))
             self.ahk.start_hotkeys()
             await self.ahk.key_down('a')
             await self.ahk.key_press('a')

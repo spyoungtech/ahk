@@ -243,5 +243,5 @@ __all__ = [name for name in dir(KEYS) if not name.startswith('_')]
 def __getattr__(name: str) -> Union[Key, KeyModifier]:
     obj = getattr(KEYS, name, None)
     if not isinstance(obj, Key) and not isinstance(obj, KeyModifier):
-        raise AttributeError(f'module {__name__} has no attribute {name!r}')
+        raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
     return obj

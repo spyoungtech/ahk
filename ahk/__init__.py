@@ -7,8 +7,10 @@ from ._async import AsyncWindow
 from ._sync import AHK
 from ._sync import Control
 from ._sync import Window
+from .hotkey import Hotkey
+from .hotkey import Hotstring
 
-__all__ = ['AHK', 'Window', 'AsyncWindow', 'AsyncAHK', 'Control', 'AsyncControl']
+__all__ = ['AHK', 'Window', 'AsyncWindow', 'AsyncAHK', 'Control', 'AsyncControl', 'Hotkey', 'Hotstring']
 
 _global_instance: Optional[AHK] = None
 

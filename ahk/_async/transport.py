@@ -34,7 +34,7 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias, TypeGuard
 
-from ahk.hotkey import ThreadedHotkeyTransport
+from ahk.hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
 from concurrent.futures import Future, ThreadPoolExecutor
 
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
@@ -263,13 +263,21 @@ class AsyncTransport(ABC):
         self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path)
         pass
 
-    def add_hotkey(
-        self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
-    ) -> None:
-        return self._hotkey_transport.add_hotkey(hotkey=hotkey, callback=callback, ex_handler=ex_handler)
+    def add_hotkey(self, hotkey: Hotkey) -> None:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            self._hotkey_transport.add_hotkey(hotkey=hotkey)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return None
 
-    def add_hotstring(self, trigger_string: str, replacement: str) -> None:
-        return self._hotkey_transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
+    def add_hotstring(self, hotstring: Hotstring) -> None:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            self._hotkey_transport.add_hotstring(hotstring=hotstring)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return None
 
     def start_hotkeys(self) -> None:
         return self._hotkey_transport.start()

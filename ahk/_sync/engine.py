@@ -17,6 +17,9 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
+from ..hotkey import Hotkey
+from ..hotkey import Hotstring
+
 if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias
 else:
@@ -32,7 +35,9 @@ from .window import Window
 
 sleep = time.sleep
 
-CoordModeTargets: TypeAlias = Union[Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']]
+CoordModeTargets: TypeAlias = Union[
+    Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']
+]
 CoordModeRelativeTo: TypeAlias = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
 
 CoordMode: TypeAlias = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
@@ -71,8 +76,7 @@ class AHK:
             return deprecation_replacements[item]
 
     def add_hotkey(
-        self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
-    ) -> None:
+        self, hotkey: Hotkey) -> None:
         """
         Register a function to be called when a hotkey is pressed.
 
@@ -83,27 +87,32 @@ class AHK:
         - If you add a hotkey after the hotkey thread/instance is active, it will be restarted automatically
         - `async` functions are not directly supported as callbacks, however you may write a synchronous function that calls `asyncio.run`/`loop.create_task` etc.
 
-        :param hotkey: the hotkey that should trigger the callback. For example the string '#n' for Win+n
-        :param callback: A callable (e.g., a function) to run when the hotkey is triggered.
-        :param ex_handler: An exception handler callable that runs when your callback fails. The exception handler must accept two positional arguments.
-                           The first argument is a string representing the hotkey that failed and the second is the exception instance that was raised during the execution of your callback.
-                           If you do not provide an exception handler, a default handler is used.
+        :param hotkey: an instance of ahk.hotkey.Hotkey
         """
-        return self._transport.add_hotkey(hotkey=hotkey, callback=callback, ex_handler=ex_handler)
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            self._transport.add_hotkey(hotkey=hotkey)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return None
 
-    def add_hotstring(self, trigger_string: str, replacement: str) -> None:
+    def add_hotstring(self, hotstring: Hotstring) -> None:
         """
         Register a hotstring, e.g., `::btw::by the way`
 
         Key notes:
 
         - You must call the `start_hotkeys` method for registered hotstrings to be active
-        - All hotstrings (and hotkeys) run in a single AHK process instance
+        - All hotstrings (and hotkeys) run in a single AHK process instance separate from other AHK processes.
 
-        :param trigger_string: The 'abbreviation' part of the hotstring. e.g., `btw`
-        :param replacement: The text to replace when the trigger fires. e.g., `by the way`
+        :param hotstring: an instance of ahk.hotkey.Hotstring
         """
-        return self._transport.add_hotstring(trigger_string=trigger_string, replacement=replacement)
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            self._transport.add_hotstring(hotstring=hotstring)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return None
 
     def set_title_match_mode(self, title_match_mode: TitleMatchMode, /) -> None:
         """
@@ -374,6 +383,21 @@ class AHK:
     def find_windows_by_title(self, title: str, exact: bool = False) -> Iterable[Window]:
         raise NotImplementedError()
 
+
+    def find_window(
+        self, func: Optional[Callable[[Window], bool]] = None, **kwargs: Any
+    ) -> Iterable[Window]:
+        raise NotImplementedError()
+
+    def find_window_by_class(self, class_name: str, exact: bool = False) -> Iterable[Window]:
+        raise NotImplementedError()
+
+    def find_window_by_text(self, text: str, exact: bool = False) -> Iterable[Window]:
+        raise NotImplementedError()
+
+    def find_window_by_title(self, title: str, exact: bool = False) -> Iterable[Window]:
+        raise NotImplementedError()
+
     def get_volume(self, device_number: int = 1) -> float:
         raise NotImplementedError()
 
@@ -632,7 +656,7 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '',*, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Window, None]: ...
+    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Window, None]: ...
     @overload
     def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Window, None]]: ...
     @overload
@@ -1849,6 +1873,10 @@ class AHK:
     # alias for backwards compatibility
     windows = list_windows
 
+    def right_click(self, *args: Any, **kwargs: Any) -> Union[None, FutureResult[None]]:
+        kwargs['button'] = 2
+        return self.click(*args, **kwargs)
+
     def click(
         self,
         x: Optional[int] = None,
@@ -1860,7 +1888,7 @@ class AHK:
         relative: Optional[bool] = None,
         blocking: bool = True,
         mode: Optional[CoordMode] = None,
-    ) -> None:
+    ) -> Union[None, FutureResult[None]]:
         raise NotImplementedError()
 
     # fmt: off

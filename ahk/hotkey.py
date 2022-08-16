@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import atexit
+import functools
 import os
+import pathlib
+import re
 import subprocess
 import sys
 import threading
+import warnings
 from abc import ABC
 from abc import abstractmethod
+from base64 import b64encode
 from textwrap import dedent
 from typing import Any
 from typing import Callable
@@ -24,6 +29,12 @@ if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
     from typing_extensions import ParamSpec
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 import logging
 import tempfile
 from jinja2 import Environment, BaseLoader
@@ -42,11 +53,18 @@ def _default_ex_handler(hotkey: str, ex: Exception) -> None:
 class HotkeyTransportBase(ABC):
     def __init__(self, executable_path: str, default_ex_handler: Optional[Callable[[str, Exception], Any]] = None):
         self._executable_path = executable_path
-        self._hotkeys: Dict[str, Tuple[Callable[[], Any], Optional[Callable[[str, Exception], Any]]]] = {}
+        self._hotkeys: Dict[str, Hotkey] = {}
         self._default_ex_handler: Callable[[str, Exception], Any] = default_ex_handler or _default_ex_handler
-        # self._transport_options: Dict[Any, Any] = transport_options or {}
-        self._hotstrings: Dict[str, str] = {}
+        self._hotstrings: Dict[str, Hotstring] = {}
         self._running: bool = False
+        self._get_callback_registry = functools.lru_cache(maxsize=None)(self._callback_registry_uncached)
+
+    @property
+    def _callback_registry(self) -> Dict[str, Union[Hotkey, Hotstring]]:
+        return self._get_callback_registry()
+
+    def _callback_registry_uncached(self) -> Dict[str, Union[Hotkey, Hotstring]]:
+        return self._hotkeys | self._hotstrings
 
     @abstractmethod
     def restart(self) -> Any:
@@ -56,28 +74,20 @@ class HotkeyTransportBase(ABC):
     def start(self) -> Any:
         return NotImplemented
 
-    @staticmethod
-    def _validate_hotkey(hotkey: str) -> None:
-        assert '\n' not in hotkey, 'Newlines not allowed in hotkeys'  # TODO: perform better validation
-
-    @staticmethod
-    def _validate_hotstring(trigger: str, replacement: str) -> None:
-        assert '\n' not in trigger, 'newlines not allowed in hotstrings'  # TODO: perform better validation
-        assert '\n' not in replacement, 'newlines not allowed in hotstrings'
-
-    def add_hotkey(
-        self, hotkey: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
-    ) -> None:
-        self._validate_hotkey(hotkey)
-        self._hotkeys[hotkey] = (callback, ex_handler)
+    def add_hotkey(self, hotkey: Hotkey) -> None:
+        if hotkey._id in self._callback_registry:
+            warnings.warn('Hotkey was already registered! This action will remove the original entry.', stacklevel=2)
+        self._hotkeys[hotkey._id] = hotkey
+        self._get_callback_registry.cache_clear()
         if self._running:
             self.restart()
         return None
 
-    def add_hotstring(self, trigger_string: str, replacement: str) -> None:
-        replacement = replacement.replace('\n', '`n').replace('\r', '`n')
-        self._validate_hotstring(trigger_string, replacement)
-        self._hotstrings[trigger_string] = replacement
+    def add_hotstring(self, hotstring: Hotstring) -> None:
+        if hotstring._id in self._callback_registry:
+            warnings.warn('Hotstring was already registered! This action will remove the original entry.', stacklevel=2)
+        self._hotstrings[hotstring._id] = hotstring
+        self._get_callback_registry.cache_clear()
         if self._running:
             self.restart()
         # TODO: add support for adding IfWinActive/IfWinExist
@@ -127,20 +137,20 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
 
         self._callback_queue.empty()
         self._callback_queue.put_nowait(STOP)
-        print('Waiting for stop...')
+        logging.debug('Waiting for stop...')
         if self._dispatcher_thread is not None:
             try:
                 self._dispatcher_thread.join(timeout=3)
             except TimeoutError:
-                print('DISPATCHER JOIN TIMED OUT!')
+                logging.debug('DISPATCHER JOIN TIMED OUT!')
             self._dispatcher_thread = None
-        print('Waiting for callback stop...')
+        logging.debug('Waiting for callback stop...')
         self._callback_queue.join()
         if self._listener_thread is not None:
             try:
                 self._listener_thread.join(timeout=3)
             except TimeoutError:
-                print('LISTENER JOIN TIMED OUT!')
+                logging.debug('LISTENER JOIN TIMED OUT!')
             self._listener_thread = None
         self._proc.kill()
 
@@ -156,12 +166,16 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 break
 
             assert isinstance(job, str)
-            if job not in self._hotkeys:
+            if job not in self._callback_registry:
                 logging.warning(f'Received request to dispatch unregistered hotkey: {job!r}. Ignoring.')
                 self._callback_queue.task_done()
                 continue
 
-            cb, ex_handler = self._hotkeys[job]
+            hot_thing: Union[Hotstring, Hotkey] = self._hotkeys[job]
+            cb = hot_thing.callback
+            assert cb is not None
+            ex_handler = hot_thing.ex_handler
+            assert ex_handler is not None
             t = threading.Thread(target=self._do_callback, args=(job, cb, ex_handler), daemon=True)
             self._callback_threads.append(t)
             t.start()
@@ -169,32 +183,11 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
 
     def _render_hotkey_tempate(self) -> str:
         env = Environment(loader=BaseLoader())
-        template = env.from_string(
-            dedent(
-                """\
-        KEEPALIVE := Chr(57344)
-        SetTimer, keepalive, 1000
-
-        {% for hotkey in hotkeys %}
-
-        {{ hotkey }}::
-            FileAppend, %A_ThisHotkey%`n, *, UTF-8
-            return
-
-        {% endfor %}
-
-        {% for trigger, replacement in hotstrings %}
-
-        ::{{ trigger }}::{{replacement}}
-
-        {% endfor %}
-        keepalive:
-        global KEEPALIVE
-        FileAppend, %KEEPALIVE%`n, *, UTF-8
-        """
-            )
-        )
-        ret = template.render(hotkeys=list(self._hotkeys), hotstrings=self._hotstrings.items())
+        # TODO: make string constant for template
+        fname = pathlib.Path(__file__).parent / 'hotkeys.ahk'
+        template_string = open(fname).read()
+        template = env.from_string(template_string)
+        ret = template.render(hotkeys=list(self._hotkeys.values()), hotstrings=self._hotstrings.values())
         assert isinstance(ret, str)
         return ret
 
@@ -219,10 +212,107 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                     logging.debug('keepalive received')
                     continue
                 if not line.strip():
-                    print('Listener: Process probably died, exiting')
+                    logging.debug('Listener: Process probably died, exiting')
                     break
                 logging.debug(f'Received {line!r}')
                 self._callback_queue.put_nowait(line.decode('UTF-8').strip())
+
+
+class Hotkey:
+    def __init__(
+        self, keyname: str, *, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
+    ):
+        self._keyname: str = keyname
+        self.callback: Callable[[], Any] = callback
+        self.ex_handler: Callable[[str, Exception], Any] = ex_handler or _default_ex_handler
+        self._validate()
+
+    @property
+    def keyname(self) -> str:
+        return self._keyname
+
+    def __hash__(self) -> int:
+        return hash(self.keyname)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Hotkey):
+            return NotImplemented
+        return hash(self) == hash(other)
+
+    def _validate(self) -> None:
+        assert '\n' not in self.keyname, 'Newlines not allowed in hotkey trigger keys'
+        return None
+
+    @property
+    def _id(self) -> str:
+        return str(hash(self))
+
+
+class Hotstring:
+    def __init__(
+        self,
+        trigger: str,
+        replacement_or_callback: Union[str, Callable[[], Any]],
+        ex_handler: Optional[Callable[[str, Exception], Any]],
+        options: str = '',
+    ):
+        self.replacement: Optional[str]
+        self.callback: Optional[Callable[[], Any]]
+        self.ex_handler: Optional[Callable[[str, Exception], Any]]
+        self._trigger: str = trigger
+        self._options: str = options
+        if callable(replacement_or_callback):
+            self.replacement = None
+            self.callback = replacement_or_callback
+            self.ex_handler = ex_handler or _default_ex_handler
+        else:
+            if not isinstance(replacement_or_callback, str):
+                raise TypeError('Expected callable or str for hotstring')
+            if ex_handler is not None:
+                raise TypeError(
+                    'ex_handler may only be specified when a callable is used. Must be None when using string replacement.'
+                )
+            assert isinstance(replacement_or_callback, str)
+            self.replacement = replacement_or_callback
+            self.callback = None
+            self.ex_handler = None
+        self._validate()
+
+    @property
+    def options(self) -> str:
+        return self._options
+
+    @property
+    def trigger(self) -> str:
+        return self._trigger
+
+    def __hash__(self) -> int:
+        return hash(self.trigger)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Hotstring):
+            return NotImplemented
+        return hash(self) == hash(other)
+
+    @property
+    def _id(self) -> str:
+        return str(hash(self))
+
+    @property
+    def _replacement_as_b64(self) -> str:
+        assert self.replacement is not None
+        data = bytes(self.replacement, 'UTF-8')
+        return str(b64encode(data), 'UTF-8')
+
+    def _validate(self) -> None:
+        assert '\n' not in self.trigger, 'Newlines not allowed in trigger'
+        if self.options:
+            assert '\n' not in self.options, 'Newlines not allowed in options'
+            assert 'x' not in self.options.lower(), 'X is not an allowed option. Use a callback instead.'
+            assert re.fullmatch(
+                r'(\?|C|C1|K\d+|O|P\n+|S[IPE]|T|Z)+', self.options.upper()
+            ), f'Invalid options: {self.options!r}'
+        return None
 
 
 @runtime_checkable
