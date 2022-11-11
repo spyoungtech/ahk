@@ -57,6 +57,8 @@ SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
 
 FunctionName = Literal[
+    Literal['AHKControlClick'],
+    Literal['AHKControlGetText'],
     Literal['AHKGetTitleMatchMode'],
     Literal['AHKGetTitleMatchSpeed'],
     Literal['AHKSetDetectHiddenWindows'],
@@ -420,6 +422,13 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKGetTitleMatchMode']) -> str: ...
     @overload
     def function_call(self, function_name: Literal['AHKGetTitleMatchSpeed']) -> str: ...
+
+    @overload
+    def function_call(self, function_name: Literal['AHKControlGetText'], args: Optional[List[str]] = None, *, engine: Optional[AHK] = None, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+
+    @overload
+    def function_call(self, function_name: Literal['AHKControlClick'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     # @overload

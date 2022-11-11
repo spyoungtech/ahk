@@ -638,10 +638,11 @@ AHKWinGetText(ByRef command) {
     WinGetText, output,%title%,%text%,%extitle%,%extext%
 
     if (ErrorLevel = 1) {
-        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window text")
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window text")
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     }
 
-    response := FormatResponse(STRINGRESPONSEMESSAGE, output)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
@@ -893,14 +894,15 @@ AHKWinSetStyle(ByRef command) {
 
 
     WinSet, Style, %style%, %title%, %text%, %extitle%, %extext%
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    } else {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
-    if (ErrorLevel = 1) {
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
-    } else {
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
-    }
+    return resp
 }
 
 AHKWinSetExStyle(ByRef command) {
@@ -930,14 +932,15 @@ AHKWinSetExStyle(ByRef command) {
 
 
     WinSet, ExStyle, %style%, %title%, %text%, %extitle%, %extext%
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    } else {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
-    if (ErrorLevel = 1) {
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
-    } else {
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
-    }
+    return resp
 }
 
 AHKWinSetRegion(ByRef command) {
@@ -967,14 +970,15 @@ AHKWinSetRegion(ByRef command) {
 
 
     WinSet, Region, %options%, %title%, %text%, %extitle%, %extext%
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    } else {
+        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
-    if (ErrorLevel = 1) {
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
-    } else {
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
-    }
+    return resp
 }
 
 AHKWinSetTransparent(ByRef command) {
@@ -1472,6 +1476,82 @@ WinSendRaw(ByRef command) {
     ControlSendRaw,,% keys, %title%
 }
 
+AHKControlClick(ByRef command) {
+    ctrl := command[2]
+    title := command[3]
+    text := command[4]
+    button := command[5]
+    click_count := command[6]
+    options := command[7]
+    exclude_title := command[8]
+    exclude_text := command[9]
+    detect_hw := command[10]
+    match_mode := command[11]
+    match_speed := command[12]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    ControlClick, %ctrl%, %title%, %text%, %button%, %click_count%, %options%, %exclude_title%, %exclude_text%
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+    return FormatNoValueResponse()
+}
+
+AHKControlGetText(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    ctrl := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    ControlGetText, result, %ctrl%, %title%, %text%, %extitle%, %extext%
+
+    if (ErrorLevel = 1) {
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem getting the text")
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, result)
+    }
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return response
+
+
+}
+
 AHKControlSend(ByRef command) {
     ctrl := command[2]
     keys := command[3]
@@ -1679,7 +1759,7 @@ Loop {
         func := commandArray[1]
         response := %func%(commandArray)
     } catch e {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, %e%)
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, e)
     }
 
     if (response) {

@@ -117,28 +117,19 @@ class Window:
     def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
     def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[True]) -> None: ...
+    @overload
+    def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def set_always_on_top(
         self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
-        if blocking:
-            self._engine.win_set_always_on_top(
-                toggle=toggle,
-                title=f'ahk_id {self._ahk_id}',
-                blocking=True,
-                detect_hidden_windows=True,
-                title_match_mode=(1, 'Fast'),
-            )
-            return None
-        else:
-            resp = self._engine.win_set_always_on_top(
-                toggle=toggle,
-                title=f'ahk_id {self._ahk_id}',
-                blocking=False,
-                detect_hidden_windows=True,
-                title_match_mode=(1, 'Fast'),
-            )
-            return resp
+        return self._engine.win_set_always_on_top(
+            toggle=toggle,
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
 
     # fmt: off
     @overload
@@ -147,6 +138,8 @@ class Window:
     def is_always_on_top(self, *, blocking: Literal[False]) -> FutureResult[Optional[bool]]: ...
     @overload
     def is_always_on_top(self, *, blocking: Literal[True]) -> bool: ...
+    @overload
+    def is_always_on_top(self, *, blocking: bool = True) -> Union[bool, FutureResult[Optional[bool]]]: ...
     # fmt: on
     def is_always_on_top(self, *, blocking: bool = True) -> Union[bool, FutureResult[Optional[bool]]]:
         args = [f'ahk_id {self._ahk_id}']
@@ -166,26 +159,17 @@ class Window:
     def send(self, keys: str, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
     def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
-        if blocking:
-            self._engine.control_send(
-                keys=keys,
-                title=f'ahk_id {self._ahk_id}',
-                blocking=True,
-                detect_hidden_windows=True,
-                title_match_mode=(1, 'Fast'),
-            )
-            return None
-        else:
-            resp = self._engine.control_send(
-                keys=keys,
-                title=f'ahk_id {self._ahk_id}',
-                blocking=False,
-                detect_hidden_windows=True,
-                title_match_mode=(1, 'Fast'),
-            )
-            return resp
+        return self._engine.control_send(
+            keys=keys,
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
 
     # fmt: off
     @overload
@@ -194,18 +178,13 @@ class Window:
     def get_text(self, *, blocking: Literal[False]) -> FutureResult[str]: ...
     @overload
     def get_text(self, *, blocking: Literal[True]) -> str: ...
+    @overload
+    def get_text(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
     # fmt: on
     def get_text(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
-        if blocking:
-            resp = self._engine.win_get_text(
-                title=f'ahk_id {self._ahk_id}', blocking=True, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        return self._engine.win_get_text(
+                title=f'ahk_id {self._ahk_id}', blocking=blocking, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
             )
-            return resp
-        else:
-            nonblocking_resp = self._engine.win_get_text(
-                title=f'ahk_id {self._ahk_id}', blocking=False, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
-            )
-            return nonblocking_resp
 
 
 class Control:
@@ -217,33 +196,47 @@ class Control:
 
     # fmt: off
     @overload
+    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '') -> None: ...
+    @overload
+    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
+    @overload
+    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def click(
+        self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
+        raise NotImplementedError
+
+    # fmt: off
+    @overload
     def send(self, keys: str) -> None: ...
     @overload
     def send(self, keys: str, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
     def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
-        if blocking:
-            self._engine.control_send(
+        return self._engine.control_send(
                 keys=keys,
                 control=self.control_class,
                 title=f'ahk_id {self.window._ahk_id}',
-                blocking=True,
+                blocking=blocking,
                 detect_hidden_windows=True,
                 title_match_mode=(1, 'Fast'),
             )
-            return None
-        else:
-            resp = self._engine.control_send(
-                keys=keys,
-                control=self.control_class,
-                title=f'ahk_id {self.window._ahk_id}',
-                blocking=False,
-                detect_hidden_windows=True,
-                title_match_mode=(1, 'Fast'),
-            )
-            return resp
+
+    def get_text(self, blocking: bool = True) -> Union[str, FutureResult[str]]:
+        return self._engine.control_get_text(
+            control=self.control_class,
+            title=f'ahk_id {self.window._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} window={self.window!r}, control_hwnd={self.hwnd!r}, control_class={self.control_class!r}>'
