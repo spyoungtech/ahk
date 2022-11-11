@@ -207,7 +207,15 @@ class AsyncControl:
     async def click(
         self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
-        raise NotImplementedError
+        return await self._engine.control_click(
+            button=button,
+            control=self.control_class,
+            options=options,
+            title=f'ahk_id {self.window._ahk_id}',
+            title_match_mode=(1, 'Fast'),
+            detect_hidden_windows=True,
+            blocking=blocking,
+        )
 
     # fmt: off
     @overload

@@ -183,8 +183,8 @@ class Window:
     # fmt: on
     def get_text(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
         return self._engine.win_get_text(
-                title=f'ahk_id {self._ahk_id}', blocking=blocking, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
-            )
+            title=f'ahk_id {self._ahk_id}', blocking=blocking, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
 
 
 class Control:
@@ -207,7 +207,15 @@ class Control:
     def click(
         self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
-        raise NotImplementedError
+        return self._engine.control_click(
+            button=button,
+            control=self.control_class,
+            options=options,
+            title=f'ahk_id {self.window._ahk_id}',
+            title_match_mode=(1, 'Fast'),
+            detect_hidden_windows=True,
+            blocking=blocking
+        )
 
     # fmt: off
     @overload
@@ -221,13 +229,13 @@ class Control:
     # fmt: on
     def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         return self._engine.control_send(
-                keys=keys,
-                control=self.control_class,
-                title=f'ahk_id {self.window._ahk_id}',
-                blocking=blocking,
-                detect_hidden_windows=True,
-                title_match_mode=(1, 'Fast'),
-            )
+            keys=keys,
+            control=self.control_class,
+            title=f'ahk_id {self.window._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
 
     def get_text(self, blocking: bool = True) -> Union[str, FutureResult[str]]:
         return self._engine.control_get_text(

@@ -192,8 +192,7 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
-        raise NotImplementedError
-        args = [control, title, text, button, click_count, options, exclude_title, exclude_text]
+        args = [control, title, text, str(button), str(click_count), options, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
