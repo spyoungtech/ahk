@@ -196,20 +196,26 @@ class AsyncControl:
 
     # fmt: off
     @overload
-    async def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '') -> None: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '') -> None: ...
     @overload
-    async def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
     @overload
-    async def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def click(
-        self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True
+        self,
+        *,
+        button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L',
+        click_count: int = 1,
+        options: str = '',
+        blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.control_click(
             button=button,
             control=self.control_class,
+            click_count=click_count,
             options=options,
             title=f'ahk_id {self.window._ahk_id}',
             title_match_mode=(1, 'Fast'),

@@ -1504,6 +1504,11 @@ AHKControlClick(ByRef command) {
     }
 
     ControlClick, %ctrl%, %title%, %text%, %button%, %click_count%, %options%, %exclude_title%, %exclude_text%
+
+    if (ErrorLevel != 0) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Failed to click control")
+    }
+
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
@@ -1750,20 +1755,20 @@ CommandArrayFromQuery(ByRef text) {
 }
 
 stdin  := FileOpen("*", "r `n", "UTF-8")  ; Requires [v1.1.17+]
-response := ""
+pyresp := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
     commandArray := CommandArrayFromQuery(query)
     try {
         func := commandArray[1]
-        response := %func%(commandArray)
+        pyresp := %func%(commandArray)
     } catch e {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, e)
+        pyresp := FormatResponse(EXCEPTIONRESPONSEMESSAGE, e)
     }
 
-    if (response) {
-        FileAppend, %response%, *, UTF-8
+    if (pyresp) {
+        FileAppend, %pyresp%, *, UTF-8
     } else {
         msg := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("Unknown Error when calling {}", func))
         FileAppend, %msg%, *, UTF-8

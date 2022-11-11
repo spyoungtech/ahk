@@ -196,25 +196,26 @@ class Control:
 
     # fmt: off
     @overload
-    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '') -> None: ...
+    def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '') -> None: ...
     @overload
-    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: Literal[False]) -> FutureResult[None]: ...
+    def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
+    def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
     @overload
-    def click(self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def click(
-        self, *, button: Union[int, str] = 1, click_count: int = 1, options: str = '', blocking: bool = True
+        self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
         return self._engine.control_click(
             button=button,
             control=self.control_class,
+            click_count=click_count,
             options=options,
             title=f'ahk_id {self.window._ahk_id}',
             title_match_mode=(1, 'Fast'),
             detect_hidden_windows=True,
-            blocking=blocking
+            blocking=blocking,
         )
 
     # fmt: off
