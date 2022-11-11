@@ -64,7 +64,9 @@ class HotkeyTransportBase(ABC):
         return self._get_callback_registry()
 
     def _callback_registry_uncached(self) -> Dict[str, Union[Hotkey, Hotstring]]:
-        return self._hotkeys | self._hotstrings
+        registry: Dict[str, Union[Hotkey, Hotstring]] = dict(self._hotkeys)
+        registry.update(self._hotstrings)
+        return registry
 
     @abstractmethod
     def restart(self) -> Any:
