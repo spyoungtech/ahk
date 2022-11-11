@@ -1477,6 +1477,7 @@ WinSendRaw(ByRef command) {
 }
 
 AHKControlClick(ByRef command) {
+    global EXCEPTIONRESPONSEMESSAGE
     ctrl := command[2]
     title := command[3]
     text := command[4]
