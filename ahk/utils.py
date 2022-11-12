@@ -1,6 +1,4 @@
 import logging
-import functools
-from asyncio import coroutine
 
 ESCAPE_SEQUENCE_MAP = {
     '\n': '`n',
