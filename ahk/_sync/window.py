@@ -4,6 +4,7 @@ from typing import Literal
 from typing import Optional
 from typing import overload
 from typing import Sequence
+from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -205,7 +206,12 @@ class Control:
     def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def click(
-        self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True
+        self,
+        *,
+        button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L',
+        click_count: int = 1,
+        options: str = '',
+        blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
         return self._engine.control_click(
             button=button,
@@ -245,6 +251,25 @@ class Control:
             blocking=blocking,
             detect_hidden_windows=True,
             title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    def get_position(self) -> Tuple[int, int, int, int]: ...
+    @overload
+    def get_position(self, blocking: Literal[False]) -> FutureResult[Tuple[int, int, int, int]]: ...
+    @overload
+    def get_position(self, blocking: Literal[True]) -> Tuple[int, int, int, int]: ...
+    @overload
+    def get_position(self, blocking: bool = True) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]: ...
+    # fmt: on
+    def get_position(self, blocking: bool = True) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]:
+        return self._engine.control_get_position(
+            control=self.control_class,
+            title=f'ahk_id {self.window._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast')
         )
 
     def __repr__(self) -> str:

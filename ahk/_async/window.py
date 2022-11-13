@@ -4,6 +4,7 @@ from typing import Literal
 from typing import Optional
 from typing import overload
 from typing import Sequence
+from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
@@ -245,6 +246,27 @@ class AsyncControl:
 
     async def get_text(self, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
         return await self._engine.control_get_text(
+            control=self.control_class,
+            title=f'ahk_id {self.window._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    async def get_position(self) -> Tuple[int, int, int, int]: ...
+    @overload
+    async def get_position(self, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int, int, int]]: ...
+    @overload
+    async def get_position(self, blocking: Literal[True]) -> Tuple[int, int, int, int]: ...
+    @overload
+    async def get_position(self, blocking: bool = True) -> Union[Tuple[int, int, int, int], AsyncFutureResult[Tuple[int, int, int, int]]]: ...
+    # fmt: on
+    async def get_position(
+        self, blocking: bool = True
+    ) -> Union[Tuple[int, int, int, int], AsyncFutureResult[Tuple[int, int, int, int]]]:
+        return await self._engine.control_get_position(
             control=self.control_class,
             title=f'ahk_id {self.window._ahk_id}',
             blocking=blocking,

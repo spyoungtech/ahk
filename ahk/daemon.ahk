@@ -1554,6 +1554,49 @@ AHKControlGetText(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return response
+}
+
+
+AHKControlGetPos(ByRef command) {
+    global TUPLERESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    ctrl := command[2]
+    title := command[3]
+    text := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    ControlGetPos, x, y, w, h, %ctrl%, %title%, %text%, %extitle%, %extext%
+
+    result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
+
+    if (ErrorLevel = 1) {
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem getting the text")
+    } else {
+        response := FormatResponse(TUPLERESPONSEMESSAGE, result)
+    }
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return response
 
 
 }
