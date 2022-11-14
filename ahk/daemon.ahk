@@ -1152,23 +1152,26 @@ CoordMode(ByRef command) {
 }
 
 
-Click(ByRef command) {
-    if (command.Length() = 1) {
-          Click
-    }  else if (command.Length() = 2) {
-          Click, command[2]
-    } else if (command.Length() = 3) {
-          Click, command[2], command[3]
-    } else if (command.Length() = 4) {
-          Click, command[2], command[3], command[4]
-    } else if (command.Length() = 5) {
-          Click, command[2], command[3], command[4], command[5]
-    } else if (command.Length() = 6) {
-          Click, command[2], command[3], command[4], command[5], command[6]
-    } else if (command.Length() = 7) {
-          Click, command[2], command[3], command[4], command[5], command[6], command[7]
+AHKClick(ByRef command) {
+    x := command[2]
+    y := command[3]
+    button := command[4]
+    direction := command[5]
+    r := command[6]
+    relative_to := command[7]
+    current_coord_rel := Format("{}", A_CoordModeMouse)
+
+    if (relative_to != current_coord_rel) {
+        CoordMode, Mouse, %relative_to%
     }
-    return
+
+    Click, %x%, %y%, %button%, %direction%, %r%
+
+    if (relative_to != current_coord_rel) {
+        CoordMode, Mouse, %current_coord_rel%
+    }
+
+    return FormatNoValueResponse()
 
 }
 

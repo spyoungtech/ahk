@@ -109,7 +109,7 @@ FunctionName = Literal[
     'AHKWinSetTransColor',
     'AHKWinSetTransparent',
     'AHKWindowList',
-    'Click',
+    'AHKClick',
     'CoordMode',
     'FromMouse',
     'MouseClickDrag',
@@ -292,7 +292,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['CoordMode'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['Click'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['MouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload

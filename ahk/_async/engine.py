@@ -39,7 +39,7 @@ sleep = time.sleep
 CoordModeTargets: TypeAlias = Union[
     Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']
 ]
-CoordModeRelativeTo: TypeAlias = Union[Literal['Screen'], Literal['Relative'], Literal['Window'], Literal['Client']]
+CoordModeRelativeTo: TypeAlias = Union[Literal['Screen', 'Relative', 'Window', 'Client', '']]
 
 CoordMode: TypeAlias = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
 
@@ -49,6 +49,60 @@ MatchSpeeds: TypeAlias = Literal['Fast', 'Slow', '']
 TitleMatchMode: TypeAlias = Optional[
     Union[MatchModes, MatchSpeeds, Tuple[Union[MatchModes, MatchSpeeds], Union[MatchSpeeds, MatchModes]]]
 ]
+
+_BUTTONS: dict[Union[str, int], str] = {
+    1: 'L',
+    2: 'R',
+    3: 'M',
+    'left': 'L',
+    'right': 'R',
+    'middle': 'M',
+    'wheelup': 'WU',
+    'wheeldown': 'WD',
+    'wheelleft': 'WL',
+    'wheelright': 'WR',
+}
+
+MouseButton: TypeAlias = Union[
+    int,
+    Literal[
+        'L',
+        'R',
+        'M',
+        'left',
+        'right',
+        'middle',
+        'wheelup',
+        'WU',
+        'wheeldown',
+        'WD',
+        'wheelleft',
+        'WL',
+        'wheelright',
+        'WR',
+    ],
+]
+
+
+def resolve_button(button: Union[str, int]) -> str:
+    """
+    Resolve a string of a button name to a canonical name used for AHK script
+    :param button:
+    :type button: str
+    :return:
+    """
+    if isinstance(button, str):
+        button = button.lower()
+
+    if button in _BUTTONS:
+        resolved_button = _BUTTONS[button]
+    elif isinstance(button, int) and button > 3:
+        #  for addtional mouse buttons
+        resolved_button = f'X{button-3}'
+    else:
+        assert isinstance(button, str)
+        resolved_button = button
+    return resolved_button
 
 
 class AsyncAHK:
@@ -2133,17 +2187,34 @@ class AsyncAHK:
 
     async def click(
         self,
-        x: Optional[int] = None,
+        x: Optional[Union[int, Tuple[int, int]]] = None,
         y: Optional[int] = None,
         *,
-        button: Optional[str] = None,
-        n: Optional[int] = None,
-        direction: Optional[str] = None,
+        button: Optional[Union[MouseButton, str]] = None,
+        click_count: Optional[int] = None,
+        direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None,
         relative: Optional[bool] = None,
         blocking: bool = True,
-        mode: Optional[CoordMode] = None,
+        coord_mode: Optional[CoordModeRelativeTo] = None,
     ) -> Union[None, AsyncFutureResult[None]]:
-        raise NotImplementedError()
+        if x or y:
+            if y is None and isinstance(x, tuple) and len(x) == 2:
+                #  allow position to be specified by a two-sequence tuple
+                x, y = x
+            assert x is not None and y is not None, 'If provided, position must be specified by x AND y'
+        if button is None:
+            button = 'L'
+        button = resolve_button(button)
+
+        if relative:
+            r = 'Rel'
+        else:
+            r = ''
+        if coord_mode is None:
+            coord_mode = ''
+        args = [str(x), str(y), button, str(click_count), direction or '', r, coord_mode]
+
+        return await self._transport.function_call('AHKClick', args=args, blocking=blocking)
 
     # fmt: off
     @overload
