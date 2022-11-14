@@ -1156,18 +1156,19 @@ AHKClick(ByRef command) {
     x := command[2]
     y := command[3]
     button := command[4]
-    direction := command[5]
-    r := command[6]
-    relative_to := command[7]
+    click_count := command[5]
+    direction := command[6]
+    r := command[7]
+    relative_to := command[8]
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
-    if (relative_to != current_coord_rel) {
+    if (relative_to != "") {
         CoordMode, Mouse, %relative_to%
     }
 
     Click, %x%, %y%, %button%, %direction%, %r%
 
-    if (relative_to != current_coord_rel) {
+    if (relative_to != "") {
         CoordMode, Mouse, %current_coord_rel%
     }
 
