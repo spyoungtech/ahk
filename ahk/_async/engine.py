@@ -2181,10 +2181,49 @@ class AsyncAHK:
     # alias for backwards compatibility
     windows = list_windows
 
-    async def right_click(self, *args: Any, **kwargs: Any) -> Union[None, AsyncFutureResult[None]]:
-        kwargs['button'] = 2
-        return await self.click(*args, **kwargs)
+    # fmt: off
+    @overload
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
+    @overload
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def right_click(
+        self,
+        x: Optional[Union[int, Tuple[int, int]]] = None,
+        y: Optional[int] = None,
+        *,
+        click_count: Optional[int] = None,
+        direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None,
+        relative: Optional[bool] = None,
+        blocking: bool = True,
+        coord_mode: Optional[CoordModeRelativeTo] = None,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        button = 'R'
+        return await self.click(
+            x,
+            y,
+            button=button,
+            click_count=click_count,
+            direction=direction,
+            relative=relative,
+            blocking=blocking,
+            coord_mode=coord_mode,
+        )
 
+    # fmt: off
+    @overload
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
+    @overload
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def click(
         self,
         x: Optional[Union[int, Tuple[int, int]]] = None,
@@ -2213,8 +2252,8 @@ class AsyncAHK:
         if coord_mode is None:
             coord_mode = ''
         args = [str(x), str(y), button, str(click_count), direction or '', r, coord_mode]
-
-        return await self._transport.function_call('AHKClick', args=args, blocking=blocking)
+        resp = await self._transport.function_call('AHKClick', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload

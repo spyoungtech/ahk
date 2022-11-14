@@ -2180,10 +2180,30 @@ class AHK:
     # alias for backwards compatibility
     windows = list_windows
 
-    def right_click(self, *args: Any, **kwargs: Any) -> Union[None, FutureResult[None]]:
-        kwargs['button'] = 2
-        return self.click(*args, **kwargs)
+    # fmt: off
+    @overload
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> FutureResult[None]: ...
+    @overload
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]:
+        button = 'R'
+        return self.click(x, y, button=button, click_count=click_count, direction=direction, relative=relative, blocking=blocking, coord_mode=coord_mode)
 
+    # fmt: off
+    @overload
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    @overload
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> FutureResult[None]: ...
+    @overload
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def click(
         self,
         x: Optional[Union[int, Tuple[int, int]]] = None,
@@ -2212,8 +2232,8 @@ class AHK:
         if coord_mode is None:
             coord_mode = ''
         args = [str(x), str(y), button, str(click_count), direction or '', r, coord_mode]
-
-        return self._transport.function_call('AHKClick', args=args, blocking=blocking)
+        resp = self._transport.function_call('AHKClick', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload
