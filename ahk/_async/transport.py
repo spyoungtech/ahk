@@ -65,82 +65,81 @@ SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
 
 FunctionName = Literal[
-    Literal['AHKControlGetPos'],
-    Literal['AHKControlClick'],
-    Literal['AHKControlGetText'],
-    Literal['AHKGetTitleMatchMode'],
-    Literal['AHKGetTitleMatchSpeed'],
-    Literal['AHKSetDetectHiddenWindows'],
-    Literal['AHKSetTitleMatchMode'],
-    Literal['AHKWinSetTitle'],
-    Literal['AHKWinExist'],
-    Literal['ImageSearch'],
-    Literal['PixelGetColor'],
-    Literal['PixelSearch'],
-    Literal['MouseGetPos'],
-    Literal['AHKKeyState'],
-    Literal['MouseMove'],
-    Literal['CoordMode'],
-    Literal['Click'],
-    Literal['MouseClickDrag'],
-    Literal['KeyWait'],
-    Literal['SetKeyDelay'],
-    Literal['AHKSend'],
-    Literal['AHKSendRaw'],
-    Literal['AHKSendInput'],
-    Literal['AHKSendEvent'],
-    Literal['AHKSendPlay'],
-    Literal['SetCapsLockState'],
-    Literal['AHKWinGetTitle'],
-    Literal['WinGetClass'],
-    Literal['AHKWinGetText'],
-    Literal['WinActivate'],
-    Literal['WinActivateBottom'],
-    Literal['AHKWinClose'],
-    Literal['WinHide'],
-    Literal['WinKill'],
-    Literal['WinMaximize'],
-    Literal['WinMinimize'],
-    Literal['WinRestore'],
-    Literal['WinShow'],
-    Literal['WindowList'],
-    Literal['WinSend'],
-    Literal['WinSendRaw'],
-    Literal['AHKControlSend'],
-    Literal['FromMouse'],
-    Literal['WinGet'],
-    Literal['WinSet'],
-    Literal['AHKWinSetAlwaysOnTop'],
-    Literal['AHKWinIsAlwaysOnTop'],
-    Literal['AHKWinSetTop'],
-    Literal['AHKWinSetBottom'],
-    Literal['AHKWinSetDisable'],
-    Literal['AHKWinSetEnable'],
-    Literal['AHKWinSetRedraw'],
-    Literal['WinSetTitle'],
-    Literal['AHKWinSetTransparent'],
-    Literal['AHKWinSetTransColor'],
-    Literal['AHKWinSetStyle'],
-    Literal['AHKWinSetExStyle'],
-    Literal['AHKWinSetRegion'],
-    Literal['WinIsAlwaysOnTop'],
-    Literal['WinClick'],
-    Literal['AHKWinMove'],
-    Literal['AHKWinGetPos'],
-    Literal['AHKWinGetID'],
-    Literal['AHKWinGetIDLast'],
-    Literal['AHKWinGetPID'],
-    Literal['AHKWinGetProcessName'],
-    Literal['AHKWinGetProcessPath'],
-    Literal['AHKWinGetCount'],
-    Literal['AHKWinGetList'],
-    Literal['AHKWinGetMinMax'],
-    Literal['AHKWinGetControlList'],
-    Literal['AHKWinGetControlListHwnd'],
-    Literal['AHKWinGetTransparent'],
-    Literal['AHKWinGetTransColor'],
-    Literal['AHKWinGetStyle'],
-    Literal['AHKWinGetExStyle'],
+    'AHKControlClick',
+    'AHKControlGetPos',
+    'AHKControlGetText',
+    'AHKControlSend',
+    'AHKGetTitleMatchMode',
+    'AHKGetTitleMatchSpeed',
+    'AHKImageSearch',
+    'AHKKeyState',
+    'AHKKeyWait',
+    'AHKMouseGetPos',
+    'AHKMouseMove',
+    'AHKSend',
+    'AHKSendEvent',
+    'AHKSendInput',
+    'AHKSendPlay',
+    'AHKSendRaw',
+    'AHKSetDetectHiddenWindows',
+    'AHKSetTitleMatchMode',
+    'AHKWinClose',
+    'AHKWinExist',
+    'AHKWinGetControlList',
+    'AHKWinGetControlListHwnd',
+    'AHKWinGetCount',
+    'AHKWinGetExStyle',
+    'AHKWinGetID',
+    'AHKWinGetIDLast',
+    'AHKWinGetList',
+    'AHKWinGetMinMax',
+    'AHKWinGetPID',
+    'AHKWinGetPos',
+    'AHKWinGetProcessName',
+    'AHKWinGetProcessPath',
+    'AHKWinGetStyle',
+    'AHKWinGetText',
+    'AHKWinGetTitle',
+    'AHKWinGetTransColor',
+    'AHKWinGetTransparent',
+    'AHKWinIsAlwaysOnTop',
+    'AHKWinMove',
+    'AHKWinSetAlwaysOnTop',
+    'AHKWinSetBottom',
+    'AHKWinSetDisable',
+    'AHKWinSetEnable',
+    'AHKWinSetExStyle',
+    'AHKWinSetRedraw',
+    'AHKWinSetRegion',
+    'AHKWinSetStyle',
+    'AHKWinSetTitle',
+    'AHKWinSetTop',
+    'AHKWinSetTransColor',
+    'AHKWinSetTransparent',
+    'AHKWindowList',
+    'Click',
+    'CoordMode',
+    'FromMouse',
+    'MouseClickDrag',
+    'PixelGetColor',
+    'PixelSearch',
+    'SetCapsLockState',
+    'SetKeyDelay',
+    'WinActivate',
+    'WinActivateBottom',
+    'WinClick',
+    'WinGet',
+    'WinGetClass',
+    'WinHide',
+    'WinKill',
+    'WinMaximize',
+    'WinMinimize',
+    'WinRestore',
+    'WinSend',
+    'WinSendRaw',
+    'WinSet',
+    'WinSetTitle',
+    'WinShow',
 ]
 
 
@@ -296,17 +295,17 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKWinExist'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[bool, AsyncFutureResult[bool]]: ...
     @overload
-    async def function_call(self, function_name: Literal['ImageSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], None, AsyncFutureResult[Union[Tuple[int, int], None]]]: ...
+    async def function_call(self, function_name: Literal['AHKImageSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], None, AsyncFutureResult[Union[Tuple[int, int], None]]]: ...
     @overload
     async def function_call(self, function_name: Literal['PixelGetColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
     async def function_call(self, function_name: Literal['PixelSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
     @overload
-    async def function_call(self, function_name: Literal['MouseGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
+    async def function_call(self, function_name: Literal['AHKMouseGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKKeyState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[bool, AsyncFutureResult[bool]]: ...
     @overload
-    async def function_call(self, function_name: Literal['MouseMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def function_call(self, function_name: Literal['AHKMouseMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['CoordMode'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
@@ -314,7 +313,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['MouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['KeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[int, AsyncFutureResult[int]]: ...
+    async def function_call(self, function_name: Literal['AHKKeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[int, AsyncFutureResult[int]]: ...
     @overload
     async def function_call(self, function_name: Literal['SetKeyDelay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
@@ -354,7 +353,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['WinShow'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['WindowList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
+    async def function_call(self, function_name: Literal['AHKWindowList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
     @overload
     async def function_call(self, function_name: Literal['WinSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload

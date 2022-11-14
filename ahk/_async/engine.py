@@ -488,7 +488,7 @@ class AsyncAHK:
         else:
             args.append('')
             args.append('')
-        resp = await self._transport.function_call('WindowList', args, engine=self, blocking=blocking)
+        resp = await self._transport.function_call('AHKWindowList', args, engine=self, blocking=blocking)
         return resp
 
     # fmt: off
@@ -504,7 +504,7 @@ class AsyncAHK:
     async def get_mouse_position(
         self, *, blocking: bool = True
     ) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]:
-        resp = await self._transport.function_call('MouseGetPos', blocking=blocking)
+        resp = await self._transport.function_call('AHKMouseGetPos', blocking=blocking)
         return resp
 
     # fmt: off
@@ -539,7 +539,7 @@ class AsyncAHK:
         args = [str(x), str(y), str(speed)]
         if relative:
             args.append('R')
-        resp = await self._transport.function_call('MouseMove', args, blocking=blocking)
+        resp = await self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
     async def a_run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
@@ -705,7 +705,7 @@ class AsyncAHK:
         if options:
             args.append(options)
 
-        resp = await self._transport.function_call('KeyWait', args)
+        resp = await self._transport.function_call('AHKKeyWait', args)
         return resp
 
     # async def mouse_position(self):
@@ -2204,7 +2204,7 @@ class AsyncAHK:
             args.append(s)
         else:
             args.append(image_path)
-        resp = await self._transport.function_call('ImageSearch', args, blocking=blocking)
+        resp = await self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
 
     async def mouse_drag(

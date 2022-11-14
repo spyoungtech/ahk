@@ -487,7 +487,7 @@ class AHK:
         else:
             args.append('')
             args.append('')
-        resp = self._transport.function_call('WindowList', args, engine=self, blocking=blocking)
+        resp = self._transport.function_call('AHKWindowList', args, engine=self, blocking=blocking)
         return resp
 
     # fmt: off
@@ -503,7 +503,7 @@ class AHK:
     def get_mouse_position(
         self, *, blocking: bool = True
     ) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]:
-        resp = self._transport.function_call('MouseGetPos', blocking=blocking)
+        resp = self._transport.function_call('AHKMouseGetPos', blocking=blocking)
         return resp
 
     # fmt: off
@@ -538,12 +538,13 @@ class AHK:
         args = [str(x), str(y), str(speed)]
         if relative:
             args.append('R')
-        resp = self._transport.function_call('MouseMove', args, blocking=blocking)
+        resp = self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
     def a_run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
 
+    # fmt: off
     @overload
     def get_active_window(self) -> Optional[Window]: ...
     @overload
@@ -552,8 +553,13 @@ class AHK:
     def get_active_window(self, blocking: Literal[False]) -> FutureResult[Optional[Window]]: ...
     @overload
     def get_active_window(self, blocking: bool = True) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
-    def get_active_window(self, blocking: bool = True) -> Union[Optional[Window], FutureResult[Optional[Window]]]:
-        return self.win_get(title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking)
+    # fmt: on
+    def get_active_window(
+        self, blocking: bool = True
+    ) -> Union[Optional[Window], FutureResult[Optional[Window]]]:
+        return self.win_get(
+            title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking
+        )
 
     def find_windows(
         self, func: Optional[Callable[[Window], bool]] = None, **kwargs: Any
@@ -698,7 +704,7 @@ class AHK:
         if options:
             args.append(options)
 
-        resp = self._transport.function_call('KeyWait', args)
+        resp = self._transport.function_call('AHKKeyWait', args)
         return resp
 
     # async def mouse_position(self):
@@ -2197,7 +2203,7 @@ class AHK:
             args.append(s)
         else:
             args.append(image_path)
-        resp = self._transport.function_call('ImageSearch', args, blocking=blocking)
+        resp = self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
 
     def mouse_drag(

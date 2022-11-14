@@ -1044,7 +1044,7 @@ AHKWinSetTransColor(ByRef command) {
     return FormatNoValueResponse()
 }
 
-ImageSearch(ByRef command) {
+AHKImageSearch(ByRef command) {
     global COORDINATERESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     imagepath := command[6]
@@ -1105,7 +1105,7 @@ PixelSearch(ByRef command) {
 }
 
 
-MouseGetPos(ByRef command) {
+AHKMouseGetPos(ByRef command) {
     global COORDINATERESPONSEMESSAGE
     MouseGetPos, xpos, ypos
     payload := Format("({}, {})", xpos, ypos)
@@ -1129,7 +1129,7 @@ AHKKeyState(ByRef command) {
     }
 }
 
-MouseMove(ByRef command) {
+AHKMouseMove(ByRef command) {
     x := command[2]
     y := command[3]
     speed := command[4]
@@ -1206,7 +1206,7 @@ RegDelete(ByRef command) {
     RegDelete, %keyname%, command[3]
 }
 
-KeyWait(ByRef command) {
+AHKKeyWait(ByRef command) {
     global INTEGERRESPONSEMESSAGE
     keyname := command[2]
     if (command.Length() = 2) {
@@ -1423,7 +1423,7 @@ WinWaitClose(ByRef command) {
 }
 
 
-WindowList(ByRef command) {
+AHKWindowList(ByRef command) {
     global WINDOWIDLISTRESPONSEMESSAGE
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
