@@ -545,8 +545,22 @@ class AsyncAHK:
     async def a_run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
 
-    async def get_active_window(self) -> Union[AsyncWindow, None]:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def get_active_window(self) -> Optional[AsyncWindow]: ...
+    @overload
+    async def get_active_window(self, blocking: Literal[True]) -> Optional[AsyncWindow]: ...
+    @overload
+    async def get_active_window(self, blocking: Literal[False]) -> AsyncFutureResult[Optional[AsyncWindow]]: ...
+    @overload
+    async def get_active_window(self, blocking: bool = True) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]: ...
+    # fmt: on
+    async def get_active_window(
+        self, blocking: bool = True
+    ) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]:
+        return await self.win_get(
+            title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking
+        )
 
     async def find_windows(
         self, func: Optional[Callable[[AsyncWindow], bool]] = None, **kwargs: Any

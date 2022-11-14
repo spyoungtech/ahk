@@ -544,8 +544,16 @@ class AHK:
     def a_run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
 
-    def get_active_window(self) -> Union[Window, None]:
-        raise NotImplementedError()
+    @overload
+    def get_active_window(self) -> Optional[Window]: ...
+    @overload
+    def get_active_window(self, blocking: Literal[True]) -> Optional[Window]: ...
+    @overload
+    def get_active_window(self, blocking: Literal[False]) -> FutureResult[Optional[Window]]: ...
+    @overload
+    def get_active_window(self, blocking: bool = True) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
+    def get_active_window(self, blocking: bool = True) -> Union[Optional[Window], FutureResult[Optional[Window]]]:
+        return self.win_get(title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking)
 
     def find_windows(
         self, func: Optional[Callable[[Window], bool]] = None, **kwargs: Any
