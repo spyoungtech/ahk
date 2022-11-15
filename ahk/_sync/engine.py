@@ -220,6 +220,16 @@ class AHK:
         resp = self._transport.function_call('AHKGetTitleMatchSpeed')
         return resp
 
+    def set_coord_mode(self, target: CoordModeTargets, relative_to: CoordModeRelativeTo = 'Screen') -> None:
+        args = [str(target), str(relative_to)]
+        self._transport.function_call('AHKSetCoordMode', args)
+        return None
+
+    def get_coord_mode(self, target: CoordModeTargets) -> str:
+        args = [str(target)]
+        resp = self._transport.function_call('AHKGetCoordMode', args)
+        return resp
+
     # fmt: off
     @overload
     def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
@@ -760,34 +770,6 @@ class AHK:
 
         resp = self._transport.function_call('AHKKeyWait', args)
         return resp
-
-    # async def mouse_position(self):
-    #     raise NotImplementedError()
-
-    def mouse_wheel(
-        self,
-        direction: Union[
-            Literal['up'], Literal['down'], Literal['UP'], Literal['DOWN'], Literal['Up'], Literal['Down']
-        ],
-        *args: Any,
-        **kwargs: Any,
-    ) -> None:
-        raise NotImplementedError()
-
-    # async def reg_delete(self, key_name: str, value_name: str = '') -> None:
-    #     raise NotImplementedError()
-    #
-    # async def reg_loop(self, reg: str, key_name: str, mode=''):
-    #     raise NotImplementedError()
-    #
-    # async def reg_read(self, key_name: str, value_name='') -> str:
-    #     raise NotImplementedError()
-    #
-    # async def reg_set_view(self, reg_view: int) -> None:
-    #     raise NotImplementedError()
-    #
-    # async def reg_write(self, value_type: str, key_name: str, value_name='') -> None:
-    #     raise NotImplementedError()
 
     def run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
@@ -2190,9 +2172,28 @@ class AHK:
     @overload
     def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]: ...
     # fmt: on
-    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]:
+    def right_click(
+        self,
+        x: Optional[Union[int, Tuple[int, int]]] = None,
+        y: Optional[int] = None,
+        *,
+        click_count: Optional[int] = None,
+        direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None,
+        relative: Optional[bool] = None,
+        blocking: bool = True,
+        coord_mode: Optional[CoordModeRelativeTo] = None,
+    ) -> Union[None, FutureResult[None]]:
         button = 'R'
-        return self.click(x, y, button=button, click_count=click_count, direction=direction, relative=relative, blocking=blocking, coord_mode=coord_mode)
+        return self.click(
+            x,
+            y,
+            button=button,
+            click_count=click_count,
+            direction=direction,
+            relative=relative,
+            blocking=blocking,
+            coord_mode=coord_mode,
+        )
 
     # fmt: off
     @overload

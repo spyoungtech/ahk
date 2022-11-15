@@ -1176,6 +1176,37 @@ AHKClick(ByRef command) {
 
 }
 
+AHKGetCoordMode(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    target := command[2]
+
+    if (target = "ToolTip") {
+        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeToolTip)
+    }
+    if (target = "Pixel") {
+        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModePixel)
+    }
+    if (target = "Mouse") {
+        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeMouse)
+    }
+    if (target = "Caret") {
+        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeCaret)
+    }
+    if (target = "Menu") {
+        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeMenu)
+    }
+    return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Invalid coord mode")
+}
+
+AHKSetCoordMode(ByRef command) {
+    target := command[2]
+    relative_to := command[3]
+    CoordMode, %target%, %relative_to%
+
+    return FormatNoValueResponse()
+}
+
 MouseClickDrag(ByRef command) {
     button := command[2]
     if (command.Length() = 6) {

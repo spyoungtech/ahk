@@ -61,6 +61,7 @@ FunctionName = Literal[
     'AHKControlGetPos',
     'AHKControlGetText',
     'AHKControlSend',
+    'AHKGetCoordMode',
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKImageSearch',
@@ -74,6 +75,7 @@ FunctionName = Literal[
     'AHKSendPlay',
     'AHKSendRaw',
     'AHKSetDetectHiddenWindows',
+    'AHKSetCoordMode',
     'AHKSetTitleMatchMode',
     'AHKWinClose',
     'AHKWinExist',
@@ -431,6 +433,13 @@ class Transport(ABC):
 
     @overload
     def function_call(self, function_name: Literal['AHKControlGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]: ...
+
+    @overload
+    def function_call(self, function_name: Literal['AHKGetCoordMode'], args: List[str]) -> str: ...
+
+    @overload
+    def function_call(self, function_name: Literal['AHKSetCoordMode'], args: List[str]) -> None: ...
+
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     # @overload
