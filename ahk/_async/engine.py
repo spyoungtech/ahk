@@ -777,18 +777,33 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def send(self, s: str) -> None: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None) -> None: ...
     @overload
-    async def send(self, s: str, *, blocking: Literal[True]) -> None: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def send(self, s: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def send(self, s: str, raw: bool = False, delay: Optional[int] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def send(
-        self, s: str, raw: bool = False, delay: Optional[int] = None, blocking: bool = True
+        self,
+        s: str,
+        *,
+        raw: bool = False,
+        key_delay: Optional[int] = None,
+        key_press_duration: Optional[int] = None,
+        blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         args = [s]
+        if key_delay:
+            args.append(str(key_delay))
+        else:
+            args.append('')
+        if key_press_duration:
+            args.append(str(key_press_duration))
+        else:
+            args.append('')
+
         if raw:
             raw_resp = await self._transport.function_call('AHKSendRaw', args=args, blocking=blocking)
             return raw_resp
@@ -796,8 +811,28 @@ class AsyncAHK:
             resp = await self._transport.function_call('AHKSend', args=args, blocking=blocking)
             return resp
 
-    async def send_event(self, s: str, delay: Optional[int] = None) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def send_raw(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None) -> None: ...
+    @overload
+    async def send_raw(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    async def send_raw(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def send_raw(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def send_raw(
+        self,
+        s: str,
+        *,
+        key_delay: Optional[int] = None,
+        key_press_duration: Optional[int] = None,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        resp = await self.send(
+            s, raw=True, key_delay=key_delay, key_press_duration=key_press_duration, blocking=blocking
+        )
+        return resp
 
     # fmt: off
     @overload
@@ -814,11 +849,36 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKSendInput', args, blocking=blocking)
         return resp
 
-    async def send_play(self, s: str) -> None:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def send_play(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None) -> None: ...
+    @overload
+    async def send_play(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    async def send_play(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def send_play(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def send_play(
+        self,
+        s: str,
+        *,
+        key_delay: Optional[int] = None,
+        key_press_duration: Optional[int] = None,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [s]
+        if key_delay:
+            args.append(str(key_delay))
+        else:
+            args.append('')
+        if key_press_duration:
+            args.append(str(key_press_duration))
+        else:
+            args.append('')
 
-    async def send_raw(self, s: str, delay: Optional[int] = None) -> None:
-        raise NotImplementedError()
+        resp = await self._transport.function_call('AHKSendPlay', args=args, blocking=blocking)
+        return resp
 
     async def set_capslock_state(
         self, state: Optional[Union[Literal['On'], Literal['Off'], Literal['AlwaysOn'], Literal['AlwaysOff']]] = None

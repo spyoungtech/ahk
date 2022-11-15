@@ -1269,42 +1269,98 @@ Unescape(HayStack) {
 }
 
 AHKSend(ByRef command) {
-    command.RemoveAt(1)
-    s := Join(",", command*)
-    str := Unescape(s)
+    str := command[2]
+    key_delay := command[3]
+    key_press_duration := command[4]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %key_delay%, %key_press_duration%
+    }
+
     Send,% str
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %current_delay%, %current_key_duration%
+    }
     return FormatNoValueResponse()
 }
 
 AHKSendRaw(ByRef command) {
-    command.RemoveAt(1)
-    s := Join(",", command*) ; TODO: remove after better input handling is implemented
-    str := Unescape(s)
+    str := command[2]
+    key_delay := command[3]
+    key_press_duration := command[4]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %key_delay%, %key_press_duration%
+    }
+
     SendRaw,% str
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %current_delay%, %current_key_duration%
+    }
     return FormatNoValueResponse()
 }
 
 AHKSendInput(ByRef command) {
-
     str := command[2]
+    key_delay := command[3]
+    key_press_duration := command[4]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %key_delay%, %key_press_duration%
+    }
+
     SendInput,% str
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %current_delay%, %current_key_duration%
+    }
     return FormatNoValueResponse()
 }
 
 
-SendEvent(ByRef command) {
-    command.RemoveAt(1)
-    s := Join(",", command*)
-    str := Unescape(s)
+AHKSendEvent(ByRef command) {
+    str := command[2]
+    key_delay := command[3]
+    key_press_duration := command[4]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %key_delay%, %key_press_duration%
+    }
+
     SendEvent,% str
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %current_delay%, %current_key_duration%
+    }
     return FormatNoValueResponse()
 }
 
-SendPlay(ByRef command) {
-    command.RemoveAt(1)
-    s := Join(",", command*)
-    str := Unescape(s)
+AHKSendPlay(ByRef command) {
+    str := command[2]
+    key_delay := command[3]
+    key_press_duration := command[4]
+    current_delay := Format("{}", A_KeyDelayPlay)
+    current_key_duration := Format("{}", A_KeyDurationPlay)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %key_delay%, %key_press_duration%, Play
+    }
+
     SendPlay,% str
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay, %current_delay%, %current_key_duration%
+    }
     return FormatNoValueResponse()
 }
 
