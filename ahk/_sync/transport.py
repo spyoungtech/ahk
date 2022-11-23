@@ -12,7 +12,6 @@ from io import BytesIO
 from shutil import which
 from typing import Any
 from typing import AnyStr
-from typing import Callable
 from typing import Generic
 from typing import List
 from typing import Literal
@@ -35,6 +34,9 @@ else:
     from typing import TypeAlias, TypeGuard
 
 from ahk.hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
+from ahk.message import RequestMessage
+from ahk.message import ResponseMessage
+
 from concurrent.futures import Future, ThreadPoolExecutor
 
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
@@ -146,7 +148,7 @@ class Killable(Protocol):
 def kill(proc: Killable) -> None:
     try:
         proc.kill()
-    except:
+    except:  # noqa
         pass
 
 
@@ -206,11 +208,11 @@ def _resolve_executable_path(executable_path: Union[str, os.PathLike[AnyStr]] = 
     if not executable_path:
         executable_path = (
             os.environ.get('AHK_PATH', '')
-            or which('AutoHotkey.exe')
-            or which('AutoHotkeyU64.exe')
-            or which('AutoHotkeyU32.exe')
-            or which('AutoHotkeyA32.exe')
-            or ''
+            or which('AutoHotkey.exe')  # noqa
+            or which('AutoHotkeyU64.exe')  # noqa
+            or which('AutoHotkeyU32.exe')  # noqa
+            or which('AutoHotkeyA32.exe')  # noqa
+            or ''  # noqa
         )
 
     if not executable_path:
@@ -539,7 +541,7 @@ class DaemonProcessTransport(Transport):
         finally:
             try:
                 proc.kill()
-            except:
+            except:  # noqa
                 pass
         response = ResponseMessage.from_bytes(content, engine=engine)
         return response.unpack()  # type: ignore
@@ -577,8 +579,6 @@ class DaemonProcessTransport(Transport):
         return response.unpack()  # type: ignore
 
 
-from ahk.message import RequestMessage
-from ahk.message import ResponseMessage
 
 
 if TYPE_CHECKING:

@@ -12,7 +12,6 @@ import warnings
 from abc import ABC
 from abc import abstractmethod
 from base64 import b64encode
-from textwrap import dedent
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -20,7 +19,6 @@ from typing import List
 from typing import Optional
 from typing import Protocol
 from typing import runtime_checkable
-from typing import Tuple
 from typing import Type
 from typing import TypeVar
 from typing import Union
@@ -30,10 +28,6 @@ if sys.version_info >= (3, 10):
 else:
     from typing_extensions import ParamSpec
 
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 import logging
 import tempfile
@@ -326,5 +320,5 @@ class Killable(Protocol):
 def kill(proc: Killable) -> None:
     try:
         proc.kill()
-    except:
+    except:  # noqa
         pass

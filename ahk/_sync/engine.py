@@ -311,6 +311,7 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, FutureResult[str]]:
+
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -848,7 +849,6 @@ class AHK:
         resp = self._transport.function_call('AHKSendInput', args, blocking=blocking)
         return resp
 
-
     # fmt: off
     @overload
     def send_play(self, s: str, *, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None) -> None: ...
@@ -893,7 +893,7 @@ class AHK:
         title: str,
         text: str,
         second: float = 1.0,
-        slient: bool = False,
+        silent: bool = False,
         large_icon: bool = False,
         blocking: bool = True,
     ) -> None:
@@ -904,7 +904,7 @@ class AHK:
         title: str,
         text: str,
         second: float = 1.0,
-        slient: bool = False,
+        silent: bool = False,
         large_icon: bool = False,
         blocking: bool = True,
     ) -> None:

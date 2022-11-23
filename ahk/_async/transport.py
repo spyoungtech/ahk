@@ -12,7 +12,6 @@ from io import BytesIO
 from shutil import which
 from typing import Any
 from typing import AnyStr
-from typing import Callable
 from typing import Generic
 from typing import List
 from typing import Literal
@@ -35,6 +34,9 @@ else:
     from typing import TypeAlias, TypeGuard
 
 from ahk.hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
+from ahk.message import RequestMessage
+from ahk.message import ResponseMessage
+
 from concurrent.futures import Future, ThreadPoolExecutor
 
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
@@ -154,7 +156,7 @@ class Killable(Protocol):
 def kill(proc: Killable) -> None:
     try:
         proc.kill()
-    except:
+    except:  # noqa
         pass
 
 
@@ -563,7 +565,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         finally:
             try:
                 proc.kill()
-            except:
+            except:  # noqa
                 pass
         response = ResponseMessage.from_bytes(content, engine=engine)
         return response.unpack()  # type: ignore
@@ -607,10 +609,6 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         content = content_buffer.getvalue()[:-1]
         response = ResponseMessage.from_bytes(content, engine=engine)
         return response.unpack()  # type: ignore
-
-
-from ahk.message import RequestMessage
-from ahk.message import ResponseMessage
 
 
 if TYPE_CHECKING:

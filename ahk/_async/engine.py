@@ -893,7 +893,7 @@ class AsyncAHK:
         title: str,
         text: str,
         second: float = 1.0,
-        slient: bool = False,
+        silent: bool = False,
         large_icon: bool = False,
         blocking: bool = True,
     ) -> None:
@@ -904,7 +904,7 @@ class AsyncAHK:
         title: str,
         text: str,
         second: float = 1.0,
-        slient: bool = False,
+        silent: bool = False,
         large_icon: bool = False,
         blocking: bool = True,
     ) -> None:
