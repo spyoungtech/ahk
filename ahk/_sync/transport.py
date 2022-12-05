@@ -36,6 +36,7 @@ else:
 from ahk.hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
+from ahk.message import Position
 
 from concurrent.futures import Future, ThreadPoolExecutor
 
@@ -208,11 +209,11 @@ def _resolve_executable_path(executable_path: Union[str, os.PathLike[AnyStr]] = 
     if not executable_path:
         executable_path = (
             os.environ.get('AHK_PATH', '')
-            or which('AutoHotkey.exe')  # noqa
-            or which('AutoHotkeyU64.exe')  # noqa
-            or which('AutoHotkeyU32.exe')  # noqa
-            or which('AutoHotkeyA32.exe')  # noqa
-            or ''  # noqa
+            or which('AutoHotkey.exe')
+            or which('AutoHotkeyU64.exe')
+            or which('AutoHotkeyU32.exe')
+            or which('AutoHotkeyA32.exe')
+            or ''
         )
 
     if not executable_path:
@@ -361,8 +362,8 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['WinClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
-    # @overload
-    # async def function_call(self, function_name: Literal['AHKWinGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK) = None -> Union[TupleResponseMessage, AsyncFutureResult[TupleResponseMessage]]: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKWinGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[Position, None], FutureResult[Union[None, Position]]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinGetID'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, Window], FutureResult[Union[None, Window]]]: ...
     @overload
@@ -434,7 +435,7 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKControlClick'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
 
     @overload
-    def function_call(self, function_name: Literal['AHKControlGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]: ...
+    def function_call(self, function_name: Literal['AHKControlGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[Position, FutureResult[Position]]: ...
 
     @overload
     def function_call(self, function_name: Literal['AHKGetCoordMode'], args: List[str]) -> str: ...
@@ -577,8 +578,6 @@ class DaemonProcessTransport(Transport):
         content = content_buffer.getvalue()[:-1]
         response = ResponseMessage.from_bytes(content, engine=engine)
         return response.unpack()  # type: ignore
-
-
 
 
 if TYPE_CHECKING:

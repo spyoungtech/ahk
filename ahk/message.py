@@ -6,6 +6,7 @@ import string
 import sys
 from abc import abstractmethod
 from base64 import b64encode
+from collections import namedtuple
 from typing import Any
 from typing import cast
 from typing import Generator
@@ -28,6 +29,9 @@ from typing import Union
 
 class OutOfMessageTypes(Exception):
     ...
+
+
+Position = namedtuple('Position', ('x', 'y', 'width', 'height'))
 
 
 @runtime_checkable
@@ -202,10 +206,10 @@ class WindowListResponseMessage(ResponseMessage):
         s = s.rstrip(',')
         window_ids = s.split(',')
         if isinstance(self._engine, AsyncAHK):
-            async_ret = [AsyncWindow(engine=self._engine, ahk_id=ahk_id) for ahk_id in window_ids]
+            async_ret = [AsyncWindow(engine=self._engine, ahk_id=ahk_id) for ahk_id in window_ids if ahk_id]
             return async_ret
         elif isinstance(self._engine, AHK):
-            ret = [Window(engine=self._engine, ahk_id=ahk_id) for ahk_id in window_ids]
+            ret = [Window(engine=self._engine, ahk_id=ahk_id) for ahk_id in window_ids if ahk_id]
             return ret
         else:
             raise ValueError(f'Invalid engine: {self._engine!r}')
@@ -287,6 +291,17 @@ class WindowResponseMessage(ResponseMessage):
             raise ValueError(f'Invalid engine: {self._engine!r}')
 
 
+class PositionResponseMessage(TupleResponseMessage):
+    type = 'position'
+
+    def unpack(self) -> Position:
+        resp = super().unpack()
+        if not len(resp) == 4:
+            raise ValueError(f'Unexpected response. Expected tuple of length 4, got tuple of length {len(resp)}')
+        pos = Position(*resp)
+        return pos
+
+
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')
 
 
@@ -312,8 +327,10 @@ ResponseMessageTypes = Union[
     NoValueResponseMessage,
     WindowControlListResponseMessage,
     ExceptionResponseMessage,
+    PositionResponseMessage,
 ]
 ResponseMessageClassTypes = Union[
+    Type[PositionResponseMessage],
     Type[TupleResponseMessage],
     Type[CoordinateResponseMessage],
     Type[IntegerResponseMessage],

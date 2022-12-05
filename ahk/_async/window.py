@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import sys
+import warnings
+from typing import Any
+from typing import Coroutine
 from typing import Literal
 from typing import Optional
 from typing import overload
@@ -8,6 +12,13 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
+from ahk.message import Position
+
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
+
 if TYPE_CHECKING:
     from .engine import AsyncAHK
     from .transport import AsyncFutureResult
@@ -15,6 +26,24 @@ if TYPE_CHECKING:
 
 class WindowNotFoundException(Exception):
     ...
+
+
+AsyncPropertyReturnStr: TypeAlias = Coroutine[None, None, str]  # unasync: remove
+SyncPropertyReturnStr: TypeAlias = str
+
+AsyncPropertyReturnInt: TypeAlias = Coroutine[None, None, int]  # unasync: remove
+SyncPropertyReturnInt: TypeAlias = int
+
+AsyncPropertyReturnTupleIntInt: TypeAlias = Coroutine[None, None, Tuple[int, int]]  # unasync: remove
+SyncPropertyReturnTupleIntInt: TypeAlias = Tuple[int, int]
+
+AsyncPropertyReturnBool: TypeAlias = Coroutine[None, None, bool]  # unasync: remove
+SyncPropertyReturnBool: TypeAlias = bool
+
+_PROPERTY_DEPRECATION_WARNING_MESSAGE = 'Use of the {0} property is not recommended (in the async API only) and may be removed in a future version. Use the get_{0} method instead.'
+_SETTERS_REMOVED_ERROR_MESSAGE = (
+    'Use of the {0} property setter is not supported in the async API. Use the set_{0} instead.'
+)
 
 
 class AsyncWindow:
@@ -46,6 +75,17 @@ class AsyncWindow:
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
         )
 
+    @property
+    def id(self) -> str:
+        return self._ahk_id
+
+    @property
+    def exist(self) -> AsyncPropertyReturnBool:
+        warnings.warn(  # unasync: remove
+            _PROPERTY_DEPRECATION_WARNING_MESSAGE.format('exist'), category=DeprecationWarning, stacklevel=2
+        )
+        return self.exists()
+
     async def get_pid(self) -> int:
         pid = await self._engine.win_get_pid(
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
@@ -55,6 +95,13 @@ class AsyncWindow:
                 f'Error when trying to get PID of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
             )
         return pid
+
+    @property
+    def pid(self) -> AsyncPropertyReturnInt:
+        warnings.warn(  # unasync: remove
+            _PROPERTY_DEPRECATION_WARNING_MESSAGE.format('pid'), category=DeprecationWarning, stacklevel=2
+        )
+        return self.get_pid()
 
     async def get_process_name(self) -> str:
         name = await self._engine.win_get_process_name(
@@ -66,6 +113,13 @@ class AsyncWindow:
             )
         return name
 
+    @property
+    def process_name(self) -> AsyncPropertyReturnStr:
+        warnings.warn(  # unasync: remove
+            _PROPERTY_DEPRECATION_WARNING_MESSAGE.format('process_name'), category=DeprecationWarning, stacklevel=2
+        )
+        return self.get_process_name()
+
     async def get_process_path(self) -> str:
         path = await self._engine.win_get_process_path(
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
@@ -75,6 +129,13 @@ class AsyncWindow:
                 f'Error when trying to get process path of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
             )
         return path
+
+    @property
+    def process_path(self) -> AsyncPropertyReturnStr:
+        warnings.warn(  # unasync: remove
+            _PROPERTY_DEPRECATION_WARNING_MESSAGE.format('process_path'), category=DeprecationWarning, stacklevel=2
+        )
+        return self.get_process_path()
 
     async def get_minmax(self) -> int:
         minmax = await self._engine.win_get_minmax(
@@ -92,15 +153,17 @@ class AsyncWindow:
         )
         return title
 
-    async def list_controls(self) -> Sequence['AsyncControl']:
-        controls = await self._engine.win_get_control_list(
-            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+    @property
+    def title(self) -> AsyncPropertyReturnStr:
+        warnings.warn(  # unasync: remove
+            _PROPERTY_DEPRECATION_WARNING_MESSAGE.format('title'), category=DeprecationWarning, stacklevel=2
         )
-        if controls is None:
-            raise WindowNotFoundException(
-                f'Error when trying to enumerate controls for window {self._ahk_id}. The window may have been closed before the operation could be completed'
-            )
-        return controls
+        return self.get_title()
+
+    @title.setter
+    def title(self, value: str) -> Any:
+        raise RuntimeError(_SETTERS_REMOVED_ERROR_MESSAGE)  # unasync: remove
+        self.set_title(value)
 
     async def set_title(self, new_title: str) -> None:
         await self._engine.win_set_title(
@@ -110,6 +173,16 @@ class AsyncWindow:
             title_match_mode=(1, 'Fast'),
         )
         return None
+
+    async def list_controls(self) -> Sequence['AsyncControl']:
+        controls = await self._engine.win_get_control_list(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
+        if controls is None:
+            raise WindowNotFoundException(
+                f'Error when trying to enumerate controls for window {self._ahk_id}. The window may have been closed before the operation could be completed'
+            )
+        return controls
 
     # fmt: off
     @overload
@@ -153,6 +226,15 @@ class AsyncWindow:
             )
         return resp
 
+    @property
+    def always_on_top(self) -> AsyncPropertyReturnBool:
+        return self.is_always_on_top()
+
+    @always_on_top.setter
+    def always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> Any:
+        raise RuntimeError(_SETTERS_REMOVED_ERROR_MESSAGE)  # unasync: remove
+        self.set_always_on_top(toggle)
+
     # fmt: off
     @overload
     async def send(self, keys: str) -> None: ...
@@ -186,6 +268,33 @@ class AsyncWindow:
         return await self._engine.win_get_text(
             title=f'ahk_id {self._ahk_id}', blocking=blocking, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
         )
+
+    @property
+    def text(self) -> AsyncPropertyReturnStr:
+        return self.get_text()
+
+    # fmt: off
+    @overload
+    async def get_position(self) -> Position: ...
+    @overload
+    async def get_position(self, blocking: Literal[False]) -> AsyncFutureResult[Optional[Position]]: ...
+    @overload
+    async def get_position(self, blocking: Literal[True]) -> Position: ...
+    @overload
+    async def get_position(self, blocking: bool = True) -> Union[Position, AsyncFutureResult[Optional[Position]]]: ...
+    # fmt: on
+    async def get_position(self, blocking: bool = True) -> Union[Position, AsyncFutureResult[Optional[Position]]]:
+        resp = await self._engine.win_get_position(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+        if resp is None:
+            raise WindowNotFoundException(
+                f'Error when trying to get position for window {self._ahk_id}. The window may have been closed before the operation could be completed'
+            )
+        return resp
 
 
 class AsyncControl:
@@ -255,17 +364,15 @@ class AsyncControl:
 
     # fmt: off
     @overload
-    async def get_position(self) -> Tuple[int, int, int, int]: ...
+    async def get_position(self) -> Position: ...
     @overload
-    async def get_position(self, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int, int, int]]: ...
+    async def get_position(self, blocking: Literal[False]) -> AsyncFutureResult[Position]: ...
     @overload
-    async def get_position(self, blocking: Literal[True]) -> Tuple[int, int, int, int]: ...
+    async def get_position(self, blocking: Literal[True]) -> Position: ...
     @overload
-    async def get_position(self, blocking: bool = True) -> Union[Tuple[int, int, int, int], AsyncFutureResult[Tuple[int, int, int, int]]]: ...
+    async def get_position(self, blocking: bool = True) -> Union[Position, AsyncFutureResult[Position]]: ...
     # fmt: on
-    async def get_position(
-        self, blocking: bool = True
-    ) -> Union[Tuple[int, int, int, int], AsyncFutureResult[Tuple[int, int, int, int]]]:
+    async def get_position(self, blocking: bool = True) -> Union[Position, AsyncFutureResult[Position]]:
         return await self._engine.control_get_position(
             control=self.control_class,
             title=f'ahk_id {self.window._ahk_id}',

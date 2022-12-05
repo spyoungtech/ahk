@@ -5,9 +5,10 @@ import sys
 import time
 import warnings
 from typing import Any
+from typing import Awaitable
 from typing import Callable
+from typing import Coroutine
 from typing import Dict
-from typing import Iterable
 from typing import List
 from typing import Literal
 from typing import NoReturn
@@ -31,9 +32,11 @@ from .transport import FutureResult
 from .transport import Transport
 from .window import Control
 from .window import Window
-
+from ahk.message import Position
 
 sleep = time.sleep
+
+SyncFilterFunc: TypeAlias = Callable[[Window], bool]
 
 CoordModeTargets: TypeAlias = Union[
     Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']
@@ -82,6 +85,12 @@ MouseButton: TypeAlias = Union[
     ],
 ]
 
+SyncPropertyReturnTupleIntInt: TypeAlias = Tuple[int, int]
+
+SyncPropertyReturnOptionalAsyncWindow: TypeAlias = Optional[Window]
+
+_PROPERTY_DEPRECATION_WARNING_MESSAGE = 'Use of the {0} property is not recommended (in the async API only) and may be removed in a future version. Use the get_{0} method instead'
+
 
 def resolve_button(button: Union[str, int]) -> str:
     """
@@ -122,8 +131,9 @@ class AHK:
     def __getattr__(self, item: Any) -> Any:
         deprecation_replacements: Dict[str, Any] = {'type': self.send_input}
         if item in deprecation_replacements:
+            func = deprecation_replacements[item]
             warnings.warn(
-                'type is deprecated and will be removed in a future version. Use `send_input` instead.',
+                f'{item!r} is deprecated and will be removed in a future version. Use {func.__name__!r} instead.',
                 DeprecationWarning,
                 stacklevel=2,
             )
@@ -311,7 +321,6 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, FutureResult[str]]:
-
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -347,13 +356,13 @@ class AHK:
 
     # fmt: off
     @overload
-    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Tuple[int, int, int, int]: ...
+    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Position: ...
     @overload
-    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Tuple[int, int, int, int]]: ...
+    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Position]: ...
     @overload
-    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Tuple[int, int, int, int]: ...
+    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Position: ...
     @overload
-    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]: ...
+    def control_get_position(self, control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, FutureResult[Position]]: ...
     # fmt: on
     def control_get_position(
         self,
@@ -366,7 +375,7 @@ class AHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]:
+    ) -> Union[Position, FutureResult[Position]]:
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -507,22 +516,26 @@ class AHK:
 
     # fmt: off
     @overload
-    def list_windows(self, *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[Window]: ...
+    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[Window]: ...
     @overload
-    def list_windows(self, *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[Window], FutureResult[List[Window]]]: ...
+    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[Window], FutureResult[List[Window]]]: ...
     @overload
-    def list_windows(self, *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[Window]: ...
+    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[Window]: ...
     @overload
-    def list_windows(self, *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[List[Window], FutureResult[List[Window]]]: ...
+    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[List[Window], FutureResult[List[Window]]]: ...
     # fmt: on
     def list_windows(
         self,
         *,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[List[Window], FutureResult[List[Window]]]:
-        args = []
+        args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
                 args.append('On')
@@ -570,6 +583,10 @@ class AHK:
     ) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]:
         resp = self._transport.function_call('AHKMouseGetPos', blocking=blocking)
         return resp
+
+    @property
+    def mouse_position(self) -> SyncPropertyReturnTupleIntInt:
+        return self.get_mouse_position()
 
     # fmt: off
     @overload
@@ -626,33 +643,138 @@ class AHK:
             title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking
         )
 
+    @property
+    def active_window(self) -> SyncPropertyReturnOptionalAsyncWindow:
+        return self.get_active_window()
+
     def find_windows(
-        self, func: Optional[Callable[[Window], bool]] = None, **kwargs: Any
-    ) -> Iterable[Window]:
-        raise NotImplementedError()
+        self,
+        func: Optional[SyncFilterFunc] = None,
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        exact: Optional[bool] = None,
+    ) -> List[Window]:
+        if exact is not None and title_match_mode is not None:
+            raise TypeError('exact and match_mode parameters are mutually exclusive')
+        if exact is not None:
+            warnings.warn('exact parameter is deprecated. Use match_mode=3 instead', stacklevel=2)
+            if exact:
+                title_match_mode = (3, 'Fast')
+            else:
+                title_match_mode = (1, 'Fast')
+        elif title_match_mode is None:
+            title_match_mode = (1, 'Fast')
 
-    def find_windows_by_class(self, class_name: str, exact: bool = False) -> Iterable[Window]:
-        raise NotImplementedError()
+        windows = self.list_windows(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+        )
+        if func is None:
+            return windows
+        else:
+            ret: List[Window] = []
+            for win in windows:
+                match = func(win)
+                if match:
+                    ret.append(win)
+            return ret
 
-    def find_windows_by_text(self, text: str, exact: bool = False) -> Iterable[Window]:
-        raise NotImplementedError()
+    def find_windows_by_class(
+        self, class_name: str, *, exact: Optional[bool] = None, title_match_mode: Optional[TitleMatchMode] = None
+    ) -> List[Window]:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            ret = self.find_windows(
+                title=f'ahk_class {class_name}', title_match_mode=title_match_mode, exact=exact
+            )
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return ret
 
-    def find_windows_by_title(self, title: str, exact: bool = False) -> Iterable[Window]:
-        raise NotImplementedError()
+    def find_windows_by_text(
+        self, text: str, exact: Optional[bool] = None, title_match_mode: Optional[TitleMatchMode] = None
+    ) -> List[Window]:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            ret = self.find_windows(text=text, exact=exact, title_match_mode=title_match_mode)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return ret
+
+    def find_windows_by_title(
+        self, title: str, exact: Optional[bool] = None, title_match_mode: Optional[TitleMatchMode] = None
+    ) -> List[Window]:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            ret = self.find_windows(title=title, exact=exact, title_match_mode=title_match_mode)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return ret
 
     def find_window(
-        self, func: Optional[Callable[[Window], bool]] = None, **kwargs: Any
-    ) -> Iterable[Window]:
-        raise NotImplementedError()
+        self,
+        func: Optional[SyncFilterFunc] = None,
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        exact: Optional[bool] = None,
+    ) -> Optional[Window]:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            windows = self.find_windows(
+                func,
+                title=title,
+                text=text,
+                exclude_title=exclude_title,
+                exclude_text=exclude_text,
+                exact=exact,
+                title_match_mode=title_match_mode,
+            )
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return windows[0] if windows else None
 
-    def find_window_by_class(self, class_name: str, exact: bool = False) -> Iterable[Window]:
-        raise NotImplementedError()
+    def find_window_by_class(
+        self, class_name: str, exact: Optional[bool] = None, title_match_mode: Optional[TitleMatchMode] = None
+    ) -> Optional[Window]:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            windows = self.find_windows_by_class(
+                class_name=class_name, exact=exact, title_match_mode=title_match_mode
+            )
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return windows[0] if windows else None
 
-    def find_window_by_text(self, text: str, exact: bool = False) -> Iterable[Window]:
-        raise NotImplementedError()
+    def find_window_by_text(
+        self, text: str, exact: Optional[bool] = None, title_match_mode: Optional[TitleMatchMode] = None
+    ) -> Optional[Window]:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            windows = self.find_windows_by_text(text=text, exact=exact, title_match_mode=title_match_mode)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return windows[0] if windows else None
 
-    def find_window_by_title(self, title: str, exact: bool = False) -> Iterable[Window]:
-        raise NotImplementedError()
+    def find_window_by_title(
+        self, title: str, exact: Optional[bool] = None, title_match_mode: Optional[TitleMatchMode] = None
+    ) -> Optional[Window]:
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            windows = self.find_windows_by_title(title=title, exact=exact, title_match_mode=title_match_mode)
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
+        return windows[0] if windows else None
 
     def get_volume(self, device_number: int = 1) -> float:
         raise NotImplementedError()
@@ -1117,6 +1239,61 @@ class AHK:
             args.append('')
         resp = self._transport.function_call('AHKWinGetTitle', args, blocking=blocking)
         return resp
+
+    # fmt: off
+    @overload
+    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
+    @overload
+    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Position, None]]: ...
+    @overload
+    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Position, None]: ...
+    @overload
+    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, None, FutureResult[Union[Position, None]]]: ...
+    # fmt: on
+    def win_get_position(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[Position, None, FutureResult[Union[Position, None]]]:
+        args = [title, text, exclude_title, exclude_text]
+        if detect_hidden_windows is not None:
+            if detect_hidden_windows is True:
+                args.append('On')
+            elif detect_hidden_windows is False:
+                args.append('Off')
+            else:
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
+        resp = self._transport.function_call('AHKWinGetPos', args, blocking=blocking, engine=self)
+        return resp
+
 
     # fmt: off
     @overload

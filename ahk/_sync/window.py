@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import sys
+import warnings
+from typing import Any
+from typing import Coroutine
 from typing import Literal
 from typing import Optional
 from typing import overload
@@ -8,6 +12,13 @@ from typing import Tuple
 from typing import TYPE_CHECKING
 from typing import Union
 
+from ahk.message import Position
+
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
+
 if TYPE_CHECKING:
     from .engine import AHK
     from .transport import FutureResult
@@ -15,6 +26,20 @@ if TYPE_CHECKING:
 
 class WindowNotFoundException(Exception):
     ...
+
+
+SyncPropertyReturnStr: TypeAlias = str
+
+SyncPropertyReturnInt: TypeAlias = int
+
+SyncPropertyReturnTupleIntInt: TypeAlias = Tuple[int, int]
+
+SyncPropertyReturnBool: TypeAlias = bool
+
+_PROPERTY_DEPRECATION_WARNING_MESSAGE = 'Use of the {0} property is not recommended (in the async API only) and may be removed in a future version. Use the get_{0} method instead.'
+_SETTERS_REMOVED_ERROR_MESSAGE = (
+    'Use of the {0} property setter is not supported in the async API. Use the set_{0} instead.'
+)
 
 
 class Window:
@@ -46,6 +71,14 @@ class Window:
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
         )
 
+    @property
+    def id(self) -> str:
+        return self._ahk_id
+
+    @property
+    def exist(self) -> SyncPropertyReturnBool:
+        return self.exists()
+
     def get_pid(self) -> int:
         pid = self._engine.win_get_pid(
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
@@ -55,6 +88,10 @@ class Window:
                 f'Error when trying to get PID of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
             )
         return pid
+
+    @property
+    def pid(self) -> SyncPropertyReturnInt:
+        return self.get_pid()
 
     def get_process_name(self) -> str:
         name = self._engine.win_get_process_name(
@@ -66,6 +103,10 @@ class Window:
             )
         return name
 
+    @property
+    def process_name(self) -> SyncPropertyReturnStr:
+        return self.get_process_name()
+
     def get_process_path(self) -> str:
         path = self._engine.win_get_process_path(
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
@@ -75,6 +116,10 @@ class Window:
                 f'Error when trying to get process path of window {self._ahk_id!r}. The window may have been closed before the operation could be completed'
             )
         return path
+
+    @property
+    def process_path(self) -> SyncPropertyReturnStr:
+        return self.get_process_path()
 
     def get_minmax(self) -> int:
         minmax = self._engine.win_get_minmax(
@@ -92,15 +137,13 @@ class Window:
         )
         return title
 
-    def list_controls(self) -> Sequence['Control']:
-        controls = self._engine.win_get_control_list(
-            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
-        )
-        if controls is None:
-            raise WindowNotFoundException(
-                f'Error when trying to enumerate controls for window {self._ahk_id}. The window may have been closed before the operation could be completed'
-            )
-        return controls
+    @property
+    def title(self) -> SyncPropertyReturnStr:
+        return self.get_title()
+
+    @title.setter
+    def title(self, value: str) -> Any:
+        self.set_title(value)
 
     def set_title(self, new_title: str) -> None:
         self._engine.win_set_title(
@@ -110,6 +153,16 @@ class Window:
             title_match_mode=(1, 'Fast'),
         )
         return None
+
+    def list_controls(self) -> Sequence['Control']:
+        controls = self._engine.win_get_control_list(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
+        if controls is None:
+            raise WindowNotFoundException(
+                f'Error when trying to enumerate controls for window {self._ahk_id}. The window may have been closed before the operation could be completed'
+            )
+        return controls
 
     # fmt: off
     @overload
@@ -153,6 +206,14 @@ class Window:
             )
         return resp
 
+    @property
+    def always_on_top(self) -> SyncPropertyReturnBool:
+        return self.is_always_on_top()
+
+    @always_on_top.setter
+    def always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> Any:
+        self.set_always_on_top(toggle)
+
     # fmt: off
     @overload
     def send(self, keys: str) -> None: ...
@@ -186,6 +247,33 @@ class Window:
         return self._engine.win_get_text(
             title=f'ahk_id {self._ahk_id}', blocking=blocking, detect_hidden_windows=True, title_match_mode=(1, 'Fast')
         )
+
+    @property
+    def text(self) -> SyncPropertyReturnStr:
+        return self.get_text()
+
+    # fmt: off
+    @overload
+    def get_position(self) -> Position: ...
+    @overload
+    def get_position(self, blocking: Literal[False]) -> FutureResult[Optional[Position]]: ...
+    @overload
+    def get_position(self, blocking: Literal[True]) -> Position: ...
+    @overload
+    def get_position(self, blocking: bool = True) -> Union[Position, FutureResult[Optional[Position]]]: ...
+    # fmt: on
+    def get_position(self, blocking: bool = True) -> Union[Position, FutureResult[Optional[Position]]]:
+        resp = self._engine.win_get_position(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+        if resp is None:
+            raise WindowNotFoundException(
+                f'Error when trying to get position for window {self._ahk_id}. The window may have been closed before the operation could be completed'
+            )
+        return resp
 
 
 class Control:
@@ -255,21 +343,21 @@ class Control:
 
     # fmt: off
     @overload
-    def get_position(self) -> Tuple[int, int, int, int]: ...
+    def get_position(self) -> Position: ...
     @overload
-    def get_position(self, blocking: Literal[False]) -> FutureResult[Tuple[int, int, int, int]]: ...
+    def get_position(self, blocking: Literal[False]) -> FutureResult[Position]: ...
     @overload
-    def get_position(self, blocking: Literal[True]) -> Tuple[int, int, int, int]: ...
+    def get_position(self, blocking: Literal[True]) -> Position: ...
     @overload
-    def get_position(self, blocking: bool = True) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]: ...
+    def get_position(self, blocking: bool = True) -> Union[Position, FutureResult[Position]]: ...
     # fmt: on
-    def get_position(self, blocking: bool = True) -> Union[Tuple[int, int, int, int], FutureResult[Tuple[int, int, int, int]]]:
+    def get_position(self, blocking: bool = True) -> Union[Position, FutureResult[Position]]:
         return self._engine.control_get_position(
             control=self.control_class,
             title=f'ahk_id {self.window._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
-            title_match_mode=(1, 'Fast')
+            title_match_mode=(1, 'Fast'),
         )
 
     def __repr__(self) -> str:

@@ -13,6 +13,8 @@ NOVALUERESPONSEMESSAGE := "007" ; NoValueResponseMessage
 EXCEPTIONRESPONSEMESSAGE := "008" ; ExceptionResponseMessage
 WINDOWCONTROLLISTRESPONSEMESSAGE := "009" ; WindowControlListResponseMessage
 WINDOWRESPONSEMESSAGE := "00a" ; WindowResponseMessage
+POSITIONRESPONSEMESSAGE := "00b" ; PositionResponseMessage
+
 NOVALUE_SENTINEL := Chr(57344)
 
 FormatResponse(MessageType, payload) {
@@ -1519,9 +1521,13 @@ AHKWindowList(ByRef command) {
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
-    detect_hw := command[2]
-    match_mode := command[3]
-    match_speed := command[4]
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1535,7 +1541,7 @@ AHKWindowList(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
-    WinGet windows, List
+    WinGet windows, List, %title%, %text%, %extitle%, %extext%
     r := ""
     Loop %windows%
     {
@@ -1649,7 +1655,7 @@ AHKControlGetText(ByRef command) {
 
 
 AHKControlGetPos(ByRef command) {
-    global TUPLERESPONSEMESSAGE
+    global POSITIONRESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     ctrl := command[2]
     title := command[3]
@@ -1675,14 +1681,13 @@ AHKControlGetPos(ByRef command) {
     }
 
     ControlGetPos, x, y, w, h, %ctrl%, %title%, %text%, %extitle%, %extext%
-
-    result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
-
     if (ErrorLevel = 1) {
         response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem getting the text")
     } else {
-        response := FormatResponse(TUPLERESPONSEMESSAGE, result)
+        result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
+        response := FormatResponse(PositionResponseMessage, result)
     }
+
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
@@ -1808,21 +1813,45 @@ AHKWinMove(ByRef command) {
 }
 
 AHKWinGetPos(ByRef command) {
+    global POSITIONRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+
     title := command[2]
-    WinGetPos, x, y, width, height, %title%
-    if (command.Length() = 3) {
-        pos_info := command[3]
-        if (pos_info = "position") {
-            s := Format("({}, {})", x, y)
-        } else if (pos_info = "height") {
-            s := Format("({})", height)
-        } else if (pos_info = "width") {
-            s := Format("({})", width)
-        }
-    } else {
-        s := Format("({}, {}, {}, {})", x, y, width, height)
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
     }
-    return s
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    WinGetPos, x, y, w, h, %title%, %text%, %extitle%, %extext%
+
+    if (ErrorLevel = 1) {
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem getting the position")
+    } else {
+        result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
+        response := FormatResponse(PositionResponseMessage, result)
+    }
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return response
 }
 
 CountNewlines(ByRef s) {
