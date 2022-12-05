@@ -839,8 +839,23 @@ class AHK:
         else:
             return self.key_up(key=key, blocking=False)
 
-    def key_state(self, key_name: str, mode: Optional[Union[Literal['P'], Literal['T']]] = None) -> bool:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None) -> bool: ...
+    @overload
+    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[True]) -> bool: ...
+    @overload
+    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[False]) -> FutureResult[bool]: ...
+    @overload
+    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]: ...
+    # fmt: on
+    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+        args = [key_name]
+        if mode is not None:
+            if mode not in ('T', 'P'):
+                raise ValueError(f'Invalid value for mode parameter. Mode must be `T` or `P`. Got {mode!r}')
+            args.append(mode)
+        return self._transport.function_call('AHKKeyState', args, blocking=blocking)
 
     # fmt: off
     @overload
@@ -1293,7 +1308,6 @@ class AHK:
             args.append('')
         resp = self._transport.function_call('AHKWinGetPos', args, blocking=blocking, engine=self)
         return resp
-
 
     # fmt: off
     @overload

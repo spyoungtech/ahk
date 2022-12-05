@@ -849,8 +849,25 @@ class AsyncAHK:
         else:
             return await self.key_up(key=key, blocking=False)
 
-    async def key_state(self, key_name: str, mode: Optional[Union[Literal['P'], Literal['T']]] = None) -> bool:
-        raise NotImplementedError()
+    # fmt: off
+    @overload
+    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None) -> bool: ...
+    @overload
+    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[True]) -> bool: ...
+    @overload
+    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    @overload
+    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True) -> Union[bool, AsyncFutureResult[bool]]: ...
+    # fmt: on
+    async def key_state(
+        self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True
+    ) -> Union[bool, AsyncFutureResult[bool]]:
+        args = [key_name]
+        if mode is not None:
+            if mode not in ('T', 'P'):
+                raise ValueError(f'Invalid value for mode parameter. Mode must be `T` or `P`. Got {mode!r}')
+            args.append(mode)
+        return await self._transport.function_call('AHKKeyState', args, blocking=blocking)
 
     # fmt: off
     @overload

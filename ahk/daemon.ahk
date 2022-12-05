@@ -1116,17 +1116,18 @@ AHKMouseGetPos(ByRef command) {
 }
 
 AHKKeyState(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
     if (command.Length() = 3) {
         if (GetKeyState(command[2], command[3])) {
-            return 1
+            return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
         } else {
-            return 0
+            return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
         }
     } else{
         if (GetKeyState(command[2])) {
-            return 1
+            return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
         } else {
-            return 0
+            return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
         }
     }
 }
