@@ -14,7 +14,7 @@ EXCEPTIONRESPONSEMESSAGE := "008" ; ExceptionResponseMessage
 WINDOWCONTROLLISTRESPONSEMESSAGE := "009" ; WindowControlListResponseMessage
 WINDOWRESPONSEMESSAGE := "00a" ; WindowResponseMessage
 POSITIONRESPONSEMESSAGE := "00b" ; PositionResponseMessage
-
+FLOATRESPONSEMESSAGE := "00c" ; FloatResponseMessage
 NOVALUE_SENTINEL := Chr(57344)
 
 FormatResponse(MessageType, payload) {
@@ -1116,20 +1116,33 @@ AHKMouseGetPos(ByRef command) {
 }
 
 AHKKeyState(ByRef command) {
-    global BOOLEANRESPONSEMESSAGE
-    if (command.Length() = 3) {
-        if (GetKeyState(command[2], command[3])) {
-            return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
-        } else {
-            return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
-        }
+    global INTEGERRESPONSEMESSAGE
+    global FLOATRESPONSEMESSAGE
+    global STRINGRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+
+    keyname := command[2]
+    mode := command[3]
+    if (mode != "") {
+        state := GetKeyState(keyname, mode)
     } else{
-        if (GetKeyState(command[2])) {
-            return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
-        } else {
-            return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
-        }
+        state := GetKeyState(keyname)
     }
+
+    if (state = "") {
+        return FormatNoValueResponse()
+    }
+
+    if state is integer
+        return FormatResponse(INTEGERRESPONSEMESSAGE, state)
+
+    if state is float
+        return FormatResponse(FLOATRESPONSEMESSAGE, state)
+
+    if state is alnum
+        return FormatResponse(STRINGRESPONSEMESSAGE, state)
+
+    return FormatResponse(EXCEPTIONRESPONSEMESSAGE, state)
 }
 
 AHKMouseMove(ByRef command) {

@@ -851,18 +851,27 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None) -> bool: ...
+    async def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None) -> Union[float, int, str, None]: ...
     @overload
-    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[True]) -> bool: ...
+    async def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: Literal[True]) -> Union[float, int, str, None]: ...
     @overload
-    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    async def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: Literal[False]) -> Union[AsyncFutureResult[str], AsyncFutureResult[int], AsyncFutureResult[float], AsyncFutureResult[None]]: ...
     @overload
-    async def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True) -> Union[bool, AsyncFutureResult[bool]]: ...
+    async def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None], Union[str, AsyncFutureResult[str]], Union[int, AsyncFutureResult[int]], Union[float, AsyncFutureResult[float]]]: ...
     # fmt: on
     async def key_state(
-        self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True
-    ) -> Union[bool, AsyncFutureResult[bool]]:
-        args = [key_name]
+        self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: bool = True
+    ) -> Union[
+        int,
+        float,
+        str,
+        None,
+        AsyncFutureResult[str],
+        AsyncFutureResult[int],
+        AsyncFutureResult[float],
+        AsyncFutureResult[None],
+    ]:
+        args: List[str] = [key_name]
         if mode is not None:
             if mode not in ('T', 'P'):
                 raise ValueError(f'Invalid value for mode parameter. Mode must be `T` or `P`. Got {mode!r}')

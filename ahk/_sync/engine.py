@@ -841,18 +841,27 @@ class AHK:
 
     # fmt: off
     @overload
-    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None) -> bool: ...
+    def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None) -> Union[float, int, str, None]: ...
     @overload
-    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[True]) -> bool: ...
+    def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: Literal[True]) -> Union[float, int, str, None]: ...
     @overload
-    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: Literal[False]) -> FutureResult[bool]: ...
+    def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: Literal[False]) -> Union[FutureResult[str], FutureResult[int], FutureResult[float], FutureResult[None]]: ...
     @overload
-    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]: ...
+    def key_state(self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: bool = True) -> Union[None, FutureResult[None], Union[str, FutureResult[str]], Union[int, FutureResult[int]], Union[float, FutureResult[float]]]: ...
     # fmt: on
     def key_state(
-        self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True
-    ) -> Union[bool, FutureResult[bool]]:
-        args = [key_name]
+        self, key_name: str, *, mode: Optional[Literal['T', 'P']] = None, blocking: bool = True
+    ) -> Union[
+        int,
+        float,
+        str,
+        None,
+        FutureResult[str],
+        FutureResult[int],
+        FutureResult[float],
+        FutureResult[None],
+    ]:
+        args: List[str] = [key_name]
         if mode is not None:
             if mode not in ('T', 'P'):
                 raise ValueError(f'Invalid value for mode parameter. Mode must be `T` or `P`. Got {mode!r}')

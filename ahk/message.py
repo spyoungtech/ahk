@@ -302,6 +302,16 @@ class PositionResponseMessage(TupleResponseMessage):
         return pos
 
 
+class FloatResponseMessage(ResponseMessage):
+    type = 'float'
+
+    def unpack(self) -> float:
+        s = self._raw_content.decode(encoding='utf-8')
+        val = ast.literal_eval(s)
+        assert isinstance(val, float)
+        return val
+
+
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')
 
 
