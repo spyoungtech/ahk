@@ -148,3 +148,13 @@ class TestWindowAsync(TestCase):
         edit_control.send('hello world')
         text = self.win.get_text()
         assert 'hello world' in text
+
+    def test_control_position(self):
+        controls = self.win.list_controls()
+        edit_control = controls[0]
+        pos = edit_control.get_position()
+        assert pos
+
+    def test_win_position(self):
+        pos = self.win.get_position()
+        assert pos

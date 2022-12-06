@@ -148,3 +148,13 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         await edit_control.send('hello world')
         text = await self.win.get_text()
         assert 'hello world' in text
+
+    async def test_control_position(self):
+        controls = await self.win.list_controls()
+        edit_control = controls[0]
+        pos = await edit_control.get_position()
+        assert pos
+
+    async def test_win_position(self):
+        pos = await self.win.get_position()
+        assert pos
