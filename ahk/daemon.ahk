@@ -1367,11 +1367,11 @@ AHKSendPlay(ByRef command) {
     return FormatNoValueResponse()
 }
 
-SetCapsLockState(ByRef command) {
-    if (command.Length() = 1) {
+AHKSetCapsLockState(ByRef command) {
+    state := command[2]
+    if (state = "") {
         SetCapsLockState % !GetKeyState("CapsLock", "T")
     } else {
-        state := command[2]
         SetCapsLockState, %state%
     }
     return FormatNoValueResponse()

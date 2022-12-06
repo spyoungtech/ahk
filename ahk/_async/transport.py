@@ -128,7 +128,7 @@ FunctionName = Literal[
     'MouseClickDrag',
     'PixelGetColor',
     'PixelSearch',
-    'SetCapsLockState',
+    'AHKSetCapsLockState',
     'SetKeyDelay',
     'WinActivate',
     'WinActivateBottom',
@@ -332,7 +332,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKSendPlay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['SetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def function_call(self, function_name: Literal['AHKSetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKWinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload

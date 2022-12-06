@@ -849,7 +849,9 @@ class AHK:
     @overload
     def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]: ...
     # fmt: on
-    def key_state(self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+    def key_state(
+        self, key_name: str, mode: Optional[Literal['T', 'P']] = None, *, blocking: bool = True
+    ) -> Union[bool, FutureResult[bool]]:
         args = [key_name]
         if mode is not None:
             if mode not in ('T', 'P'):
@@ -1017,10 +1019,27 @@ class AHK:
         resp = self._transport.function_call('AHKSendPlay', args=args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    @overload
+    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def set_capslock_state(
-        self, state: Optional[Union[Literal['On'], Literal['Off'], Literal['AlwaysOn'], Literal['AlwaysOff']]] = None
-    ) -> None:
-        raise NotImplementedError()
+        self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
+        args: List[str] = []
+        if state is not None:
+            if state.lower() not in ('on', 'off', 'alwayson', 'alwaysoff'):
+                raise ValueError(
+                    f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
+                )
+            args.append(state)
+        return self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
 
     def set_volume(self, value: int, device_number: int = 1) -> None:
         raise NotImplementedError()

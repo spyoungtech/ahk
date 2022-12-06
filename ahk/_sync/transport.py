@@ -120,7 +120,7 @@ FunctionName = Literal[
     'MouseClickDrag',
     'PixelGetColor',
     'PixelSearch',
-    'SetCapsLockState',
+    'AHKSetCapsLockState',
     'SetKeyDelay',
     'WinActivate',
     'WinActivateBottom',
@@ -315,7 +315,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKSendPlay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['SetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKSetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
     @overload

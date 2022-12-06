@@ -1029,10 +1029,27 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKSendPlay', args=args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    async def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    @overload
+    async def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def set_capslock_state(
-        self, state: Optional[Union[Literal['On'], Literal['Off'], Literal['AlwaysOn'], Literal['AlwaysOff']]] = None
-    ) -> None:
-        raise NotImplementedError()
+        self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args: List[str] = []
+        if state is not None:
+            if state.lower() not in ('on', 'off', 'alwayson', 'alwaysoff'):
+                raise ValueError(
+                    f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
+                )
+            args.append(state)
+        return await self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
 
     async def set_volume(self, value: int, device_number: int = 1) -> None:
         raise NotImplementedError()
