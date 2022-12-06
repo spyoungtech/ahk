@@ -1030,24 +1030,24 @@ class AHK:
 
     # fmt: off
     @overload
-    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
     @overload
-    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
     @overload
-    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def set_capslock_state(self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def set_capslock_state(
-        self, state: Optional[Literal['On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True
+        self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
         args: List[str] = []
         if state is not None:
-            if state.lower() not in ('on', 'off', 'alwayson', 'alwaysoff'):
+            if str(state).lower() not in ('1', '0', 'on', 'off', 'alwayson', 'alwaysoff'):
                 raise ValueError(
                     f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
                 )
-            args.append(state)
+            args.append(str(state))
         return self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
 
     def set_volume(self, value: int, device_number: int = 1) -> None:
