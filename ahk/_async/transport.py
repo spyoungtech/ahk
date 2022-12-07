@@ -46,6 +46,10 @@ T_AsyncFuture = TypeVar('T_AsyncFuture')  # unasync: remove
 T_SyncFuture = TypeVar('T_SyncFuture')
 
 
+class AHKProtocolError(Exception):
+    ...
+
+
 class AsyncFutureResult(Generic[T_AsyncFuture]):  # unasync: remove
     def __init__(self, task: asyncio.Task[T_AsyncFuture]):
         self._task: asyncio.Task[T_AsyncFuture] = task
@@ -604,7 +608,13 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         content_buffer = BytesIO()
         content_buffer.write(tom)
         content_buffer.write(num_lines)
-        for _ in range(int(num_lines) + 1):
+        try:
+            lines_to_read = int(num_lines) + 1
+        except ValueError:
+            raise AHKProtocolError(
+                'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+            )
+        for _ in range(lines_to_read):
             part = await self._proc.readline()
             content_buffer.write(part)
         content = content_buffer.getvalue()[:-1]

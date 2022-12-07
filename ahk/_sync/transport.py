@@ -44,6 +44,8 @@ DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 T_SyncFuture = TypeVar('T_SyncFuture')
 
+class AHKProtocolError(Exception):
+    ...
 
 
 
@@ -572,7 +574,11 @@ class DaemonProcessTransport(Transport):
         content_buffer = BytesIO()
         content_buffer.write(tom)
         content_buffer.write(num_lines)
-        for _ in range(int(num_lines) + 1):
+        try:
+            lines_to_read = int(num_lines) + 1
+        except ValueError:
+            raise AHKProtocolError('Unexpected data received. This is usually the result of an unhandled error in the AHK process.')
+        for _ in range(lines_to_read):
             part = self._proc.readline()
             content_buffer.write(part)
         content = content_buffer.getvalue()[:-1]
