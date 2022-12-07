@@ -216,7 +216,7 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
 
 class Hotkey:
     def __init__(
-        self, keyname: str, *, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
+        self, keyname: str, callback: Callable[[], Any], *, ex_handler: Optional[Callable[[str, Exception], Any]] = None
     ):
         self._keyname: str = keyname
         self.callback: Callable[[], Any] = callback
@@ -249,6 +249,7 @@ class Hotstring:
         self,
         trigger: str,
         replacement_or_callback: Union[str, Callable[[], Any]],
+        *,
         ex_handler: Optional[Callable[[str, Exception], Any]],
         options: str = '',
     ):

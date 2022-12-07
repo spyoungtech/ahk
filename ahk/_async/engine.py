@@ -144,7 +144,9 @@ class AsyncAHK:
             return deprecation_replacements[item]
         raise AttributeError(f'{self.__class__.__qualname__!r} object has no attribute {item!r}')
 
-    def add_hotkey(self, hotkey: Hotkey) -> None:
+    def add_hotkey(
+        self, keyname: str, callback: Callable[[], Any], *, ex_handler: Optional[Callable[[str, Exception], Any]] = None
+    ) -> None:
         """
         Register a function to be called when a hotkey is pressed.
 
@@ -157,6 +159,7 @@ class AsyncAHK:
 
         :param hotkey: an instance of ahk.hotkey.Hotkey
         """
+        hotkey = Hotkey(keyname, callback, ex_handler=ex_handler)
         with warnings.catch_warnings(record=True) as caught_warnings:
             self._transport.add_hotkey(hotkey=hotkey)
         if caught_warnings:
@@ -164,7 +167,14 @@ class AsyncAHK:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
         return None
 
-    def add_hotstring(self, hotstring: Hotstring) -> None:
+    def add_hotstring(
+        self,
+        trigger: str,
+        replacement_or_callback: Union[str, Callable[[], Any]],
+        *,
+        ex_handler: Optional[Callable[[str, Exception], Any]],
+        options: str = '',
+    ) -> None:
         """
         Register a hotstring, e.g., `::btw::by the way`
 
@@ -175,6 +185,7 @@ class AsyncAHK:
 
         :param hotstring: an instance of ahk.hotkey.Hotstring
         """
+        hotstring = Hotstring(trigger, replacement_or_callback, ex_handler=ex_handler, options=options)
         with warnings.catch_warnings(record=True) as caught_warnings:
             self._transport.add_hotstring(hotstring=hotstring)
         if caught_warnings:

@@ -26,7 +26,7 @@ class TestMouseAsync(TestCase):
     def test_hotkey(self):
 
         with mock.MagicMock(return_value=None) as m:
-            self.ahk.add_hotkey(Hotkey('a', callback=m))
+            self.ahk.add_hotkey('a', callback=m)
             self.ahk.start_hotkeys()
             self.ahk.key_down('a')
             self.ahk.key_press('a')
@@ -39,7 +39,7 @@ class TestMouseAsync(TestCase):
 
         with mock.MagicMock() as mock_cb, mock.MagicMock() as mock_ex_handler:
             mock_cb.side_effect = side_effect
-            self.ahk.add_hotkey(Hotkey('a', callback=mock_cb, ex_handler=mock_ex_handler))
+            self.ahk.add_hotkey('a', callback=mock_cb, ex_handler=mock_ex_handler)
             self.ahk.start_hotkeys()
             self.ahk.key_down('a')
             self.ahk.key_press('a')
