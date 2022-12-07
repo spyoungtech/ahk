@@ -307,7 +307,7 @@ class Hotstring:
             assert '\n' not in self.options, 'Newlines not allowed in options'
             assert 'x' not in self.options.lower(), 'X is not an allowed option. Use a callback instead.'
             assert re.fullmatch(
-                r'(\?|C|C1|K\d+|O|P\n+|S[IPE]|T|Z)+', self.options.upper()
+                r'(\?|C|C1|K\d+|O|P\d+|S[IPE]|T|Z)+', self.options.upper()
             ), f'Invalid options: {self.options!r}'
         return None
 
