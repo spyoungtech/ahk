@@ -21,7 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
           python -m pip install .
-          python -m pip install tox
+          python -m pip install "tox<4"
           python -m pip install ahk-binary
       - name: Test with coverage/pytest
         env:
