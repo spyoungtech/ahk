@@ -33,7 +33,7 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias, TypeGuard
 
-from ahk.hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
+from ahk._hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import Position
@@ -77,6 +77,7 @@ FunctionName = Literal[
     'AHKControlGetText',
     'AHKControlSend',
     'AHKGetCoordMode',
+    'AHKGetSendLevel',
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKImageSearch',
@@ -91,7 +92,9 @@ FunctionName = Literal[
     'AHKSendRaw',
     'AHKSetDetectHiddenWindows',
     'AHKSetCoordMode',
+    'AHKSetSendLevel',
     'AHKSetTitleMatchMode',
+    'AHKWinActivate',
     'AHKWinClose',
     'AHKWinExist',
     'AHKWinGetControlList',
@@ -134,7 +137,6 @@ FunctionName = Literal[
     'PixelSearch',
     'AHKSetCapsLockState',
     'SetKeyDelay',
-    'WinActivate',
     'WinActivateBottom',
     'WinClick',
     'WinGet',
@@ -344,7 +346,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKWinGetText'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
-    async def function_call(self, function_name: Literal['WinActivate'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def function_call(self, function_name: Literal['AHKWinActivate'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['WinActivateBottom'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
@@ -463,6 +465,11 @@ class AsyncTransport(ABC):
 
     @overload
     async def function_call(self, function_name: Literal['AHKSetCoordMode'], args: List[str]) -> None: ...
+
+    @overload
+    async def function_call(self, function_name: Literal['AHKGetSendLevel']) -> int: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKSetSendLevel'], args: List[str]) -> None: ...
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...

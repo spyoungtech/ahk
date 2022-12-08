@@ -158,3 +158,8 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_win_position(self):
         pos = await self.win.get_position()
         assert pos
+
+    async def test_win_activate(self):
+        await self.win.activate()
+        w = await self.ahk.get_active_window()
+        assert w == self.win

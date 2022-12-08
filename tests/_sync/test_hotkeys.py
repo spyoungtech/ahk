@@ -6,7 +6,6 @@ from unittest import TestCase
 
 from ahk import AHK
 from ahk import Window
-from ahk.hotkey import Hotkey
 
 
 sleep = time.sleep

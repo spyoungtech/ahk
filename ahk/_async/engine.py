@@ -18,8 +18,8 @@ from typing import Tuple
 from typing import Type
 from typing import Union
 
-from ..hotkey import Hotkey
-from ..hotkey import Hotstring
+from .._hotkey import Hotkey
+from .._hotkey import Hotstring
 
 if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias
@@ -172,7 +172,7 @@ class AsyncAHK:
         trigger: str,
         replacement_or_callback: Union[str, Callable[[], Any]],
         *,
-        ex_handler: Optional[Callable[[str, Exception], Any]],
+        ex_handler: Optional[Callable[[str, Exception], Any]] = None,
         options: str = '',
     ) -> None:
         """
@@ -943,6 +943,18 @@ class AsyncAHK:
 
     async def run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
         raise NotImplementedError()
+
+    async def set_send_level(self, level: int) -> None:
+        if not isinstance(level, int):
+            raise TypeError('level must be an integer between 0 and 100')
+        if not 0 <= level <= 100:
+            raise ValueError('level value must be between 0 and 100')
+        args = [str(level)]
+        await self._transport.function_call('AHKSetSendLevel', args)
+
+    async def get_send_level(self) -> int:
+        resp = await self._transport.function_call('AHKGetSendLevel')
+        return resp
 
     # fmt: off
     @overload
@@ -1803,6 +1815,60 @@ class AsyncAHK:
             args.append('')
             args.append('')
         resp = await self._transport.function_call('AHKWinExist', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_activate(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    @overload
+    async def win_activate(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_activate(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    async def win_activate(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def win_activate(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [title, text, exclude_title, exclude_text]
+        if detect_hidden_windows is not None:
+            if detect_hidden_windows is True:
+                args.append('On')
+            elif detect_hidden_windows is False:
+                args.append('Off')
+            else:
+                raise TypeError(
+                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
+                )
+        else:
+            args.append('')
+        if title_match_mode is not None:
+            if isinstance(title_match_mode, tuple):
+                match_mode, match_speed = title_match_mode
+            elif title_match_mode in (1, 2, 3, 'RegEx'):
+                match_mode = title_match_mode
+                match_speed = ''
+            elif title_match_mode in ('Fast', 'Slow'):
+                match_mode = ''
+                match_speed = title_match_mode
+            else:
+                raise ValueError(
+                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
+                )
+            args.append(str(match_mode))
+            args.append(str(match_speed))
+        else:
+            args.append('')
+            args.append('')
+        resp = await self._transport.function_call('AHKWinActivate', args, blocking=blocking)
         return resp
 
     # fmt: off

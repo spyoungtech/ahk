@@ -34,6 +34,8 @@ import tempfile
 from jinja2 import Environment, BaseLoader
 from queue import Queue
 
+from ahk._utils import escape_sequence_replace
+
 P_HotkeyCallbackParam = ParamSpec('P_HotkeyCallbackParam')
 T_HotkeyCallbackReturn = TypeVar('T_HotkeyCallbackReturn')
 
@@ -250,13 +252,13 @@ class Hotstring:
         trigger: str,
         replacement_or_callback: Union[str, Callable[[], Any]],
         *,
-        ex_handler: Optional[Callable[[str, Exception], Any]],
+        ex_handler: Optional[Callable[[str, Exception], Any]] = None,
         options: str = '',
     ):
         self.replacement: Optional[str]
         self.callback: Optional[Callable[[], Any]]
         self.ex_handler: Optional[Callable[[str, Exception], Any]]
-        self._trigger: str = trigger
+        self._trigger: str = escape_sequence_replace(trigger)
         self._options: str = options
         if callable(replacement_or_callback):
             self.replacement = None
@@ -293,7 +295,7 @@ class Hotstring:
 
     @property
     def _id(self) -> str:
-        return str(hash(self))
+        return str(hash(self)).replace('-', '0')
 
     @property
     def _replacement_as_b64(self) -> str:
@@ -302,7 +304,8 @@ class Hotstring:
         return str(b64encode(data), 'UTF-8')
 
     def _validate(self) -> None:
-        assert '\n' not in self.trigger, 'Newlines not allowed in trigger'
+        if not isinstance(self.trigger, str):
+            raise TypeError(f'trigger must be a string. Got {self.trigger!r}')
         if self.options:
             assert '\n' not in self.options, 'Newlines not allowed in options'
             assert 'x' not in self.options.lower(), 'X is not an allowed option. Use a callback instead.'

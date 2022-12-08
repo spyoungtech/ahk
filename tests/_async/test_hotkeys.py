@@ -7,7 +7,6 @@ from unittest import TestCase
 
 from ahk import AsyncAHK
 from ahk import AsyncWindow
-from ahk.hotkey import Hotkey
 
 
 async_sleep = asyncio.sleep  # unasync: remove

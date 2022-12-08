@@ -33,7 +33,7 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias, TypeGuard
 
-from ahk.hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
+from ahk._hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import Position
@@ -44,8 +44,10 @@ DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 T_SyncFuture = TypeVar('T_SyncFuture')
 
+
 class AHKProtocolError(Exception):
     ...
+
 
 
 
@@ -67,6 +69,7 @@ FunctionName = Literal[
     'AHKControlGetText',
     'AHKControlSend',
     'AHKGetCoordMode',
+    'AHKGetSendLevel',
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKImageSearch',
@@ -81,7 +84,9 @@ FunctionName = Literal[
     'AHKSendRaw',
     'AHKSetDetectHiddenWindows',
     'AHKSetCoordMode',
+    'AHKSetSendLevel',
     'AHKSetTitleMatchMode',
+    'AHKWinActivate',
     'AHKWinClose',
     'AHKWinExist',
     'AHKWinGetControlList',
@@ -124,7 +129,6 @@ FunctionName = Literal[
     'PixelSearch',
     'AHKSetCapsLockState',
     'SetKeyDelay',
-    'WinActivate',
     'WinActivateBottom',
     'WinClick',
     'WinGet',
@@ -325,7 +329,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinGetText'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinActivate'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinActivate'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['WinActivateBottom'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
@@ -444,6 +448,11 @@ class Transport(ABC):
 
     @overload
     def function_call(self, function_name: Literal['AHKSetCoordMode'], args: List[str]) -> None: ...
+
+    @overload
+    def function_call(self, function_name: Literal['AHKGetSendLevel']) -> int: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKSetSendLevel'], args: List[str]) -> None: ...
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
@@ -577,7 +586,9 @@ class DaemonProcessTransport(Transport):
         try:
             lines_to_read = int(num_lines) + 1
         except ValueError:
-            raise AHKProtocolError('Unexpected data received. This is usually the result of an unhandled error in the AHK process.')
+            raise AHKProtocolError(
+                'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+            )
         for _ in range(lines_to_read):
             part = self._proc.readline()
             content_buffer.write(part)

@@ -158,3 +158,8 @@ class TestWindowAsync(TestCase):
     def test_win_position(self):
         pos = self.win.get_position()
         assert pos
+
+    def test_win_activate(self):
+        self.win.activate()
+        w = self.ahk.get_active_window()
+        assert w == self.win

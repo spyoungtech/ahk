@@ -31,3 +31,13 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_set_capslock(self):
         await self.ahk.set_capslock_state('On')
         assert await self.ahk.key_state('CapsLock', mode='T') == 1
+
+    async def test_hotstring(self):
+        self.ahk.add_hotstring('btw', 'by the way')
+        self.ahk.start_hotkeys()
+        await self.ahk.set_send_level(1)
+        await self.win.activate()
+        await self.ahk.send('btw ')
+        time.sleep(2)
+
+        assert 'by the way' in await self.win.get_text()

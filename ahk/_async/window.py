@@ -296,6 +296,25 @@ class AsyncWindow:
             )
         return resp
 
+    # fmt: off
+    @overload
+    async def activate(self) -> None: ...
+    @overload
+    async def activate(self, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def activate(self, blocking: Literal[True]) -> None: ...
+    @overload
+    async def activate(self, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def activate(self, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        resp = await self._engine.win_activate(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+        return resp
+
 
 class AsyncControl:
     def __init__(self, window: AsyncWindow, hwnd: str, control_class: str):

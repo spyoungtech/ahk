@@ -57,6 +57,17 @@ AHKGetTitleMatchSpeed(ByRef command) {
     return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchModeSpeed)
 }
 
+AHKSetSendLevel(ByRef command) {
+    level := command[2]
+    SendLevel, %level%
+    return FormatNoValueResponse()
+}
+
+AHKGetSendLevel(ByRef command) {
+    global INTEGERRESPONSEMESSAGE
+    return FormatResponse(INTEGERRESPONSEMESSAGE, A_SendLevel)
+}
+
 AHKWinExist(ByRef command) {
     global BOOLEANRESPONSEMESSAGE
     title := command[2]
@@ -87,6 +98,11 @@ AHKWinExist(ByRef command) {
     } else {
         resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
     }
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
     return resp
 }
 
@@ -1408,14 +1424,37 @@ WinGetClass(ByRef command) {
     return text
 }
 
-WinActivate(ByRef command) {
+AHKWinActivate(ByRef command) {
     title := command[2]
-    if (command.Length() = 2) {
-        WinActivate, %title%
-    } else {
-        secondstowait := command[3]
-        WinActivate, %title%, %secondstowait%
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
     }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    WinActivate, %title%, %text%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return FormatNoValueResponse()
 }
 
 WinActivateBottom(ByRef command) {

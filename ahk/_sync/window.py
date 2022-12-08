@@ -275,6 +275,24 @@ class Window:
             )
         return resp
 
+    # fmt: off
+    @overload
+    def activate(self) -> None: ...
+    @overload
+    def activate(self, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def activate(self, blocking: Literal[True]) -> None: ...
+    @overload
+    def activate(self, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def activate(self, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        resp = self._engine.win_activate(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+        return resp
 
 class Control:
     def __init__(self, window: Window, hwnd: str, control_class: str):
