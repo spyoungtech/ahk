@@ -2659,16 +2659,36 @@ class AHK:
     def mouse_drag(
         self,
         x: int,
-        y: Optional[int] = None,
+        y: int,
         *,
         from_position: Optional[Tuple[int, int]] = None,
         speed: Optional[int] = None,
-        button: Union[str, int] = 1,
+        button: MouseButton = 1,
         relative: Optional[bool] = None,
         blocking: bool = True,
-        mode: Optional[CoordMode] = None,
+        coord_mode: Optional[CoordModeRelativeTo] = None,
     ) -> None:
-        raise NotImplementedError()
+        if from_position:
+            x1, y1 = from_position
+            args = [str(button), str(x1), str(y1), str(x), str(y)]
+        else:
+            args = [str(button), '', '', str(x), str(y)]
+
+        if speed:
+            args.append(str(speed))
+        else:
+            args.append('')
+
+        if relative:
+            args.append('R')
+        else:
+            args.append('')
+
+        if coord_mode:
+            args.append(coord_mode)
+
+        self._transport.function_call('AHKMouseClickDrag', args, blocking=blocking)
+
 
     def pixel_get_color(
         self, x: int, y: int, coord_mode: str = 'Screen', alt: bool = False, slow: bool = False, rgb: bool = True

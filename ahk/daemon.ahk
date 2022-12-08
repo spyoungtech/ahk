@@ -1239,15 +1239,30 @@ AHKSetCoordMode(ByRef command) {
     return FormatNoValueResponse()
 }
 
-MouseClickDrag(ByRef command) {
+AHKMouseClickDrag(ByRef command) {
     button := command[2]
-    if (command.Length() = 6) {
-        MouseClickDrag,%button%,command[3],command[4],command[5],command[6]
-    } else if (command.Length() = 7) {
-        MouseClickDrag,%button%,command[3],command[4],command[5],command[6],command[7]
-    } else if (command.Length() = 8) {
-        MouseClickDrag,%button%,command[3],command[4],command[5],command[6],command[7],R
+    x1 := command[3]
+    y1 := command[4]
+    x2 := command[5]
+    y2 := command[6]
+    speed := command[7]
+    relative := command[8]
+    relative_to := command[9]
+
+    current_coord_rel := Format("{}", A_CoordModeMouse)
+
+    if (relative_to != "") {
+        CoordMode, Mouse, %relative_to%
     }
+
+    MouseClickDrag, %button%, %x1%, %y1%, %x2%, %y2%, %speed%, %relative%
+
+    if (relative_to != "") {
+        CoordMode, Mouse, %current_coord_rel%
+    }
+
+    return FormatNoValueResponse()
+
 }
 
 RegRead(ByRef command) {
