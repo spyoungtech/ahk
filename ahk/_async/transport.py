@@ -97,6 +97,7 @@ FunctionName = Literal[
     'AHKWinActivate',
     'AHKWinClose',
     'AHKWinExist',
+    'AHKWinFromMouse',
     'AHKWinGetControlList',
     'AHKWinGetControlListHwnd',
     'AHKWinGetCount',
@@ -131,7 +132,6 @@ FunctionName = Literal[
     'AHKWindowList',
     'AHKClick',
     'CoordMode',
-    'FromMouse',
     'MouseClickDrag',
     'PixelGetColor',
     'PixelSearch',
@@ -372,7 +372,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKControlSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['FromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
+    async def function_call(self, function_name: Literal['AHKWinFromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]: ...
     @overload
     async def function_call(self, function_name: Literal['WinGet'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload

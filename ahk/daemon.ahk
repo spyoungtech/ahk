@@ -1795,9 +1795,15 @@ AHKControlSend(ByRef command) {
 ;    }
 ;}
 
-FromMouse(ByRef command) {
+AHKWinFromMouse(ByRef command) {
+    global WINDOWRESPONSEMESSAGE
     MouseGetPos,,, MouseWin
-    return MouseWin
+
+    if (MouseWin = "") {
+        return FormatNoValueResponse()
+    }
+
+    return FormatResponse(WINDOWRESPONSEMESSAGE, MouseWin)
 }
 
 ;WinGet(ByRef command) {

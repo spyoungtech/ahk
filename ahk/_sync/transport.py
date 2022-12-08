@@ -89,6 +89,7 @@ FunctionName = Literal[
     'AHKWinActivate',
     'AHKWinClose',
     'AHKWinExist',
+    'AHKWinFromMouse',
     'AHKWinGetControlList',
     'AHKWinGetControlListHwnd',
     'AHKWinGetCount',
@@ -123,7 +124,6 @@ FunctionName = Literal[
     'AHKWindowList',
     'AHKClick',
     'CoordMode',
-    'FromMouse',
     'MouseClickDrag',
     'PixelGetColor',
     'PixelSearch',
@@ -355,7 +355,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKControlSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['FromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKWinFromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
     @overload
     def function_call(self, function_name: Literal['WinGet'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
     @overload

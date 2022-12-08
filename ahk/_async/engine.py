@@ -1761,7 +1761,8 @@ class AsyncAHK:
     async def win_get_from_mouse_position(
         self, *, blocking: bool = True
     ) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]:
-        raise NotImplementedError()
+        resp = await self._transport.function_call('AHKWinFromMouse', blocking=blocking, engine=self)
+        return resp
 
     # fmt: off
     @overload

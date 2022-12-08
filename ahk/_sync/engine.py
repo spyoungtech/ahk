@@ -1751,7 +1751,8 @@ class AHK:
     def win_get_from_mouse_position(
         self, *, blocking: bool = True
     ) -> Union[Optional[Window], FutureResult[Optional[Window]]]:
-        raise NotImplementedError()
+        resp = self._transport.function_call('AHKWinFromMouse', blocking=blocking, engine=self)
+        return resp
 
     # fmt: off
     @overload
