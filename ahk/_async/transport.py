@@ -86,6 +86,8 @@ FunctionName = Literal[
     'AHKMouseClickDrag',
     'AHKMouseGetPos',
     'AHKMouseMove',
+    'AHKPixelGetColor',
+    'AHKPixelSearch',
     'AHKSend',
     'AHKSendEvent',
     'AHKSendInput',
@@ -133,8 +135,6 @@ FunctionName = Literal[
     'AHKWindowList',
     'AHKClick',
     'CoordMode',
-    'PixelGetColor',
-    'PixelSearch',
     'AHKSetCapsLockState',
     'SetKeyDelay',
     'WinActivateBottom',
@@ -308,9 +308,9 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKImageSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], None, AsyncFutureResult[Union[Tuple[int, int], None]]]: ...
     @overload
-    async def function_call(self, function_name: Literal['PixelGetColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
+    async def function_call(self, function_name: Literal['AHKPixelGetColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
-    async def function_call(self, function_name: Literal['PixelSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
+    async def function_call(self, function_name: Literal['AHKPixelSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Optional[Tuple[int, int]], AsyncFutureResult[Optional[Tuple[int, int]]]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKMouseGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
     @overload

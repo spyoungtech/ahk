@@ -1089,37 +1089,64 @@ AHKImageSearch(ByRef command) {
     return s
 }
 
-PixelGetColor(ByRef command) {
-    x := command[3]
-    y := command[4]
-    if (command.Length() = 4) {
-    PixelGetColor,color,% x,% y
-    } else {
-        options := command[5]
-        PixelGetColor,color,% x,% y, %options%
+AHKPixelGetColor(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    x := command[2]
+    y := command[3]
+    coord_mode := command[4]
+    options := command[5]
+
+    current_mode := Format("{}", A_CoordModePixel)
+
+    if (coord_mode != "") {
+        CoordMode, Pixel, %coord_mode%
     }
-    return color
+
+    PixelGetColor, color, %x%, %y%, %options%
+    ; TODO: check errorlevel
+
+    if (coord_mode != "") {
+        CoordMode, Pixel, %current_mode%
+    }
+
+    return FormatResponse(STRINGRESPONSEMESSAGE, color)
 }
 
-PixelSearch(ByRef command) {
-    x1 := command[4]
-    y1 := command[5]
-    x2 := command[6]
-    y2 := command[7]
-    if (x2 = "A_ScreenWidth") {
-        x2 := A_ScreenWidth
+AHKPixelSearch(ByRef command) {
+    global COORDINATERESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    x1 := command[2]
+    y1 := command[3]
+    x2 := command[4]
+    y2 := command[5]
+    color := command[6]
+    variation := command[7]
+    options := command[8]
+    coord_mode := command[9]
+
+    current_mode := Format("{}", A_CoordModePixel)
+
+    if (coord_mode != "") {
+        CoordMode, Pixel, %coord_mode%
     }
-    if (y2 = "A_ScreenHeight") {
-        y2 := A_ScreenHeight
+
+    PixelSearch, resultx, resulty, %x1%, %y1%, %x2%, %y2%, %color%, %variation%, %options%
+
+    if (coord_mode != "") {
+        CoordMode, Pixel, %current_mode%
     }
-    if (command.Length() = 9) {
-        PixelSearch, xpos, ypos,% x1,% y1,% x2,% y2, command[8], command[9]
+
+    if (ErrorLevel = 1) {
+        return FormatNoValueResponse()
+    } else if (ErrorLevel = 0) {
+        payload := Format("({}, {})", resultx, resulty)
+        return FormatResponse(COORDINATERESPONSEMESSAGE, payload)
+    } else if (ErrorLevel = 2) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem conducting the pixel search (ErrorLevel 2)")
     } else {
-        options := command[10]
-        PixelSearch, xpos, ypos,% x1,% y1,% x2,% y2, command[8], command[9], %options%
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Unexpected error. This is probably a bug. Please report this at https://github.com/spyoungtech/ahk/issues")
     }
-    s := Format("({}, {})", xpos, ypos)
-    return s
+
 }
 
 

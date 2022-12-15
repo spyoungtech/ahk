@@ -2606,13 +2606,13 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None) -> Optional[Tuple[int, int]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None) -> Optional[Tuple[int, int]]: ...
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[Optional[Tuple[int, int]]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[Optional[Tuple[int, int]]]: ...
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[True]) -> Optional[Tuple[int, int]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[True]) -> Optional[Tuple[int, int]]: ...
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: str = 'Screen', scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: bool = True) -> Union[Tuple[int, int], None, AsyncFutureResult[Optional[Tuple[int, int]]]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: bool = True) -> Union[Tuple[int, int], None, AsyncFutureResult[Optional[Tuple[int, int]]]]: ...
     # fmt: on
     async def image_search(
         self,
@@ -2621,7 +2621,7 @@ class AsyncAHK:
         lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None,
         *,
         color_variation: Optional[int] = None,
-        coord_mode: str = 'Screen',
+        coord_mode: Optional[CoordModeRelativeTo] = None,
         scale_height: Optional[int] = None,
         scale_width: Optional[int] = None,
         transparent: Optional[str] = None,
@@ -2656,11 +2656,8 @@ class AsyncAHK:
 
         args = [str(x1), str(y1), str(x2), str(y2)]
         if options:
-            s = ''
-            for opt in options:
-                s += f'*{opt} '
-            s += image_path
-            args.append(s)
+            opts = ' '.join(f'*{opt}' for opt in options)
+            args.append(opts)
         else:
             args.append(image_path)
         resp = await self._transport.function_call('AHKImageSearch', args, blocking=blocking)
@@ -2699,22 +2696,65 @@ class AsyncAHK:
 
         await self._transport.function_call('AHKMouseClickDrag', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def pixel_get_color(self, x: int, y: int, *, coord_mode: Optional[CoordModeRelativeTo] = None, alt: bool = False, slow: bool = False, rgb: bool = True) -> str: ...
+    @overload
+    async def pixel_get_color(self, x: int, y: int, *, coord_mode: Optional[CoordModeRelativeTo] = None, alt: bool = False, slow: bool = False, rgb: bool = True, blocking: Literal[True]) -> str: ...
+    @overload
+    async def pixel_get_color(self, x: int, y: int, *, coord_mode: Optional[CoordModeRelativeTo] = None, alt: bool = False, slow: bool = False, rgb: bool = True, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def pixel_get_color(self, x: int, y: int, *, coord_mode: Optional[CoordModeRelativeTo] = None, alt: bool = False, slow: bool = False, rgb: bool = True, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
     async def pixel_get_color(
-        self, x: int, y: int, coord_mode: str = 'Screen', alt: bool = False, slow: bool = False, rgb: bool = True
-    ) -> str:
-        raise NotImplementedError()
+        self,
+        x: int,
+        y: int,
+        *,
+        coord_mode: Optional[CoordModeRelativeTo] = None,
+        alt: bool = False,
+        slow: bool = False,
+        rgb: bool = True,
+        blocking: bool = True,
+    ) -> Union[str, AsyncFutureResult[str]]:
+        args = [str(x), str(y), coord_mode or '']
 
+        options = ' '.join(word for word, val in zip(('Alt', 'Slow', 'RGB'), (alt, slow, rgb)) if val)
+        args.append(options)
+
+        resp = await self._transport.function_call('AHKPixelGetColor', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True) -> Optional[Tuple[int, int]]: ...
+    @overload
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: Literal[True]) -> Optional[Tuple[int, int]]: ...
+    @overload
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: Literal[False]) -> AsyncFutureResult[Optional[Tuple[int, int]]]: ...
+    @overload
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: bool = True) -> Union[Optional[Tuple[int, int]], AsyncFutureResult[Optional[Tuple[int, int]]]]: ...
+    # fmt: on
     async def pixel_search(
         self,
+        search_region_start: Tuple[int, int],
+        search_region_end: Tuple[int, int],
         color: Union[str, int],
         variation: int = 0,
-        upper_bound: Tuple[int, int] = (0, 0),
-        lower_bound: Optional[Tuple[int, int]] = None,
-        coord_mode: str = 'Screen',
+        *,
+        coord_mode: Optional[CoordModeRelativeTo] = None,
         fast: bool = True,
         rgb: bool = True,
-    ) -> Union[Tuple[int, int], None]:
-        raise NotImplementedError()
+        blocking: bool = True,
+    ) -> Union[Optional[Tuple[int, int]], AsyncFutureResult[Optional[Tuple[int, int]]]]:
+        x1, y1 = search_region_start
+        x2, y2 = search_region_end
+        args = [str(x1), str(y1), str(x2), str(y2), str(color), str(variation)]
+        mode = ' '.join(word for word, val in zip(('Fast', 'RGB'), (fast, rgb)) if val)
+        args.append(mode)
+        args.append(coord_mode or '')
+        resp = await self._transport.function_call('AHKPixelSearch', args, blocking=blocking)
+        return resp
 
     async def show_traytip(
         self,
