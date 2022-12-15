@@ -40,6 +40,9 @@ class TestScreen(IsolatedAsyncioTestCase):
         return t
 
     async def test_image_search(self):
+        if os.environ.get('CI'):
+            self.skipTest('This test does not work in GitHub Actions')
+            return
         self._show_in_thread()
         time.sleep(2)
         self.im.save('testimage.png')
@@ -47,6 +50,9 @@ class TestScreen(IsolatedAsyncioTestCase):
         assert isinstance(position, tuple)
 
     async def test_pixel_search(self):
+        if os.environ.get('CI'):
+            self.skipTest('This test does not work in GitHub Actions')
+            return
         self._show_in_thread()
         time.sleep(2)
         self.im.save('testimage.png')
