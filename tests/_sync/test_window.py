@@ -3,7 +3,10 @@ import os
 import subprocess
 import sys
 import time
+import tracemalloc
 from unittest import TestCase
+
+tracemalloc.start()
 
 from ahk import AHK
 from ahk import Window
@@ -22,9 +25,11 @@ class TestWindowAsync(TestCase):
     def tearDown(self) -> None:
         try:
             self.p.kill()
-        except Exception:
+        except:
             pass
+        self.p.communicate()
         self.ahk._transport._proc.kill()
+        time.sleep(0.2)
 
     def test_exists(self):
         self.assertTrue(self.ahk.win_exists(title='Untitled - Notepad'))
@@ -163,3 +168,6 @@ class TestWindowAsync(TestCase):
         self.win.activate()
         w = self.ahk.get_active_window()
         assert w == self.win
+
+    def test_win_get_class(self):
+        assert self.win.get_class() == 'Notepad'

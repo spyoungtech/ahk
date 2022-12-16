@@ -1268,6 +1268,38 @@ class AsyncAHK:
 
     # fmt: off
     @overload
+    async def win_get_class(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> str: ...
+    @overload
+    async def win_get_class(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def win_get_class(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> str: ...
+    @overload
+    async def win_get_class(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
+    async def win_get_class(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[str, AsyncFutureResult[str]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        resp = await self._transport.function_call('AHKWinGetClass', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
     async def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
     @overload
     async def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[Position, None]]: ...

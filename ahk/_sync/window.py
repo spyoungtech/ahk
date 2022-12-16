@@ -166,6 +166,20 @@ class Window:
 
     # fmt: off
     @overload
+    def get_class(self) -> str: ...
+    @overload
+    def get_class(self, blocking: Literal[True]) -> str: ...
+    @overload
+    def get_class(self, blocking: Literal[False]) -> FutureResult[str]: ...
+    @overload
+    def get_class(self, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
+    def get_class(self, blocking: bool = True) -> Union[str, FutureResult[str]]:
+        return self._engine.win_get_class(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'), blocking=blocking)
+
+
+    # fmt: off
+    @overload
     def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> None: ...
     @overload
     def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[False]) -> FutureResult[None]: ...
@@ -293,6 +307,7 @@ class Window:
             title_match_mode=(1, 'Fast'),
         )
         return resp
+
 
 class Control:
     def __init__(self, window: Window, hwnd: str, control_class: str):

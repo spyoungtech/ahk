@@ -132,7 +132,7 @@ FunctionName = Literal[
     'WinActivateBottom',
     'WinClick',
     'WinGet',
-    'WinGetClass',
+    'AHKWinGetClass',
     'WinHide',
     'WinKill',
     'WinMaximize',
@@ -197,7 +197,7 @@ class SyncAHKProcess:
         return line
 
     def kill(self) -> None:
-        assert self._proc is not None
+        assert self._proc is not None, 'no process to kill'
         self._proc.kill()
 
 
@@ -325,7 +325,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinGetClass'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetClass'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinGetText'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
     @overload

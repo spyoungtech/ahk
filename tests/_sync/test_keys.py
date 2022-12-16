@@ -26,7 +26,9 @@ class TestWindowAsync(TestCase):
             self.p.kill()
         except Exception:
             pass
+        self.p.communicate()
         self.ahk._transport._proc.kill()
+        time.sleep(0.2)
 
     def test_set_capslock(self):
         self.ahk.set_capslock_state('On')

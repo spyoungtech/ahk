@@ -1460,10 +1460,43 @@ HideTrayTip(ByRef command) {
 
 
 
-WinGetClass(ByRef command) {
-    title := command[3]
-    WinGetClass, text, %title%
-    return text
+AHKWinGetClass(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    WinGetClass, output,%title%,%text%,%extitle%,%extext%
+
+    if (ErrorLevel = 1) {
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window class")
+    } else {
+        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+    return response
 }
 
 AHKWinActivate(ByRef command) {

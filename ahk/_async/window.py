@@ -186,6 +186,21 @@ class AsyncWindow:
 
     # fmt: off
     @overload
+    async def get_class(self) -> str: ...
+    @overload
+    async def get_class(self, blocking: Literal[True]) -> str: ...
+    @overload
+    async def get_class(self, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def get_class(self, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
+    async def get_class(self, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
+        return await self._engine.win_get_class(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'), blocking=blocking
+        )
+
+    # fmt: off
+    @overload
     async def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0]) -> None: ...
     @overload
     async def set_always_on_top(self, toggle: Literal['On', 'Off', 'Toggle', 1, -1, 0], *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
