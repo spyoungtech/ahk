@@ -7,7 +7,6 @@ jobs:
       matrix:
         python_version: ["3.10", "3.9", "3.8", "3.11"]
     runs-on: windows-latest
-    timeout-minutes: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -24,6 +23,7 @@ jobs:
           python -m pip install tox
           python -m pip install ahk-binary
       - name: Test with coverage/pytest
+        timeout-minutes: 5
         env:
           PYTHONUNBUFFERED: "1"
         run: |
