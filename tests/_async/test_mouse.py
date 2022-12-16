@@ -19,6 +19,13 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
         self.ahk = AsyncAHK()
 
+    async def asyncTearDown(self) -> None:
+        try:
+            self.ahk._transport._proc.kill()
+        except:
+            pass
+        time.sleep(0.2)
+
     async def test_mouse_position(self) -> None:
         pos = await self.ahk.get_mouse_position()
         assert isinstance(pos, tuple)

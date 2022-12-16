@@ -37,7 +37,7 @@ class TestWindowAsync(TestCase):
 
     def test_close(self):
         self.win.close()
-        asyncio.sleep(0.2)
+        time.sleep(0.2)
         self.assertFalse(self.win.exists())
 
     def test_win_get_returns_none_nonexistent(self):

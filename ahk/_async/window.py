@@ -70,6 +70,11 @@ class AsyncWindow:
         )
         return None
 
+    async def kill(self) -> None:
+        await self._engine.win_kill(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
+
     async def exists(self) -> bool:
         return await self._engine.win_exists(
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')

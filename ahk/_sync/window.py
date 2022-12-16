@@ -66,6 +66,11 @@ class Window:
         )
         return None
 
+    def kill(self) -> None:
+        self._engine.win_kill(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
+
     def exists(self) -> bool:
         return self._engine.win_exists(
             title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
@@ -175,8 +180,9 @@ class Window:
     def get_class(self, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
     # fmt: on
     def get_class(self, blocking: bool = True) -> Union[str, FutureResult[str]]:
-        return self._engine.win_get_class(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'), blocking=blocking)
-
+        return self._engine.win_get_class(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'), blocking=blocking
+        )
 
     # fmt: off
     @overload

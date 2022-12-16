@@ -2477,6 +2477,38 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKWinClose', args=args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    @overload
+    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
+    @overload
+    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def win_kill(
+        self,
+        *,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        resp = await self._transport.function_call('AHKWinKill', args, engine=self, blocking=blocking)
+        return resp
+
     async def block_forever(self) -> NoReturn:
         while True:
             await async_sleep(1)

@@ -130,8 +130,46 @@ AHKWinClose(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
 
     WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
+
+    return FormatNoValueResponse()
+}
+
+AHKWinKill(ByRef command) {
+    title := command[2]
+    text := command[3]
+    secondstowait := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
+    WinKill, %title%, %text%, %secondstowait%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
     return FormatNoValueResponse()
 }
 
@@ -1553,15 +1591,6 @@ WinHide(ByRef command) {
     }
 }
 
-WinKill(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinKill, %title%
-    } else {
-        secondstowait := command[3]
-        WinKill, %title%, %secondstowait%
-    }
-}
 
 WinMaximize(ByRef command) {
     title := command[2]

@@ -18,16 +18,17 @@ class TestScreen(IsolatedAsyncioTestCase):
         self.im = Image.new('RGB', (20, 20))
         for coord in product(range(20), range(20)):
             self.im.putpixel(coord, (255, 0, 0))
-        await asyncio.sleep(2)
+        time.sleep(1)
 
     async def asyncTearDown(self):
         print('tearing down')
         for win in await self.ahk.list_windows():
             if win not in self.before_windows:
                 print('closing', win)
-                await win.close()
+                await win.kill()
         print('killing proc')
         self.ahk._transport._proc.kill()
+        time.sleep(0.2)
 
     #
     # async def test_pixel_search(self):
@@ -57,6 +58,7 @@ class TestScreen(IsolatedAsyncioTestCase):
         time.sleep(2)
         self.im.save('testimage.png')
         position = await self.ahk.image_search('testimage.png')
+        assert position is not None
         x, y = position
         color = await self.ahk.pixel_get_color(x, y)
         region_start = (x - 1, y - 1)
