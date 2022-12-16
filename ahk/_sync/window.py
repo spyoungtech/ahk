@@ -171,6 +171,51 @@ class Window:
 
     # fmt: off
     @overload
+    def minimize(self) -> None: ...
+    @overload
+    def minimize(self, blocking: Literal[True]) -> None: ...
+    @overload
+    def minimize(self, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def minimize(self, blocking: bool = True) -> Optional[FutureResult[None]]: ...
+    # fmt: on
+    def minimize(self, blocking: bool = True) -> Optional[FutureResult[None]]:
+        return self._engine.win_minimize(
+            title=f'ahk_id {self._ahk_id}', title_match_mode=(1, 'Fast'), detect_hidden_windows=True, blocking=blocking
+        )
+
+    # fmt: off
+    @overload
+    def maximize(self) -> None: ...
+    @overload
+    def maximize(self, blocking: Literal[True]) -> None: ...
+    @overload
+    def maximize(self, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def maximize(self, blocking: bool = True) -> Optional[FutureResult[None]]: ...
+    # fmt: on
+    def maximize(self, blocking: bool = True) -> Optional[FutureResult[None]]:
+        return self._engine.win_maximize(
+            title=f'ahk_id {self._ahk_id}', title_match_mode=(1, 'Fast'), detect_hidden_windows=True, blocking=blocking
+        )
+
+    # fmt: off
+    @overload
+    def restore(self) -> None: ...
+    @overload
+    def restore(self, blocking: Literal[True]) -> None: ...
+    @overload
+    def restore(self, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def restore(self, blocking: bool = True) -> Optional[FutureResult[None]]: ...
+    # fmt: on
+    def restore(self, blocking: bool = True) -> Optional[FutureResult[None]]:
+        return self._engine.win_restore(
+            title=f'ahk_id {self._ahk_id}', title_match_mode=(1, 'Fast'), detect_hidden_windows=True, blocking=blocking
+        )
+
+    # fmt: off
+    @overload
     def get_class(self) -> str: ...
     @overload
     def get_class(self, blocking: Literal[True]) -> str: ...

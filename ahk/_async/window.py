@@ -191,6 +191,51 @@ class AsyncWindow:
 
     # fmt: off
     @overload
+    async def minimize(self) -> None: ...
+    @overload
+    async def minimize(self, blocking: Literal[True]) -> None: ...
+    @overload
+    async def minimize(self, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def minimize(self, blocking: bool = True) -> Optional[AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def minimize(self, blocking: bool = True) -> Optional[AsyncFutureResult[None]]:
+        return await self._engine.win_minimize(
+            title=f'ahk_id {self._ahk_id}', title_match_mode=(1, 'Fast'), detect_hidden_windows=True, blocking=blocking
+        )
+
+    # fmt: off
+    @overload
+    async def maximize(self) -> None: ...
+    @overload
+    async def maximize(self, blocking: Literal[True]) -> None: ...
+    @overload
+    async def maximize(self, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def maximize(self, blocking: bool = True) -> Optional[AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def maximize(self, blocking: bool = True) -> Optional[AsyncFutureResult[None]]:
+        return await self._engine.win_maximize(
+            title=f'ahk_id {self._ahk_id}', title_match_mode=(1, 'Fast'), detect_hidden_windows=True, blocking=blocking
+        )
+
+    # fmt: off
+    @overload
+    async def restore(self) -> None: ...
+    @overload
+    async def restore(self, blocking: Literal[True]) -> None: ...
+    @overload
+    async def restore(self, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def restore(self, blocking: bool = True) -> Optional[AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def restore(self, blocking: bool = True) -> Optional[AsyncFutureResult[None]]:
+        return await self._engine.win_restore(
+            title=f'ahk_id {self._ahk_id}', title_match_mode=(1, 'Fast'), detect_hidden_windows=True, blocking=blocking
+        )
+
+    # fmt: off
+    @overload
     async def get_class(self) -> str: ...
     @overload
     async def get_class(self, blocking: Literal[True]) -> str: ...

@@ -135,9 +135,9 @@ FunctionName = Literal[
     'AHKWinGetClass',
     'WinHide',
     'AHKWinKill',
-    'WinMaximize',
-    'WinMinimize',
-    'WinRestore',
+    'AHKWinMaximize',
+    'AHKWinMinimize',
+    'AHKWinRestore',
     'WinSend',
     'WinSendRaw',
     'WinSet',
@@ -339,11 +339,11 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinKill'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinMaximize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinMaximize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinMinimize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinMinimize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinRestore'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinRestore'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['WinShow'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload

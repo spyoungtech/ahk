@@ -173,6 +173,109 @@ AHKWinKill(ByRef command) {
     return FormatNoValueResponse()
 }
 
+
+AHKWinMinimize(ByRef command) {
+    title := command[2]
+    text := command[3]
+    secondstowait := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
+    WinMinimize, %title%, %text%, %secondstowait%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return FormatNoValueResponse()
+}
+
+AHKWinMaximize(ByRef command) {
+    title := command[2]
+    text := command[3]
+    secondstowait := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
+    WinMaximize, %title%, %text%, %secondstowait%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return FormatNoValueResponse()
+}
+
+AHKWinRestore(ByRef command) {
+    title := command[2]
+    text := command[3]
+    secondstowait := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
+    WinRestore, %title%, %text%, %secondstowait%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return FormatNoValueResponse()
+}
+
 AHKWinGetID(ByRef command) {
     global WINDOWRESPONSEMESSAGE
     title := command[2]
