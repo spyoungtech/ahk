@@ -308,7 +308,16 @@ class Window:
     @overload
     def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
-    def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def click(
+        self,
+        x: int = 0,
+        y: int = 0,
+        *,
+        button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L',
+        click_count: int = 1,
+        options: str = '',
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
         pos = f'X{x} Y{y}'
         return self._engine.control_click(
             control=pos,
@@ -384,13 +393,13 @@ class Window:
 
     # fmt: off
     @overload
-    def bottom(self, *, blocking: Literal[True]) -> None: ...
+    def to_bottom(self, *, blocking: Literal[True]) -> None: ...
     @overload
-    def bottom(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    def to_bottom(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def bottom(self) -> None: ...
+    def to_bottom(self) -> None: ...
     # fmt: on
-    def bottom(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def to_bottom(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         return self._engine.win_set_bottom(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
@@ -400,14 +409,46 @@ class Window:
 
     # fmt: off
     @overload
-    def top(self, *, blocking: Literal[True]) -> None: ...
+    def to_top(self, *, blocking: Literal[True]) -> None: ...
     @overload
-    def top(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    def to_top(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def top(self) -> None: ...
+    def to_top(self) -> None: ...
     # fmt: on
-    def top(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def to_top(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         return self._engine.win_set_top(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    def show(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def show(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show(self) -> None: ...
+    # fmt: on
+    def show(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_show(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    def hide(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def hide(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def hide(self) -> None: ...
+    # fmt: on
+    def hide(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_hide(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
@@ -560,6 +601,27 @@ class Window:
             title_match_mode=(1, 'Fast'),
             blocking=blocking,
         )
+
+    @property
+    def active(self) -> SyncPropertyReturnBool:
+        return self.is_active()
+
+    def is_active(self) -> bool:
+        return self._engine.win_is_active(
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    def move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_move(x=x, y=y,
+                                           width=width,
+                                           height=height,
+                                           title=f'ahk_id {self._ahk_id}',
+                                           detect_hidden_windows=True,
+                                           title_match_mode=(1, 'Fast'),
+                                           blocking=blocking,
+                                           )
 
 
 class Control:

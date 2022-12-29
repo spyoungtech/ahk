@@ -627,6 +627,12 @@ class AsyncAHK:
         )
         return self.get_mouse_position()
 
+    @mouse_position.setter
+    def mouse_position(self, new_position: Tuple[int, int]) -> None:
+        raise RuntimeError('Use of the mouse_position setter is not supported in the async API.')  # unasync: remove
+        x, y = new_position
+        return self.mouse_move(x=x, y=y, speed=0, relative=False)
+
     # fmt: off
     @overload
     async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False) -> None: ...
@@ -2722,6 +2728,78 @@ class AsyncAHK:
             detect_hidden_windows=detect_hidden_windows,
         )
         resp = await self._transport.function_call('AHKWinHide', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_is_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> bool: ...
+    @overload
+    async def win_is_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> bool: ...
+    @overload
+    async def win_is_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[bool]: ...
+    @overload
+    async def win_is_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[bool, AsyncFutureResult[bool]]: ...
+    # fmt: on
+    async def win_is_active(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[bool, AsyncFutureResult[bool]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        resp = await self._transport.function_call('AHKWinIsActive', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    @overload
+    async def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    async def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def win_move(
+        self,
+        x: int,
+        y: int,
+        *,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        args.append(str(x))
+        args.append(str(y))
+        args.append(str(width) if width is not None else '')
+        args.append(str(height) if height is not None else '')
+        resp = await self._transport.function_call('AHKWinMove', args, blocking=blocking)
         return resp
 
     async def block_forever(self) -> NoReturn:

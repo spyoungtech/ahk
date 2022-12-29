@@ -414,13 +414,13 @@ class AsyncWindow:
 
     # fmt: off
     @overload
-    async def bottom(self, *, blocking: Literal[True]) -> None: ...
+    async def to_bottom(self, *, blocking: Literal[True]) -> None: ...
     @overload
-    async def bottom(self, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def to_bottom(self, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def bottom(self) -> None: ...
+    async def to_bottom(self) -> None: ...
     # fmt: on
-    async def bottom(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    async def to_bottom(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.win_set_bottom(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
@@ -430,14 +430,46 @@ class AsyncWindow:
 
     # fmt: off
     @overload
-    async def top(self, *, blocking: Literal[True]) -> None: ...
+    async def to_top(self, *, blocking: Literal[True]) -> None: ...
     @overload
-    async def top(self, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def to_top(self, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def top(self) -> None: ...
+    async def to_top(self) -> None: ...
     # fmt: on
-    async def top(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    async def to_top(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.win_set_top(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    async def show(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show(self, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show(self) -> None: ...
+    # fmt: on
+    async def show(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        return await self._engine.win_show(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    async def hide(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def hide(self, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def hide(self) -> None: ...
+    # fmt: on
+    async def hide(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        return await self._engine.win_hide(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
@@ -585,6 +617,31 @@ class AsyncWindow:
     ) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.win_set_trans_color(
             color=color,
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+            blocking=blocking,
+        )
+
+    @property
+    def active(self) -> AsyncPropertyReturnBool:
+        return self.is_active()
+
+    async def is_active(self) -> bool:
+        return await self._engine.win_is_active(
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    async def move(
+        self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        return await self._engine.win_move(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
             title=f'ahk_id {self._ahk_id}',
             detect_hidden_windows=True,
             title_match_mode=(1, 'Fast'),

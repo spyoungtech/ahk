@@ -171,3 +171,13 @@ class TestWindowAsync(TestCase):
 
     def test_win_get_class(self):
         assert self.win.get_class() == 'Notepad'
+
+    def test_win_move(self):
+        self.win.move(100, 100, width=300, height=300)
+        self.win.move(200, 200, width=400, height=500)
+        time.sleep(1)
+        assert self.win.get_position() == (200, 200, 400, 500)
+
+    def test_win_is_active(self):
+        self.win.activate()
+        assert self.win.is_active() is True

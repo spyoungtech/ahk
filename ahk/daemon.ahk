@@ -412,6 +412,41 @@ AHKWinRestore(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKWinIsActive(ByRef command) {
+    global BOOLEANRESPONSEMESSAGE
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+        current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    if WinActive(title, text, extitle, extext) {
+        response := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+    } else {
+        response := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    }
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+    return response
+}
+
 AHKWinGetID(ByRef command) {
     global WINDOWRESPONSEMESSAGE
     title := command[2]
@@ -2065,17 +2100,6 @@ AHKControlSend(ByRef command) {
 
 
 
-;
-;BaseCheck(ByRef command) {
-;    kommand := command[2]
-;    title := command[3]
-;    if %kommand%(title) {
-;        return 1
-;    }
-;    else {
-;        return 0
-;    }
-;}
 
 AHKWinFromMouse(ByRef command) {
     global WINDOWRESPONSEMESSAGE
@@ -2104,19 +2128,40 @@ AHKWinIsAlwaysOnTop(ByRef command) {
 
 
 AHKWinMove(ByRef command) {
-    title := command [2]
-    x := command[3]
-    y := command[4]
-    if (command.Length()) = 4 {
-        WinMove,%title%,,%x%,%y%
-    } else if (command.Length() = 5) {
-        a := command[5]
-        WinMove,%title%,,%x%,%y%,%a%
-    } else if (command.Length() = 6) {
-        a := command[5]
-        b := command[6]
-        WinMove,%title%,,%x%,%y%,%a%,%b%
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+    x := command[9]
+    y := command[10]
+    width := command[11]
+    height := command[12]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
     }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    WinMove, %title%, %text%, %x%, %y%, %width%, %height%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return FormatNoValueResponse()
+
 }
 
 AHKWinGetPos(ByRef command) {

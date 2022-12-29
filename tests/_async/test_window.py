@@ -171,3 +171,13 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
 
     async def test_win_get_class(self):
         assert await self.win.get_class() == 'Notepad'
+
+    async def test_win_move(self):
+        await self.win.move(100, 100, width=300, height=300)
+        await self.win.move(200, 200, width=400, height=500)
+        time.sleep(1)
+        assert await self.win.get_position() == (200, 200, 400, 500)
+
+    async def test_win_is_active(self):
+        await self.win.activate()
+        assert await self.win.is_active() is True
