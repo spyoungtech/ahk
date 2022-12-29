@@ -300,6 +300,29 @@ class Window:
 
     # fmt: off
     @overload
+    def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '') -> None: ...
+    @overload
+    def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
+    @overload
+    def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, FutureResult[None]]:
+        pos = f'X{x} Y{y}'
+        return self._engine.control_click(
+            control=pos,
+            title=f'ahk_id {self._ahk_id}',
+            button=button,
+            click_count=click_count,
+            options=options,
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
     def get_text(self) -> str: ...
     @overload
     def get_text(self, *, blocking: Literal[False]) -> FutureResult[str]: ...
@@ -369,6 +392,22 @@ class Window:
     # fmt: on
     def bottom(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         return self._engine.win_set_bottom(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    def top(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def top(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def top(self) -> None: ...
+    # fmt: on
+    def top(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_set_top(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,

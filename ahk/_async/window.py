@@ -321,6 +321,38 @@ class AsyncWindow:
 
     # fmt: off
     @overload
+    async def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '') -> None: ...
+    @overload
+    async def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
+    @overload
+    async def click(self, x: int = 0, y: int = 0, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def click(
+        self,
+        x: int = 0,
+        y: int = 0,
+        *,
+        button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L',
+        click_count: int = 1,
+        options: str = '',
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        pos = f'X{x} Y{y}'
+        return await self._engine.control_click(
+            control=pos,
+            title=f'ahk_id {self._ahk_id}',
+            button=button,
+            click_count=click_count,
+            options=options,
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
     async def get_text(self) -> str: ...
     @overload
     async def get_text(self, *, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
@@ -390,6 +422,22 @@ class AsyncWindow:
     # fmt: on
     async def bottom(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.win_set_bottom(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    async def top(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def top(self, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def top(self) -> None: ...
+    # fmt: on
+    async def top(self, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        return await self._engine.win_set_top(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
