@@ -493,6 +493,8 @@ class AHK:
         resp = self._transport.function_call('AHKControlSend', args, blocking=blocking)
         return resp
 
+    # TODO: raw option for control_send
+
     def start_hotkeys(self) -> None:
         """
         Start the Autohotkey process for triggering hotkeys
@@ -2598,6 +2600,118 @@ class AHK:
         )
         args.append(str(timeout) if timeout else '')
         resp = self._transport.function_call('AHKWinWait', args, blocking=blocking, engine=self)
+        return resp
+
+    def win_wait_active(
+        self,
+        *,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        timeout: Optional[int] = None,
+        blocking: bool = True,
+    ) -> Union[Window, FutureResult[Window]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        args.append(str(timeout) if timeout else '')
+        resp = self._transport.function_call('AHKWinWaitActive', args, blocking=blocking, engine=self)
+        return resp
+
+    def win_wait_not_active(
+        self,
+        *,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        timeout: Optional[int] = None,
+        blocking: bool = True,
+    ) -> Union[Window, FutureResult[Window]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        args.append(str(timeout) if timeout else '')
+        resp = self._transport.function_call('AHKWinWaitNotActive', args, blocking=blocking, engine=self)
+        return resp
+
+    # fmt: off
+    @overload
+    def win_show(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    @overload
+    def win_show(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def win_show(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    def win_show(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def win_show(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        resp = self._transport.function_call('AHKWinShow', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    def win_hide(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    @overload
+    def win_hide(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def win_hide(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    def win_hide(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def win_hide(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        resp = self._transport.function_call('AHKWinHide', args, blocking=blocking)
         return resp
 
     def block_forever(self) -> NoReturn:

@@ -219,6 +219,98 @@ AHKWinWait(ByRef command) {
     return resp
 }
 
+
+AHKWinWaitActive(ByRef command) {
+    global WINDOWRESPONSEMESSAGE
+    global TIMEOUTRESPONSEMESSAGE
+
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+    timeout := command[9]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+    if (timeout != "") {
+        WinWaitActive, %title%, %text%, %timeout%, %extitle%, %extext%
+    } else {
+        WinWaitActive, %title%, %text%,, %extitle%, %extext%
+    }
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+    } else {
+        WinGet, output, ID
+        resp := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+    }
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return resp
+}
+
+
+AHKWinWaitNotActive(ByRef command) {
+    global WINDOWRESPONSEMESSAGE
+    global TIMEOUTRESPONSEMESSAGE
+
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+    timeout := command[9]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+    if (timeout != "") {
+        WinWaitNotActive, %title%, %text%, %timeout%, %extitle%, %extext%
+    } else {
+        WinWaitNotActive, %title%, %text%,, %extitle%, %extext%
+    }
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+    } else {
+        WinGet, output, ID
+        resp := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+    }
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return resp
+}
+
+
+
 AHKWinMinimize(ByRef command) {
     title := command[2]
     text := command[3]
@@ -440,12 +532,12 @@ AHKWinGetPID(ByRef command) {
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
-if (match_mode != "") {
-    SetTitleMatchMode, %match_mode%
-}
-if (match_speed != "") {
-    SetTitleMatchMode, %match_speed%
-}
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -946,6 +1038,69 @@ AHKWinSetBottom(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKWinShow(ByRef command) {
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    WinShow, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+    return FormatNoValueResponse()
+}
+
+AHKWinHide(ByRef command) {
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+    WinHide, %title%, %text%, %extitle%, %extext%
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+    return FormatNoValueResponse()
+}
+
+
 AHKWinSetTop(ByRef command) {
     title := command[2]
     text := command[3]
@@ -1387,14 +1542,6 @@ AHKMouseMove(ByRef command) {
     return resp
 }
 
-CoordMode(ByRef command) {
-    if (command.Length() = 2) {
-        CoordMode,% command[2]
-    } else {
-        CoordMode,% command[2],% command[3]
-    }
-}
-
 
 AHKClick(ByRef command) {
     x := command[2]
@@ -1717,107 +1864,7 @@ AHKWinActivate(ByRef command) {
     return FormatNoValueResponse()
 }
 
-WinActivateBottom(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinActivateBottom, %title%
-    } else {
-        secondstowait := command[3]
-        WinActivateBottom, %title%, %secondstowait%
-    }
-}
 
-
-WinHide(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinHide, %title%
-    } else {
-        secondstowait := command[3]
-        WinHide, %title%, %secondstowait%
-    }
-}
-
-
-WinMaximize(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinMaximize, %title%
-    } else {
-        secondstowait := command[3]
-        WinMaximize, %title%, %secondstowait%
-    }
-}
-
-WinMinimize(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinMinimize, %title%
-    } else {
-        secondstowait := command[3]
-        WinMinimize, %title%, %secondstowait%
-    }
-}
-
-WinRestore(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinRestore, %title%
-    } else {
-        secondstowait := command[3]
-        WinRestore, %title%, %secondstowait%
-    }
-}
-
-WinShow(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinShow, %title%
-    } else {
-        secondstowait := command[3]
-        WinShow, %title%, %secondstowait%
-    }
-}
-
-WinWait(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinWait, %title%
-    } else {
-        secondstowait = command[3]
-        WinWait, %title%, %secondstowait%
-    }
-}
-
-WinWaitActive(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinWaitActive, %title%
-    } else {
-        secondstowait := command[3]
-        WinWaitActive, %title%, %secondstowait%
-    }
-}
-
-WinWaitNotActive(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinWaitNotActive, %title%
-    } else {
-        secondstowait = command[3]
-        WinWaitNotActive, %title%, %secondstowait%
-    }
-}
-
-WinWaitClose(ByRef command) {
-    title := command[2]
-    if (command.Length() = 2) {
-        WinWaitClose, %title%
-    } else {
-        secondstowait := command[3]
-        WinWaitClose, %title%, %secondstowait%
-    }
-}
 
 
 AHKWindowList(ByRef command) {
@@ -1859,23 +1906,7 @@ AHKWindowList(ByRef command) {
     return resp
 }
 
-WinSend(ByRef command) {
-    title := command[2]
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    str := Join(",", command*)
-    keys := Unescape(str)
-    ControlSend,,% keys, %title%
-}
 
-WinSendRaw(ByRef command) {
-    title := command[2]
-    command.RemoveAt(1)
-    command.RemoveAt(1)
-    str := Join(",", command*)
-    keys := Unescape(str)
-    ControlSendRaw,,% keys, %title%
-}
 
 AHKControlClick(ByRef command) {
     global EXCEPTIONRESPONSEMESSAGE
@@ -2057,27 +2088,6 @@ AHKWinFromMouse(ByRef command) {
     return FormatResponse(WINDOWRESPONSEMESSAGE, MouseWin)
 }
 
-;WinGet(ByRef command) {
-;    title := command[4]
-;    text := command[5]
-;    extitle := command[6]
-;    extext := command[7]
-;    WinGet, output,% command[3], %title%, %text%, %extitle%, %extext%
-;    return output
-;}
-
-;WinSet(ByRef command) {
-;    subcommand := command[2]
-;    title := command[4]
-;    value := command[3]
-;
-;    WinSet,%subcommand%,%value%,%title%
-;}
-
-;WinSetTitle(ByRef command) {
-;    newtitle := command[4]
-;    WinSetTitle,% command[2],, %newtitle%
-;}
 
 AHKWinIsAlwaysOnTop(ByRef command) {
     global BOOLEANRESPONSEMESSAGE
@@ -2092,19 +2102,6 @@ AHKWinIsAlwaysOnTop(ByRef command) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
 }
 
-WinClick(ByRef command) {
-    x := command[2]
-    y := command[3]
-    hwnd := command[4]
-    button := command[5]
-    n := command[6]
-    if (command.Length() = 6) {
-        ControlClick,x%x% y%y%,%hwnd%,,%button%,%n%
-    } else {
-        options := command[6]
-        ControlClick, x%x% y%y%, %hwnd%,,%button%, %n%, options
-    }
-}
 
 AHKWinMove(ByRef command) {
     title := command [2]
