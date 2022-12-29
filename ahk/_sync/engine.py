@@ -2432,39 +2432,17 @@ class AHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
     ) -> Union[None, FutureResult[None]]:
-        args: List[str]
-        args = [title, text, str(seconds_to_wait) if seconds_to_wait is not None else '', exclude_title, exclude_text]
-        if detect_hidden_windows is not None:
-            if detect_hidden_windows is True:
-                args.append('On')
-            elif detect_hidden_windows is False:
-                args.append('Off')
-            else:
-                raise TypeError(
-                    f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
-                )
-        else:
-            args.append('')
-        if title_match_mode is not None:
-            if isinstance(title_match_mode, tuple):
-                match_mode, match_speed = title_match_mode
-            elif title_match_mode in (1, 2, 3, 'RegEx'):
-                match_mode = title_match_mode
-                match_speed = ''
-            elif title_match_mode in ('Fast', 'Slow'):
-                match_mode = ''
-                match_speed = title_match_mode
-            else:
-                raise ValueError(
-                    f"Invalid value for title_match_mode argument. Expected 1, 2, 3, 'RegEx', 'Fast', 'Slow' or a tuple of these. Got {title_match_mode!r}"
-                )
-            args.append(str(match_mode))
-            args.append(str(match_speed))
-        else:
-            args.append('')
-            args.append('')
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        args.append(str(seconds_to_wait) if seconds_to_wait else '')
 
-        resp = self._transport.function_call('AHKWinClose', args=args, blocking=blocking)
+        resp = self._transport.function_call('AHKWinClose', args, engine=self, blocking=blocking)
         return resp
 
     # fmt: off
@@ -2482,6 +2460,7 @@ class AHK:
         *,
         title: str = '',
         text: str = '',
+        seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
         title_match_mode: Optional[TitleMatchMode] = None,
@@ -2496,6 +2475,8 @@ class AHK:
             title_match_mode=title_match_mode,
             detect_hidden_windows=detect_hidden_windows,
         )
+        args.append(str(seconds_to_wait) if seconds_to_wait else '')
+
         resp = self._transport.function_call('AHKWinKill', args, engine=self, blocking=blocking)
         return resp
 
@@ -2595,8 +2576,18 @@ class AHK:
         resp = self._transport.function_call('AHKWinRestore', args, engine=self, blocking=blocking)
         return resp
 
-
-    def win_wait(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]:
+    def win_wait(
+        self,
+        *,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        timeout: Optional[int] = None,
+        blocking: bool = True,
+    ) -> Union[Window, FutureResult[Window]]:
         args = self._format_win_args(
             title=title,
             text=text,

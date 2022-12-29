@@ -111,12 +111,12 @@ AHKWinExist(ByRef command) {
 AHKWinClose(ByRef command) {
     title := command[2]
     text := command[3]
-    secondstowait := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+    secondstowait := command[9]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -144,12 +144,12 @@ AHKWinClose(ByRef command) {
 AHKWinKill(ByRef command) {
     title := command[2]
     text := command[3]
-    secondstowait := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+    secondstowait := command[9]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -181,13 +181,12 @@ AHKWinWait(ByRef command) {
 
     title := command[2]
     text := command[3]
-    secondstowait := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
-    timeout := command[10]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+    timeout := command[9]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -201,10 +200,11 @@ AHKWinWait(ByRef command) {
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
-
-    WinWait, %title%, %text%, %timeout%, %extitle%, %extext%
-
+    if (timeout != "") {
+        WinWait, %title%, %text%, %timeout%, %extitle%, %extext%
+    } else {
+        WinWait, %title%, %text%,, %extitle%, %extext%
+    }
     if (ErrorLevel = 1) {
         resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
     } else {
@@ -222,12 +222,12 @@ AHKWinWait(ByRef command) {
 AHKWinMinimize(ByRef command) {
     title := command[2]
     text := command[3]
-    secondstowait := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -256,12 +256,11 @@ AHKWinMinimize(ByRef command) {
 AHKWinMaximize(ByRef command) {
     title := command[2]
     text := command[3]
-    secondstowait := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -290,12 +289,12 @@ AHKWinMaximize(ByRef command) {
 AHKWinRestore(ByRef command) {
     title := command[2]
     text := command[3]
-    secondstowait := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
