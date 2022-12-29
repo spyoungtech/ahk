@@ -321,13 +321,13 @@ class Window:
     @overload
     def get_position(self) -> Position: ...
     @overload
-    def get_position(self, blocking: Literal[False]) -> FutureResult[Optional[Position]]: ...
+    def get_position(self, *, blocking: Literal[False]) -> FutureResult[Optional[Position]]: ...
     @overload
-    def get_position(self, blocking: Literal[True]) -> Position: ...
+    def get_position(self, *, blocking: Literal[True]) -> Position: ...
     @overload
-    def get_position(self, blocking: bool = True) -> Union[Position, FutureResult[Optional[Position]]]: ...
+    def get_position(self, *, blocking: bool = True) -> Union[Position, FutureResult[Optional[Position]]]: ...
     # fmt: on
-    def get_position(self, blocking: bool = True) -> Union[Position, FutureResult[Optional[Position]]]:
+    def get_position(self, *, blocking: bool = True) -> Union[Position, FutureResult[Optional[Position]]]:
         resp = self._engine.win_get_position(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
@@ -344,13 +344,13 @@ class Window:
     @overload
     def activate(self) -> None: ...
     @overload
-    def activate(self, blocking: Literal[False]) -> FutureResult[None]: ...
+    def activate(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def activate(self, blocking: Literal[True]) -> None: ...
+    def activate(self, *, blocking: Literal[True]) -> None: ...
     @overload
-    def activate(self, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def activate(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
-    def activate(self, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def activate(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         resp = self._engine.win_activate(
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
@@ -358,6 +358,169 @@ class Window:
             title_match_mode=(1, 'Fast'),
         )
         return resp
+
+    # fmt: off
+    @overload
+    def bottom(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def bottom(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def bottom(self) -> None: ...
+    # fmt: on
+    def bottom(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_set_bottom(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    def disable(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def disable(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def disable(self) -> None: ...
+    # fmt: on
+    def disable(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_set_disable(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    def enable(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def enable(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def enable(self) -> None: ...
+    # fmt: on
+    def enable(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_set_enable(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    # fmt: off
+    @overload
+    def redraw(self, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def redraw(self, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def redraw(self) -> None: ...
+    @overload
+    def redraw(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def redraw(self, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._engine.win_set_redraw(
+            title=f'ahk_id {self._ahk_id}',
+            blocking=blocking,
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+        )
+
+    @overload
+    def set_style(self, style: str) -> bool:
+        ...
+
+    @overload
+    def set_style(self, style: str, *, blocking: Literal[True]) -> bool:
+        ...
+
+    @overload
+    def set_style(self, style: str, *, blocking: Literal[False]) -> FutureResult[bool]:
+        ...
+
+    @overload
+    def set_style(self, style: str, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+        ...
+
+    def set_style(self, style: str, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+        return self._engine.win_set_style(
+            style=style,
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+            blocking=blocking,
+        )
+
+    @overload
+    def set_ex_style(self, style: str) -> bool:
+        ...
+
+    @overload
+    def set_ex_style(self, style: str, *, blocking: Literal[False]) -> FutureResult[bool]:
+        ...
+
+    @overload
+    def set_ex_style(self, style: str, *, blocking: Literal[True]) -> bool:
+        ...
+
+    @overload
+    def set_ex_style(self, style: str, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+        ...
+
+    def set_ex_style(self, style: str, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+        return self._engine.win_set_ex_style(
+            style=style,
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+            blocking=blocking,
+        )
+
+    @overload
+    def set_region(self, options: str) -> bool:
+        ...
+
+    @overload
+    def set_region(self, options: str, *, blocking: Literal[True]) -> bool:
+        ...
+
+    @overload
+    def set_region(self, options: str, *, blocking: Literal[False]) -> FutureResult[bool]:
+        ...
+
+    @overload
+    def set_region(self, options: str, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+        ...
+
+    def set_region(self, options: str, *, blocking: bool = True) -> Union[bool, FutureResult[bool]]:
+        return self._engine.win_set_region(
+            options=options,
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+            blocking=blocking,
+        )
+
+    def set_transparent(
+        self, transparency: Union[int, Literal['Off']], *, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
+        return self._engine.win_set_transparent(
+            transparency=transparency,
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+            blocking=blocking,
+        )
+
+    def set_trans_color(
+        self, color: Union[int, str], *, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
+        return self._engine.win_set_trans_color(
+            color=color,
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+            blocking=blocking,
+        )
 
 
 class Control:

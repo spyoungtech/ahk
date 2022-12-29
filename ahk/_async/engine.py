@@ -2605,6 +2605,30 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKWinRestore', args, engine=self, blocking=blocking)
         return resp
 
+    async def win_wait(
+        self,
+        *,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        timeout: Optional[int] = None,
+        blocking: bool = True,
+    ) -> Union[AsyncWindow, AsyncFutureResult[AsyncWindow]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        args.append(str(timeout) if timeout else '')
+        resp = await self._transport.function_call('AHKWinWait', args, blocking=blocking, engine=self)
+        return resp
+
     async def block_forever(self) -> NoReturn:
         while True:
             await async_sleep(1)

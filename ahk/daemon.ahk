@@ -15,6 +15,8 @@ WINDOWCONTROLLISTRESPONSEMESSAGE := "009" ; WindowControlListResponseMessage
 WINDOWRESPONSEMESSAGE := "00a" ; WindowResponseMessage
 POSITIONRESPONSEMESSAGE := "00b" ; PositionResponseMessage
 FLOATRESPONSEMESSAGE := "00c" ; FloatResponseMessage
+TIMEOUTRESPONSEMESSAGE := "00d" ; TimeoutResponseMessage
+
 NOVALUE_SENTINEL := Chr(57344)
 
 FormatResponse(MessageType, payload) {
@@ -173,6 +175,49 @@ AHKWinKill(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKWinWait(ByRef command) {
+    global WINDOWRESPONSEMESSAGE
+    global TIMEOUTRESPONSEMESSAGE
+
+    title := command[2]
+    text := command[3]
+    secondstowait := command[4]
+    extitle := command[5]
+    extext := command[6]
+    detect_hw := command[7]
+    match_mode := command[8]
+    match_speed := command[9]
+    timeout := command[10]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+
+
+    WinWait, %title%, %text%, %timeout%, %extitle%, %extext%
+
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+    } else {
+        WinGet, output, ID
+        resp := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+    }
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return resp
+}
 
 AHKWinMinimize(ByRef command) {
     title := command[2]

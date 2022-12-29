@@ -229,10 +229,11 @@ class AHKExecutionException(Exception):
 
 class ExceptionResponseMessage(ResponseMessage):
     type = 'exception'
+    _exception_type: Type[Exception] = AHKExecutionException
 
     def unpack(self) -> NoReturn:
         s = self._raw_content.decode(encoding='utf-8')
-        raise AHKExecutionException(s)
+        raise self._exception_type(s)
 
 
 class WindowControlListResponseMessage(ResponseMessage):
@@ -310,6 +311,11 @@ class FloatResponseMessage(ResponseMessage):
         val = ast.literal_eval(s)
         assert isinstance(val, float)
         return val
+
+
+class TimeoutResponseMessage(ExceptionResponseMessage):
+    type = 'timeoutexception'
+    _exception_type = TimeoutError
 
 
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')

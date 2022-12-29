@@ -133,6 +133,7 @@ FunctionName = Literal[
     'AHKWinSetTransColor',
     'AHKWinSetTransparent',
     'AHKWindowList',
+    'AHKWinWait',
     'AHKClick',
     'CoordMode',
     'AHKSetCapsLockState',
@@ -470,6 +471,8 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKGetSendLevel']) -> int: ...
     @overload
     async def function_call(self, function_name: Literal['AHKSetSendLevel'], args: List[str]) -> None: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKWinWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[AsyncWindow, AsyncFutureResult[AsyncWindow]]: ...
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
