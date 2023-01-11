@@ -1974,13 +1974,16 @@ AHKControlClick(ByRef command) {
     ControlClick, %ctrl%, %title%, %text%, %button%, %click_count%, %options%, %exclude_title%, %exclude_text%
 
     if (ErrorLevel != 0) {
-        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Failed to click control")
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Failed to click control")
+    } else {
+        response := FormatNoValueResponse()
     }
 
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
-    return FormatNoValueResponse()
+
+    return response
 }
 
 AHKControlGetText(ByRef command) {
