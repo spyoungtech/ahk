@@ -140,19 +140,14 @@ FunctionName = Literal[
     'AHKWinWaitActive',
     'AHKWinWaitNotActive',
     'AHKClick',
-    'CoordMode',
     'AHKSetCapsLockState',
     'SetKeyDelay',
     'WinActivateBottom',
-    'WinClick',
-    'WinGet',
     'AHKWinGetClass',
-    'WinHide',
     'AHKWinKill',
     'AHKWinMaximize',
     'AHKWinMinimize',
     'AHKWinRestore',
-    'WinShow',
 ]
 
 
@@ -320,8 +315,6 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKMouseMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['CoordMode'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
-    @overload
     async def function_call(self, function_name: Literal['AHKClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKMouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
@@ -354,8 +347,6 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKWinClose'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['WinHide'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
-    @overload
     async def function_call(self, function_name: Literal['AHKWinKill'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKWinMaximize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
@@ -364,8 +355,6 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKWinRestore'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['WinShow'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
-    @overload
     async def function_call(self, function_name: Literal['AHKWindowList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKControlSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
@@ -373,8 +362,6 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKWinFromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKWinIsAlwaysOnTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[Optional[bool], AsyncFutureResult[Optional[bool]]]: ...
-    @overload
-    async def function_call(self, function_name: Literal['WinClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKWinMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload

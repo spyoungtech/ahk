@@ -132,19 +132,14 @@ FunctionName = Literal[
     'AHKWinWaitActive',
     'AHKWinWaitNotActive',
     'AHKClick',
-    'CoordMode',
     'AHKSetCapsLockState',
     'SetKeyDelay',
     'WinActivateBottom',
-    'WinClick',
-    'WinGet',
     'AHKWinGetClass',
-    'WinHide',
     'AHKWinKill',
     'AHKWinMaximize',
     'AHKWinMinimize',
     'AHKWinRestore',
-    'WinShow',
 ]
 
 
@@ -303,8 +298,6 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKMouseMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['CoordMode'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
-    @overload
     def function_call(self, function_name: Literal['AHKClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKMouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
@@ -337,8 +330,6 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinClose'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinHide'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
-    @overload
     def function_call(self, function_name: Literal['AHKWinKill'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinMaximize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
@@ -347,8 +338,6 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKWinRestore'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinShow'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
-    @overload
     def function_call(self, function_name: Literal['AHKWindowList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[List[Window], FutureResult[List[Window]]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKControlSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
@@ -356,8 +345,6 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKWinFromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinIsAlwaysOnTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Optional[bool], FutureResult[Optional[bool]]]: ...
-    @overload
-    def function_call(self, function_name: Literal['WinClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
