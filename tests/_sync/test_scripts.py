@@ -20,7 +20,7 @@ class TestScripts(unittest.TestCase):
         time.sleep(0.2)
 
     def test_script_missing_makes_tempfile(self):
-        with mock.patch('os.path.exists', new=unittest.mock.Mock(return_value=False)):
+        with unittest.mock.patch('os.path.exists', new=unittest.mock.Mock(return_value=False)):
             pos = self.ahk.get_mouse_position()
             path = pathlib.Path(self.ahk._transport._proc.runargs[-1])
             filename = path.name
