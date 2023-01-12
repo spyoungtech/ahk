@@ -1530,9 +1530,20 @@ AHKPixelSearch(ByRef command) {
 
 AHKMouseGetPos(ByRef command) {
     global COORDINATERESPONSEMESSAGE
+    coord_mode := command[2]
+    current_coord_mode := Format("{}", A_CoordModeMouse)
+    if (coord_mode != "") {
+        CoordMode, Mouse, %coord_mode%
+    }
     MouseGetPos, xpos, ypos
+
     payload := Format("({}, {})", xpos, ypos)
     resp := FormatResponse(COORDINATERESPONSEMESSAGE, payload)
+
+    if (coord_mode != "") {
+        CoordMode, Mouse, %current_coord_mode%
+    }
+
     return resp
 }
 

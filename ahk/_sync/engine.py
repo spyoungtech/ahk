@@ -602,18 +602,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def get_mouse_position(self, *, blocking: Literal[True]) -> Tuple[int, int]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[True]) -> Tuple[int, int]: ...
     @overload
-    def get_mouse_position(self, *, blocking: Literal[False]) -> FutureResult[Tuple[int, int]]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[False]) -> FutureResult[Tuple[int, int]]: ...
     @overload
-    def get_mouse_position(self) -> Tuple[int, int]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
     @overload
-    def get_mouse_position(self, *, blocking: bool = True) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
     # fmt: on
     def get_mouse_position(
-        self, *, blocking: bool = True
+        self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True
     ) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]:
-        resp = self._transport.function_call('AHKMouseGetPos', blocking=blocking)
+        if coord_mode:
+            args = [str(coord_mode)]
+        else:
+            args = []
+        resp = self._transport.function_call('AHKMouseGetPos', args, blocking=blocking)
         return resp
 
     @property

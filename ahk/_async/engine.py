@@ -606,18 +606,22 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def get_mouse_position(self, *, blocking: Literal[True]) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[True]) -> Tuple[int, int]: ...
     @overload
-    async def get_mouse_position(self, *, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
     @overload
-    async def get_mouse_position(self) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
     @overload
-    async def get_mouse_position(self, *, blocking: bool = True) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
     # fmt: on
     async def get_mouse_position(
-        self, *, blocking: bool = True
+        self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True
     ) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]:
-        resp = await self._transport.function_call('AHKMouseGetPos', blocking=blocking)
+        if coord_mode:
+            args = [str(coord_mode)]
+        else:
+            args = []
+        resp = await self._transport.function_call('AHKMouseGetPos', args, blocking=blocking)
         return resp
 
     @property
