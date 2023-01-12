@@ -606,18 +606,22 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def get_mouse_position(self, *, blocking: Literal[True]) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[True]) -> Tuple[int, int]: ...
     @overload
-    async def get_mouse_position(self, *, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
     @overload
-    async def get_mouse_position(self) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
     @overload
-    async def get_mouse_position(self, *, blocking: bool = True) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
+    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
     # fmt: on
     async def get_mouse_position(
-        self, *, blocking: bool = True
+        self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True
     ) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]:
-        resp = await self._transport.function_call('AHKMouseGetPos', blocking=blocking)
+        if coord_mode:
+            args = [str(coord_mode)]
+        else:
+            args = []
+        resp = await self._transport.function_call('AHKMouseGetPos', args, blocking=blocking)
         return resp
 
     @property
@@ -914,7 +918,8 @@ class AsyncAHK:
             if mode not in ('T', 'P'):
                 raise ValueError(f'Invalid value for mode parameter. Mode must be `T` or `P`. Got {mode!r}')
             args.append(mode)
-        return await self._transport.function_call('AHKKeyState', args, blocking=blocking)
+        resp = await self._transport.function_call('AHKKeyState', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload
@@ -1108,7 +1113,9 @@ class AsyncAHK:
                     f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
                 )
             args.append(str(state))
-        return await self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
+
+        resp = await self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
+        return resp
 
     async def set_volume(self, value: int, device_number: int = 1) -> None:
         raise NotImplementedError()

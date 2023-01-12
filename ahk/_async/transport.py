@@ -5,6 +5,7 @@ import atexit
 import os
 import subprocess
 import sys
+import tempfile
 import warnings
 from abc import ABC
 from abc import abstractmethod
@@ -37,6 +38,7 @@ from ahk._hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import Position
+from ahk._constants import DAEMON_SCRIPT as _DAEMON_SCRIPT
 
 from concurrent.futures import Future, ThreadPoolExecutor
 
@@ -483,7 +485,11 @@ class AsyncTransport(ABC):
         engine: Optional[AsyncAHK] = None,
     ) -> Any:
         if not self._started:
-            await self.init()
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                await self.init()
+            if caught_warnings:
+                for warning in caught_warnings:
+                    warnings.warn(warning.message, warning.category, stacklevel=3)
         request = RequestMessage(function_name=function_name, args=args)
         if blocking:
             return await self.send(request, engine=engine)
@@ -515,6 +521,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
     def __init__(self, *, executable_path: Union[str, os.PathLike[AnyStr]] = ''):
         self._proc: Optional[AsyncAHKProcess]
         self._proc = None
+        self._temp_script: Optional[str] = None
         super().__init__(executable_path=executable_path)
 
     async def init(self) -> None:
@@ -524,13 +531,35 @@ class AsyncDaemonProcessTransport(AsyncTransport):
 
     async def start(self) -> None:
         assert self._proc is None, 'cannot start a process twice'
-        daemon_script = os.path.abspath(os.path.join(os.path.dirname(__file__), '../daemon.ahk'))
-        runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
-        self._proc = AsyncAHKProcess(runargs=runargs)
-        await self._proc.start()
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            self._proc = await self._create_process()
+        if caught_warnings:
+            for warning in caught_warnings:
+                warnings.warn(warning.message, warning.category, stacklevel=2)
 
     async def _create_process(self) -> AsyncAHKProcess:
         daemon_script = os.path.abspath(os.path.join(os.path.dirname(__file__), '../daemon.ahk'))
+        if not os.path.exists(daemon_script):
+            if self._temp_script is None or not os.path.exists(self._temp_script):
+                warnings.warn(
+                    'daemon script not found. This is typically the result of a error in attempting to '
+                    'repackage/redistribute `ahk` without including its package data. Will attempt to run '
+                    'daemon script from tempfile, but this action may be blocked by some security tools. '
+                    'To fix this warning, make sure to include package data when bundling applications that '
+                    'depend on `ahk`',
+                    category=UserWarning,
+                    stacklevel=2,
+                )
+
+                with tempfile.NamedTemporaryFile(
+                    mode='w', prefix='python-ahk-', suffix='.ahk', delete=False
+                ) as tempscriptfile:
+                    tempscriptfile.write(_DAEMON_SCRIPT)  # XXX: can we make this async?
+                self._temp_script = tempscriptfile.name
+                daemon_script = self._temp_script
+                atexit.register(os.remove, tempscriptfile.name)
+            else:
+                daemon_script = self._temp_script
         runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
         proc = AsyncAHKProcess(runargs=runargs)
         await proc.start()

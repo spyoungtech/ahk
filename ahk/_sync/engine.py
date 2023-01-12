@@ -602,18 +602,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def get_mouse_position(self, *, blocking: Literal[True]) -> Tuple[int, int]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[True]) -> Tuple[int, int]: ...
     @overload
-    def get_mouse_position(self, *, blocking: Literal[False]) -> FutureResult[Tuple[int, int]]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[False]) -> FutureResult[Tuple[int, int]]: ...
     @overload
-    def get_mouse_position(self) -> Tuple[int, int]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
     @overload
-    def get_mouse_position(self, *, blocking: bool = True) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
+    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
     # fmt: on
     def get_mouse_position(
-        self, *, blocking: bool = True
+        self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True
     ) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]:
-        resp = self._transport.function_call('AHKMouseGetPos', blocking=blocking)
+        if coord_mode:
+            args = [str(coord_mode)]
+        else:
+            args = []
+        resp = self._transport.function_call('AHKMouseGetPos', args, blocking=blocking)
         return resp
 
     @property
@@ -903,7 +907,8 @@ class AHK:
             if mode not in ('T', 'P'):
                 raise ValueError(f'Invalid value for mode parameter. Mode must be `T` or `P`. Got {mode!r}')
             args.append(mode)
-        return self._transport.function_call('AHKKeyState', args, blocking=blocking)
+        resp = self._transport.function_call('AHKKeyState', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload
@@ -1097,7 +1102,9 @@ class AHK:
                     f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
                 )
             args.append(str(state))
-        return self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
+
+        resp = self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
+        return resp
 
     def set_volume(self, value: int, device_number: int = 1) -> None:
         raise NotImplementedError()
@@ -2751,16 +2758,15 @@ class AHK:
         resp = self._transport.function_call('AHKWinIsActive', args, blocking=blocking)
         return resp
 
-
     # fmt: off
     @overload
-    def win_move( self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    def win_move( self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def win_move( self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
+    def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def win_move( self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def win_move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def win_move(
         self,
