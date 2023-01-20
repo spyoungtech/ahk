@@ -45,7 +45,7 @@ class TestScreen(TestCase):
             self.skipTest('This test does not work in GitHub Actions')
             return
         self._show_in_thread()
-        time.sleep(2)
+        time.sleep(3)
         self.im.save('testimage.png')
         position = self.ahk.image_search('testimage.png')
         assert isinstance(position, tuple)
@@ -55,7 +55,7 @@ class TestScreen(TestCase):
             self.skipTest('This test does not work in GitHub Actions')
             return
         self._show_in_thread()
-        time.sleep(2)
+        time.sleep(3)
         self.im.save('testimage.png')
         position = self.ahk.image_search('testimage.png')
         assert position is not None

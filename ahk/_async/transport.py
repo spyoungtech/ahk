@@ -12,7 +12,6 @@ from abc import abstractmethod
 from io import BytesIO
 from shutil import which
 from typing import Any
-from typing import AnyStr
 from typing import Generic
 from typing import List
 from typing import Literal
@@ -21,6 +20,7 @@ from typing import overload
 from typing import Protocol
 from typing import runtime_checkable
 from typing import Tuple
+from typing import Type
 from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
@@ -34,11 +34,15 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias, TypeGuard
 
+import jinja2
+
 from ahk._hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import Position
-from ahk._constants import DAEMON_SCRIPT as _DAEMON_SCRIPT
+from ahk.message import _message_registry
+from ahk._constants import DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE
+from ahk.directives import Directive
 
 from concurrent.futures import Future, ThreadPoolExecutor
 
@@ -227,7 +231,7 @@ class AhkExecutableNotFoundError(EnvironmentError):
     pass
 
 
-def _resolve_executable_path(executable_path: Union[str, os.PathLike[AnyStr]] = '') -> str:
+def _resolve_executable_path(executable_path: str = '') -> str:
     if not executable_path:
         executable_path = (
             os.environ.get('AHK_PATH', '')
@@ -270,10 +274,16 @@ def _resolve_executable_path(executable_path: Union[str, os.PathLike[AnyStr]] = 
 class AsyncTransport(ABC):
     _started: bool = False
 
-    def __init__(self, /, executable_path: Union[str, os.PathLike[AnyStr]] = '', **kwargs: Any):
+    def __init__(
+        self,
+        /,
+        executable_path: str = '',
+        directives: Optional[list[Union[Directive, Type[Directive]]]] = None,
+        **kwargs: Any,
+    ):
         self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
         self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path)
-        pass
+        self._directives: list[Union[Directive, Type[Directive]]] = directives or []
 
     def add_hotkey(self, hotkey: Hotkey) -> None:
         with warnings.catch_warnings(record=True) as caught_warnings:
@@ -518,11 +528,16 @@ class AsyncTransport(ABC):
 
 
 class AsyncDaemonProcessTransport(AsyncTransport):
-    def __init__(self, *, executable_path: Union[str, os.PathLike[AnyStr]] = ''):
+    def __init__(
+        self,
+        *,
+        executable_path: str = '',
+        directives: Optional[list[Directive | Type[Directive]]] = None,
+    ):
         self._proc: Optional[AsyncAHKProcess]
         self._proc = None
         self._temp_script: Optional[str] = None
-        super().__init__(executable_path=executable_path)
+        super().__init__(executable_path=executable_path, directives=directives)
 
     async def init(self) -> None:
         await self.start()
@@ -537,29 +552,25 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             for warning in caught_warnings:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
 
-    async def _create_process(self) -> AsyncAHKProcess:
-        daemon_script = os.path.abspath(os.path.join(os.path.dirname(__file__), '../daemon.ahk'))
-        if not os.path.exists(daemon_script):
-            if self._temp_script is None or not os.path.exists(self._temp_script):
-                warnings.warn(
-                    'daemon script not found. This is typically the result of a error in attempting to '
-                    'repackage/redistribute `ahk` without including its package data. Will attempt to run '
-                    'daemon script from tempfile, but this action may be blocked by some security tools. '
-                    'To fix this warning, make sure to include package data when bundling applications that '
-                    'depend on `ahk`',
-                    category=UserWarning,
-                    stacklevel=2,
-                )
+    def _render_script(self) -> str:
+        template = jinja2.Environment(loader=jinja2.BaseLoader(), trim_blocks=True, autoescape=False).from_string(
+            _DAEMON_SCRIPT_TEMPLATE
+        )
+        message_types = {str(tom, 'utf-8'): c.__name__.upper() for tom, c in _message_registry.items()}
+        return template.render(directives=self._directives, message_types=message_types)
 
-                with tempfile.NamedTemporaryFile(
-                    mode='w', prefix='python-ahk-', suffix='.ahk', delete=False
-                ) as tempscriptfile:
-                    tempscriptfile.write(_DAEMON_SCRIPT)  # XXX: can we make this async?
-                self._temp_script = tempscriptfile.name
-                daemon_script = self._temp_script
-                atexit.register(os.remove, tempscriptfile.name)
-            else:
-                daemon_script = self._temp_script
+    async def _create_process(self) -> AsyncAHKProcess:
+        if self._temp_script is None or not os.path.exists(self._temp_script):
+            script_text = self._render_script()
+            with tempfile.NamedTemporaryFile(
+                mode='w', prefix='python-ahk-', suffix='.ahk', delete=False
+            ) as tempscriptfile:
+                tempscriptfile.write(script_text)  # XXX: can we make this async?
+            self._temp_script = tempscriptfile.name
+            daemon_script = self._temp_script
+            atexit.register(os.remove, tempscriptfile.name)
+        else:
+            daemon_script = self._temp_script
         runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
         proc = AsyncAHKProcess(runargs=runargs)
         await proc.start()

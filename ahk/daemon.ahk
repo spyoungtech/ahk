@@ -2,20 +2,20 @@
 #Persistent
 #SingleInstance Off
 
-RESPONSEMESSAGE := "000" ; ResponseMessage
-TUPLERESPONSEMESSAGE := "001" ; TupleResponseMessage
-COORDINATERESPONSEMESSAGE := "002" ; CoordinateResponseMessage
-INTEGERRESPONSEMESSAGE := "003" ; IntegerResponseMessage
-BOOLEANRESPONSEMESSAGE := "004" ; BooleanResponseMessage
-STRINGRESPONSEMESSAGE := "005" ; StringResponseMessage
-WINDOWIDLISTRESPONSEMESSAGE := "006" ; WindowIDListResponseMessage
-NOVALUERESPONSEMESSAGE := "007" ; NoValueResponseMessage
-EXCEPTIONRESPONSEMESSAGE := "008" ; ExceptionResponseMessage
-WINDOWCONTROLLISTRESPONSEMESSAGE := "009" ; WindowControlListResponseMessage
-WINDOWRESPONSEMESSAGE := "00a" ; WindowResponseMessage
-POSITIONRESPONSEMESSAGE := "00b" ; PositionResponseMessage
-FLOATRESPONSEMESSAGE := "00c" ; FloatResponseMessage
-TIMEOUTRESPONSEMESSAGE := "00d" ; TimeoutResponseMessage
+; BEGIN user-defined directives
+
+{% for directive in directives %}
+{{ directive }}
+
+{% endfor %}
+
+; END user-defined directives
+
+
+{% for tom, name in message_types.items() %}
+{{ name }} := "{{ tom }}"
+{% endfor %}
+
 
 NOVALUE_SENTINEL := Chr(57344)
 
@@ -1914,7 +1914,7 @@ AHKWinActivate(ByRef command) {
 
 
 AHKWindowList(ByRef command) {
-    global WINDOWIDLISTRESPONSEMESSAGE
+    global WINDOWLISTRESPONSEMESSAGE
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -1945,7 +1945,7 @@ AHKWindowList(ByRef command) {
         id := windows%A_Index%
         r .= id . "`,"
     }
-    resp := FormatResponse(WINDOWIDLISTRESPONSEMESSAGE, r)
+    resp := FormatResponse(WINDOWLISTRESPONSEMESSAGE, r)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%

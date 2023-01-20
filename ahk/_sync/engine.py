@@ -20,6 +20,7 @@ from typing import Union
 
 from .._hotkey import Hotkey
 from .._hotkey import Hotstring
+from ..directives import Directive
 
 if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias
@@ -118,14 +119,13 @@ class AHK:
         self,
         *,
         TransportClass: Optional[Type[Transport]] = None,
-        transport_options: Optional[Dict[str, Any]] = None,
+        directives: Optional[list[Directive | Type[Directive]]] = None,
+        executable_path: str = '',
     ):
-        if transport_options is None:
-            transport_options = {}
         if TransportClass is None:
             TransportClass = DaemonProcessTransport
         assert TransportClass is not None
-        transport = TransportClass(**transport_options)
+        transport = TransportClass(executable_path=executable_path, directives=directives)
         self._transport: Transport = transport
 
     def __getattr__(self, item: Any) -> Any:
