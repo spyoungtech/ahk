@@ -22,7 +22,7 @@ DAEMON_SCRIPT_TEMPLATE = r"""#NoEnv
 
 NOVALUE_SENTINEL := Chr(57344)
 
-FormatResponse(MessageType, payload) {
+FormatResponse(ByRef MessageType, ByRef payload) {
     newline_count := CountNewlines(payload)
     response := Format("{}`n{}`n{}`n", MessageType, newline_count, payload)
     return response
