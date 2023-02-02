@@ -34,7 +34,7 @@ import tempfile
 from jinja2 import Environment, BaseLoader
 from queue import Queue
 
-from ahk._utils import escape_sequence_replace
+from ahk._utils import hotkey_escape
 
 P_HotkeyCallbackParam = ParamSpec('P_HotkeyCallbackParam')
 T_HotkeyCallbackReturn = TypeVar('T_HotkeyCallbackReturn')
@@ -258,7 +258,7 @@ class Hotstring:
         self.replacement: Optional[str]
         self.callback: Optional[Callable[[], Any]]
         self.ex_handler: Optional[Callable[[str, Exception], Any]]
-        self._trigger: str = escape_sequence_replace(trigger)
+        self._trigger: str = hotkey_escape(trigger)
         self._options: str = options
         if callable(replacement_or_callback):
             self.replacement = None

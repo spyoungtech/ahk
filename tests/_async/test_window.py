@@ -118,9 +118,15 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
 
     async def test_send_literal_comma(self):
         await self.win.send('hello, world')
-        print(self.win)
         text = await self.win.get_text()
         assert 'hello, world' in text
+
+    async def test_type_escape(self):
+        await self.win.activate()
+        await self.ahk.type('hello, world!')
+        time.sleep(0.2)
+        text = await self.win.get_text()
+        assert '!' in text
 
     async def test_send_literal_tilde_n(self):
         expected_text = '```nim\nimport std/strformat\n```'

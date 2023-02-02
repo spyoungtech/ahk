@@ -8,7 +8,6 @@ from typing import Any
 from typing import Awaitable
 from typing import Callable
 from typing import Coroutine
-from typing import Dict
 from typing import List
 from typing import Literal
 from typing import NoReturn
@@ -20,6 +19,7 @@ from typing import Union
 
 from .._hotkey import Hotkey
 from .._hotkey import Hotstring
+from .._utils import type_escape
 from ..directives import Directive
 
 if sys.version_info < (3, 10):
@@ -131,18 +131,6 @@ class AsyncAHK:
         assert TransportClass is not None
         transport = TransportClass(executable_path=executable_path, directives=directives)
         self._transport: AsyncTransport = transport
-
-    def __getattr__(self, item: Any) -> Any:
-        deprecation_replacements: Dict[str, Any] = {'type': self.send_input}
-        if item in deprecation_replacements:
-            func = deprecation_replacements[item]
-            warnings.warn(
-                f'{item!r} is deprecated and will be removed in a future version. Use {func.__name__!r} instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return deprecation_replacements[item]
-        raise AttributeError(f'{self.__class__.__qualname__!r} object has no attribute {item!r}')
 
     def add_hotkey(
         self, keyname: str, callback: Callable[[], Any], *, ex_handler: Optional[Callable[[str, Exception], Any]] = None
@@ -1060,6 +1048,20 @@ class AsyncAHK:
     async def send_input(self, s: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         args = [s]
         resp = await self._transport.function_call('AHKSendInput', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def type(self, s: str) -> None: ...
+    @overload
+    async def type(self, s: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def type(self, s: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def type(self, s: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def type(self, s: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+        resp = await self.send_input(type_escape(s), blocking=blocking)
         return resp
 
     # fmt: off

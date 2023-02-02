@@ -1,4 +1,4 @@
-ESCAPE_SEQUENCE_MAP = {
+HOTKEY_ESCAPE_SEQUENCE_MAP = {
     '\n': '`n',
     '\t': '`t',
     '\r': '`r',
@@ -13,16 +13,24 @@ ESCAPE_SEQUENCE_MAP = {
     ':': '`:',
 }
 
+ESCAPE_SEQUENCE_MAP = {
+    '!': '{!}',
+    '^': '{^}',
+    '+': '{+}',
+    '{': '{{}',
+    '}': '{}}',
+    '#': '{#}',
+    '=': '{=}',
+}
+
 _TRANSLATION_TABLE = str.maketrans(ESCAPE_SEQUENCE_MAP)
 
+_HOTKEY_TRANSLATION_TABLE = str.maketrans(HOTKEY_ESCAPE_SEQUENCE_MAP)
 
-def escape_sequence_replace(s: str) -> str:
-    """
-    Replace Python escape sequences with AHK equivalent escape sequences
-    Additionally escapes some other characters for AHK escape sequences.
-    Intended for use with AHK Send command functions.
-    Note: This DOES NOT provide ANY assurances against accidental or malicious injection. Does NOT escape quotes.
-    >>> escape_sequence_replace('Hello, World!')
-    'Hello`, World{!}'
-    """
+
+def hotkey_escape(s: str) -> str:
+    return s.translate(_HOTKEY_TRANSLATION_TABLE)
+
+
+def type_escape(s: str) -> str:
     return s.translate(_TRANSLATION_TABLE)
