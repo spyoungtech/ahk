@@ -2295,6 +2295,16 @@ AHKEcho(ByRef command) {
     return FormatResponse(STRINGRESPONSEMESSAGE, command)
 }
 
+AHKTraytip(ByRef command) {
+    title := command[2]
+    text := command[3]
+    second := command[4]
+    option := command[5]
+
+    TrayTip, %title%, %text%, %second%, %option%
+    return FormatNoValueResponse()
+}
+
 
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance

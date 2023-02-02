@@ -1110,32 +1110,68 @@ class AHK:
         resp = self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
         return resp
 
-    def set_volume(self, value: int, device_number: int = 1, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def set_volume(
+        self, value: int, device_number: int = 1, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
         args = [str(device_number), str(value)]
         return self._transport.function_call('AHKSetVolume', args, blocking=blocking)
 
+    def show_traytip(
+        self,
+        title: str,
+        text: str,
+        second: float = 1.0,
+        type_id: int = 1,
+        *,
+        silent: bool = False,
+        large_icon: bool = False,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        option = type_id + (16 if silent else 0) + (32 if large_icon else 0)
+        args = [title, text, str(second), str(option)]
+        return self._transport.function_call('AHKTrayTip', args, blocking=blocking)
 
     def show_error_traytip(
         self,
         title: str,
         text: str,
         second: float = 1.0,
+        *,
         silent: bool = False,
         large_icon: bool = False,
         blocking: bool = True,
-    ) -> None:
-        raise NotImplementedError()
+    ) -> Union[None, FutureResult[None]]:
+        return self.show_traytip(
+            title=title, text=text, second=second, type_id=3, silent=silent, large_icon=large_icon, blocking=blocking
+        )
 
     def show_info_traytip(
         self,
         title: str,
         text: str,
         second: float = 1.0,
+        *,
         silent: bool = False,
         large_icon: bool = False,
         blocking: bool = True,
-    ) -> None:
-        raise NotImplementedError()
+    ) -> Union[None, FutureResult[None]]:
+        return self.show_traytip(
+            title=title, text=text, second=second, type_id=1, silent=silent, large_icon=large_icon, blocking=blocking
+        )
+
+    def show_warning_traytip(
+        self,
+        title: str,
+        text: str,
+        second: float = 1.0,
+        *,
+        silent: bool = False,
+        large_icon: bool = False,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        return self.show_traytip(
+            title=title, text=text, second=second, type_id=2, silent=silent, large_icon=large_icon, blocking=blocking
+        )
 
     def show_tooltip(
         self,
@@ -1145,17 +1181,6 @@ class AHK:
         *,
         second: float = 1.0,
         id: Optional[str] = None,
-        blocking: bool = True,
-    ) -> None:
-        raise NotImplementedError()
-
-    def show_warning_traytip(
-        self,
-        title: str,
-        text: str,
-        second: float = 1.0,
-        slient: bool = False,
-        large_icon: bool = False,
         blocking: bool = True,
     ) -> None:
         raise NotImplementedError()
@@ -2428,18 +2453,6 @@ class AHK:
         args.append(coord_mode or '')
         resp = self._transport.function_call('AHKPixelSearch', args, blocking=blocking)
         return resp
-
-    def show_traytip(
-        self,
-        title: str,
-        text: str,
-        second: float = 1.0,
-        type_id: int = 1,
-        slient: bool = False,
-        large_icon: bool = False,
-        blocking: bool = True,
-    ) -> None:
-        raise NotImplementedError()
 
     # fmt: off
     @overload
