@@ -817,7 +817,9 @@ class AsyncAHK:
         return windows[0] if windows else None
 
     async def get_volume(self, device_number: int = 1) -> float:
-        raise NotImplementedError()
+        args = [str(device_number)]
+        response = await self._transport.function_call('AHKGetVolume', args)
+        return response
 
     # fmt: off
     @overload

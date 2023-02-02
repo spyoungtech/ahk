@@ -2220,6 +2220,28 @@ AHKWinGetPos(ByRef command) {
     return response
 }
 
+
+AHKGetVolume(ByRef command) {
+    global EXCEPTIONRESPONSEMESSAGE
+    global FLOATRESPONSEMESSAGE
+    device_number := command[2]
+
+    try {
+    SoundGetWaveVolume, retval, %device_number%
+    } catch e {
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("There was a problem getting the volume with device of index {}", device_number))
+        return response
+    }
+    if (ErrorLevel = 1) {
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("There was a problem getting the volume with device of index {}", device_number))
+    } else {
+        response := FormatResponse(FLOATRESPONSEMESSAGE, Format("{}", retval))
+    }
+    return response
+}
+
+
+
 CountNewlines(ByRef s) {
     newline := "`n"
     StringReplace, s, s, %newline%, %newline%, UseErrorLevel

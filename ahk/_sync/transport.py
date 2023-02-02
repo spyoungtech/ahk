@@ -78,6 +78,7 @@ FunctionName = Literal[
     'AHKGetSendLevel',
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
+    'AHKGetVolume',
     'AHKImageSearch',
     'AHKKeyState',
     'AHKKeyWait',
@@ -446,7 +447,8 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKWinHide'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKWinIsActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, FutureResult[bool]]: ...
-
+    @overload
+    def function_call(self, function_name: Literal['AHKGetVolume'], args: Optional[List[str]] = None) -> float: ...
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     # @overload

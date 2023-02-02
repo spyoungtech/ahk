@@ -806,7 +806,9 @@ class AHK:
         return windows[0] if windows else None
 
     def get_volume(self, device_number: int = 1) -> float:
-        raise NotImplementedError()
+        args = [str(device_number)]
+        response = self._transport.function_call('AHKGetVolume', args)
+        return response
 
     # fmt: off
     @overload
