@@ -1110,8 +1110,10 @@ class AHK:
         resp = self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
         return resp
 
-    def set_volume(self, value: int, device_number: int = 1) -> None:
-        raise NotImplementedError()
+    def set_volume(self, value: int, device_number: int = 1, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        args = [str(device_number), str(value)]
+        return self._transport.function_call('AHKSetVolume', args, blocking=blocking)
+
 
     def show_error_traytip(
         self,
@@ -1158,16 +1160,25 @@ class AHK:
     ) -> None:
         raise NotImplementedError()
 
-    def sound_beep(self, frequency: int = 523, duration: int = 150) -> None:
-        raise NotImplementedError()
+    def sound_beep(
+        self, frequency: int = 523, duration: int = 150, *, blocking: bool = True
+    ) -> Optional[FutureResult[None]]:
+        args = [str(frequency), str(duration)]
+        self._transport.function_call('AHKSoundBeep', args, blocking=blocking)
+        return None
 
     def sound_get(
-        self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME'
-    ) -> None:
-        raise NotImplementedError()
+        self,
+        device_number: int = 1,
+        component_type: str = 'MASTER',
+        control_type: str = 'VOLUME',
+        blocking: bool = True,
+    ) -> Union[str, FutureResult[str]]:
+        args = [str(device_number), component_type, control_type]
+        return self._transport.function_call('AHKSoundGet', args, blocking=blocking)
 
-    def sound_play(self, filename: str, blocking: bool = True) -> None:
-        raise NotImplementedError()
+    def sound_play(self, filename: str, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        return self._transport.function_call('AHKSoundPlay', [filename], blocking=blocking)
 
     def sound_set(
         self,
@@ -1175,8 +1186,10 @@ class AHK:
         device_number: int = 1,
         component_type: str = 'MASTER',
         control_type: str = 'VOLUME',
-    ) -> None:
-        raise NotImplementedError()
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        args = [str(device_number), component_type, control_type, str(value)]
+        return self._transport.function_call('AHKSoundSet', args, blocking=blocking)
 
     # fmt: off
     @overload

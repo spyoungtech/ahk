@@ -2243,7 +2243,45 @@ AHKGetVolume(ByRef command) {
     return response
 }
 
+AHKSoundBeep(ByRef command) {
+    freq := command[2]
+    duration := command[3]
+    SoundBeep , %freq%, %duration%
+    return FormatNoValueResponse()
+}
 
+AHKSoundGet(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    device_number := command[2]
+    component_type := command[3]
+    control_type := command[4]
+
+    SoundGet, retval, %component_type%, %control_type%, %device_number%
+    ; TODO interpret return type
+    return FormatResponse(STRINGRESPONSEMESSAGE, Format("{}", retval))
+}
+
+AHKSoundSet(ByRef command) {
+    device_number := command[2]
+    component_type := command[3]
+    control_type := command[4]
+    value := command[5]
+    SoundSet, %value%, %component_type%, %control_type%, %device_number%
+    return FormatNoValueResponse()
+}
+
+AHKSoundPlay(ByRef command) {
+    filename := command[2]
+    SoundPlay, %filename%
+    return FormatNoValueResponse()
+}
+
+AHKSetVolume(ByRef command) {
+    device_number := command[2]
+    value := command[3]
+    SoundSetWaveVolume, %value%, %device_number%
+    return FormatNoValueResponse()
+}
 
 CountNewlines(ByRef s) {
     newline := "`n"

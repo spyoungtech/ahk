@@ -96,6 +96,11 @@ FunctionName = Literal[
     'AHKSetCoordMode',
     'AHKSetSendLevel',
     'AHKSetTitleMatchMode',
+    'AHKSetVolume',
+    'AHKSoundBeep',
+    'AHKSoundGet',
+    'AHKSoundPlay',
+    'AHKSoundSet',
     'AHKWinActivate',
     'AHKWinClose',
     'AHKWinExist',
@@ -449,6 +454,17 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKWinIsActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, FutureResult[bool]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKGetVolume'], args: Optional[List[str]] = None) -> float: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKSoundBeep'], args: Optional[List[str]] = None, *, blocking: bool = True) -> None: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKSoundGet'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKSoundPlay'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKSoundSet'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKSetVolume'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     # @overload
