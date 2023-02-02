@@ -3,7 +3,6 @@ from __future__ import annotations
 import atexit
 import functools
 import os
-import pathlib
 import re
 import subprocess
 import sys
@@ -23,6 +22,8 @@ from typing import Type
 from typing import TypeVar
 from typing import Union
 
+import jinja2
+
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
@@ -31,10 +32,10 @@ else:
 
 import logging
 import tempfile
-from jinja2 import Environment, BaseLoader
 from queue import Queue
 
 from ahk._utils import hotkey_escape
+from ._constants import HOTKEYS_SCRIPT_TEMPLATE as _HOTKEY_SCRIPT
 
 P_HotkeyCallbackParam = ParamSpec('P_HotkeyCallbackParam')
 T_HotkeyCallbackReturn = TypeVar('T_HotkeyCallbackReturn')
@@ -104,6 +105,15 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         self._callback_queue: Queue[Union[str, Type[STOP]]] = Queue()
         self._listener_thread: Optional[threading.Thread] = None
         self._dispatcher_thread: Optional[threading.Thread] = None
+        self._jinja_env: jinja2.Environment = jinja2.Environment(
+            loader=jinja2.PackageLoader('ahk', 'templates'), autoescape=False
+        )
+        self._template: jinja2.Template
+        try:
+            self._template = self._jinja_env.get_template('hotkeys.ahk')
+        except jinja2.TemplateNotFound:
+            warnings.warn('hotkey template not found, falling back to constant', category=UserWarning)
+            self._template = self._jinja_env.from_string(_HOTKEY_SCRIPT)
 
     def _do_callback(
         self, hotkey: str, cb: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
@@ -180,13 +190,7 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
             self._callback_queue.task_done()  # maybe _do_callback should handle this?
 
     def _render_hotkey_tempate(self) -> str:
-        env = Environment(loader=BaseLoader())
-        # TODO: make string constant for template
-        fname = pathlib.Path(__file__).parent / 'hotkeys.ahk'
-        template_string = open(fname).read()
-        template = env.from_string(template_string)
-        ret = template.render(hotkeys=list(self._hotkeys.values()), hotstrings=self._hotstrings.values())
-        assert isinstance(ret, str)
+        ret = self._template.render(hotkeys=list(self._hotkeys.values()), hotstrings=self._hotstrings.values())
         return ret
 
     def listener(self) -> None:

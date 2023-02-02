@@ -533,11 +533,33 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         *,
         executable_path: str = '',
         directives: Optional[list[Directive | Type[Directive]]] = None,
+        jinja_loader: Optional[jinja2.BaseLoader] = None,
+        template: Optional[jinja2.Template] = None,
     ):
         self._proc: Optional[AsyncAHKProcess]
         self._proc = None
         self._temp_script: Optional[str] = None
+        self.__template: jinja2.Template
+        self._jinja_env: jinja2.Environment
+        if jinja_loader is None:
+            self._jinja_env = jinja2.Environment(
+                loader=jinja2.PackageLoader('ahk', 'templates'), trim_blocks=True, autoescape=False
+            )
+        else:
+            self._jinja_env = jinja2.Environment(loader=jinja_loader, trim_blocks=True, autoescape=False)
+        try:
+            self.__template = self._jinja_env.get_template('daemon.ahk')
+        except jinja2.TemplateNotFound:
+            warnings.warn('daemon template missing. Falling back to constant', category=UserWarning)
+            self.__template = self._jinja_env.from_string(_DAEMON_SCRIPT_TEMPLATE)
+        if template is None:
+            template = self.__template
+        self._template: jinja2.Template = template
         super().__init__(executable_path=executable_path, directives=directives)
+
+    @property
+    def template(self) -> jinja2.Template:
+        return self._template
 
     async def init(self) -> None:
         await self.start()
@@ -552,12 +574,12 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             for warning in caught_warnings:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
 
-    def _render_script(self) -> str:
-        template = jinja2.Environment(loader=jinja2.BaseLoader(), trim_blocks=True, autoescape=False).from_string(
-            _DAEMON_SCRIPT_TEMPLATE
-        )
+    def _render_script(self, template: Optional[jinja2.Template] = None, **kwargs: Any) -> str:
+        if template is None:
+            template = self._template
+        kwargs['daemon'] = self.__template
         message_types = {str(tom, 'utf-8'): c.__name__.upper() for tom, c in _message_registry.items()}
-        return template.render(directives=self._directives, message_types=message_types)
+        return template.render(directives=self._directives, message_types=message_types, **kwargs)
 
     async def _create_process(self) -> AsyncAHKProcess:
         if self._temp_script is None or not os.path.exists(self._temp_script):
@@ -593,8 +615,6 @@ class AsyncDaemonProcessTransport(AsyncTransport):
                 part = await proc.readline()
                 content_buffer.write(part)
             content = content_buffer.getvalue()[:-1]
-        except Exception:
-            raise
         finally:
             try:
                 proc.kill()

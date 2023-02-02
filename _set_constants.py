@@ -2,8 +2,11 @@ import shutil
 import subprocess
 import sys
 
-with open('ahk/daemon.ahk') as f:
+with open('ahk/templates/daemon.ahk') as f:
     daemon_script = f.read()
+
+with open('ahk/templates/hotkeys.ahk') as hotkeyfile:
+    hotkey_script = hotkeyfile.read()
 
 GIT_EXECUTABLE = shutil.which('git')
 
@@ -15,6 +18,9 @@ new_contents = f'''\
 # DO NOT EDIT BY HAND
 
 DAEMON_SCRIPT_TEMPLATE = r"""{daemon_script}
+"""
+
+HOTKEYS_SCRIPT_TEMPLATE = r"""{hotkey_script}
 """
 '''
 

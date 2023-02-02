@@ -1,4 +1,4 @@
-include ahk/daemon.ahk
+include ahk/templates/daemon.ahk
 include ahk/hotkeys.ahk
 include docs/README.md
 include buildunasync.py
