@@ -34,6 +34,12 @@ FormatNoValueResponse() {
     return FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
 }
 
+FormatBinaryResponse(ByRef bin) {
+    global B64BINARYRESPONSEMESSAGE
+    b64 := b64encode(bin)
+    return FormatResponse(B64BINARYRESPONSEMESSAGE, b64)
+}
+
 AHKSetDetectHiddenWindows(ByRef command) {
     value := command[2]
     DetectHiddenWindows, %value%
@@ -2232,7 +2238,7 @@ AHKGetVolume(ByRef command) {
     try {
     SoundGetWaveVolume, retval, %device_number%
     } catch e {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("There was a problem getting the volume with device of index {}", device_number))
+        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("There was a problem getting the volume with device of index {} ({})", device_number, e.message))
         return response
     }
     if (ErrorLevel = 1) {
@@ -2305,6 +2311,28 @@ AHKTraytip(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKGetClipboard(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    return FormatResponse(STRINGRESPONSEMESSAGE, Clipboard)
+}
+
+AHKGetClipboardAll(ByRef command) {
+    data := ClipboardAll
+    return FormatBinaryResponse(data)
+}
+
+AHKSetClipboard(ByRef command) {
+    text := command[2]
+    Clipboard := text
+    return FormatNoValueResponse()
+}
+
+AHKSetClipboardAll(ByRef command) {
+    ; TODO there should be a way for us to accept a base64 string instead
+    filename := command[2]
+    FileRead, Clipboard, %filename%
+    return FormatNoValueResponse()
+}
 
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
@@ -2317,7 +2345,12 @@ b64decode(ByRef pszString) {
     ;  [out]     DWORD  *pdwSkip,   A pointer to a DWORD value that receives the number of characters skipped to reach the beginning of the -----BEGIN ...----- header. If no header is present, then the DWORD is set to zero. This parameter is optional and can be NULL if it is not needed.
     ;  [out]     DWORD  *pdwFlags   A pointer to a DWORD value that receives the flags actually used in the conversion. These are the same flags used for the dwFlags parameter. In many cases, these will be the same flags that were passed in the dwFlags parameter. If dwFlags contains one of the following flags, this value will receive a flag that indicates the actual format of the string. This parameter is optional and can be NULL if it is not needed.
 
+    if (pszString = "") {
+        return ""
+    }
+
     cchString := StrLen(pszString)
+
     dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
     getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
     buff_size := 0 ; The function will write to this variable on our first call
@@ -2344,6 +2377,44 @@ b64decode(ByRef pszString) {
     return StrGet(&ret, "UTF-8")
 }
 
+b64encode(ByRef data) {
+    ; REF: https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptbinarytostringa
+    ;  [in]            const BYTE *pbBinary: A pointer to the array of bytes to be converted into a string.
+    ;  [in]            DWORD      cbBinary: The number of elements in the pbBinary array.
+    ;  [in]            DWORD      dwFlags: Specifies the format of the resulting formatted string (see table in REF)
+    ;  [out, optional] LPSTR      pszString: A pointer to the string, or null (0) to calculate size
+    ;  [in, out]       DWORD      *pcchString: A pointer to a DWORD variable that contains the size, in TCHARs, of the pszString buffer
+
+
+    cbBinary := StrLen(data) * (A_IsUnicode ? 2 : 1)
+    if (cbBinary = 0) {
+        return ""
+    }
+    dwFlags := 0x00000001 | 0x40000000  ; CRYPT_STRING_BASE64 + CRYPT_STRING_NOCRLF
+
+    ; First step is to get the size so we can set the capacity of our return buffer correctly
+    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Ptr", 0, "UIntP", buff_size)
+    if (success = 0) {
+        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
+        throw Exception(msg, -1)
+    }
+
+
+    VarSetCapacity(ret, buff_size * (A_IsUnicode ? 2 : 1))
+
+    ; Now we do the conversion to base64 and rteturn the string
+
+    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", buff_size)
+    if (success = 0) {
+        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
+        throw Exception(msg, -1)
+    }
+    return ret
+}
+
+
+; End of included content
+
 CommandArrayFromQuery(ByRef text) {
     decoded_commands := []
     encoded_array := StrSplit(text, "|")
@@ -2367,7 +2438,8 @@ Loop {
         func := commandArray[1]
         pyresp := %func%(commandArray)
     } catch e {
-        pyresp := FormatResponse(EXCEPTIONRESPONSEMESSAGE, e)
+        message := Format("Error occurred in {}. The error message was: {}", e.What, e.message)
+        pyresp := FormatResponse(EXCEPTIONRESPONSEMESSAGE, message)
     }
 
     if (pyresp) {

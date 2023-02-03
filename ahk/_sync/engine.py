@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
+import tempfile
 import time
 import warnings
 from typing import Any
@@ -2827,6 +2829,35 @@ class AHK:
         args.append(str(height) if height is not None else '')
         resp = self._transport.function_call('AHKWinMove', args, blocking=blocking)
         return resp
+
+    def get_clipboard(self, blocking: bool = True) -> Union[str, FutureResult[str]]:
+        return self._transport.function_call('AHKGetClipboard', blocking=blocking)
+
+    def set_clipboard(self, s: str, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        args = [s]
+        return self._transport.function_call('AHKSetClipboard', args, blocking=blocking)
+
+    def get_clipboard_all(self) -> Union[bytes, FutureResult[bytes]]:
+        return self._transport.function_call('AHKGetClipboardAll')
+
+    def set_clipboard_all(self, contents: bytes, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        # TODO: figure out how to do this without a tempfile
+        if not isinstance(contents, bytes):
+            raise ValueError('Malformed data. Can only set bytes as returned by get_clipboard_all')
+        if not contents:
+            raise ValueError('bytes must be nonempty. If you want to clear the clipboard, use `set_clipboard`')
+        with tempfile.NamedTemporaryFile(prefix='ahk-python', suffix='.clip', mode='wb', delete=False) as f:
+            f.write(contents)
+
+        args = [f'*c {f.name}']
+        try:
+            resp = self._transport.function_call('AHKSetClipboardAll', args, blocking=blocking)
+            return resp
+        finally:
+            try:
+                os.remove(f.name)
+            except Exception:
+                pass
 
     def block_forever(self) -> NoReturn:
         while True:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import base64
 import itertools
 import string
 import sys
@@ -316,6 +317,15 @@ class FloatResponseMessage(ResponseMessage):
 class TimeoutResponseMessage(ExceptionResponseMessage):
     type = 'timeoutexception'
     _exception_type = TimeoutError
+
+
+class B64BinaryResponseMessage(ResponseMessage):
+    type = 'binary'
+
+    def unpack(self) -> bytes:
+        b64_content = self._raw_content
+        b = base64.b64decode(b64_content)
+        return b
 
 
 T_RequestMessageType = TypeVar('T_RequestMessageType', bound='RequestMessage')

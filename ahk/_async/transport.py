@@ -82,6 +82,8 @@ FunctionName = Literal[
     'AHKControlGetPos',
     'AHKControlGetText',
     'AHKControlSend',
+    'AHKGetClipboard',
+    'AHKGetClipboardAll',
     'AHKGetCoordMode',
     'AHKGetSendLevel',
     'AHKGetTitleMatchMode',
@@ -100,8 +102,10 @@ FunctionName = Literal[
     'AHKSendInput',
     'AHKSendPlay',
     'AHKSendRaw',
-    'AHKSetDetectHiddenWindows',
+    'AHKSetClipboard',
+    'AHKSetClipboardAll',
     'AHKSetCoordMode',
+    'AHKSetDetectHiddenWindows',
     'AHKSetSendLevel',
     'AHKSetTitleMatchMode',
     'AHKSetVolume',
@@ -484,6 +488,14 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKSetVolume'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKTrayTip'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKGetClipboard'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKGetClipboardAll'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[bytes, AsyncFutureResult[bytes]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKSetClipboard'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKSetClipboardAll'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
