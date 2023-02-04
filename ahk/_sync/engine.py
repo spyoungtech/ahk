@@ -954,7 +954,9 @@ class AHK:
         resp = self._transport.function_call('AHKKeyWait', args)
         return resp
 
-    def run_script(self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None) -> Union[str, FutureResult[str]]:
+    def run_script(
+        self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
+    ) -> Union[str, FutureResult[str]]:
         return self._transport.run_script(script_text_or_path, blocking=blocking, timeout=timeout)
 
     def set_send_level(self, level: int) -> None:
@@ -2837,8 +2839,8 @@ class AHK:
         args = [s]
         return self._transport.function_call('AHKSetClipboard', args, blocking=blocking)
 
-    def get_clipboard_all(self) -> Union[bytes, FutureResult[bytes]]:
-        return self._transport.function_call('AHKGetClipboardAll')
+    def get_clipboard_all(self, blocking: bool = True) -> Union[bytes, FutureResult[bytes]]:
+        return self._transport.function_call('AHKGetClipboardAll', blocking=blocking)
 
     def set_clipboard_all(self, contents: bytes, blocking: bool = True) -> Union[None, FutureResult[None]]:
         # TODO: figure out how to do this without a tempfile
@@ -2858,6 +2860,11 @@ class AHK:
                 os.remove(f.name)
             except Exception:
                 pass
+
+    def block_input(
+        self, value: Literal['On', 'Off', 'Default', 'Send', 'Mouse', 'MouseMove', 'MouseMoveOff', 'SendAndMouse'], /  # flake8: noqa
+    ) -> None:
+        self._transport.function_call('AHKBlockInput', args=[value])
 
     def block_forever(self) -> NoReturn:
         while True:

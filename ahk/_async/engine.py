@@ -2850,8 +2850,8 @@ class AsyncAHK:
         args = [s]
         return await self._transport.function_call('AHKSetClipboard', args, blocking=blocking)
 
-    async def get_clipboard_all(self) -> Union[bytes, AsyncFutureResult[bytes]]:
-        return await self._transport.function_call('AHKGetClipboardAll')
+    async def get_clipboard_all(self, blocking: bool = True) -> Union[bytes, AsyncFutureResult[bytes]]:
+        return await self._transport.function_call('AHKGetClipboardAll', blocking=blocking)
 
     async def set_clipboard_all(self, contents: bytes, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         # TODO: figure out how to do this without a tempfile
@@ -2871,6 +2871,13 @@ class AsyncAHK:
                 os.remove(f.name)
             except Exception:
                 pass
+
+    async def block_input(
+        self,
+        value: Literal['On', 'Off', 'Default', 'Send', 'Mouse', 'MouseMove', 'MouseMoveOff', 'SendAndMouse'],
+        /,  # flake8: noqa
+    ) -> None:
+        await self._transport.function_call('AHKBlockInput', args=[value])
 
     async def block_forever(self) -> NoReturn:
         while True:

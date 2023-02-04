@@ -27,7 +27,6 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
         time.sleep(0.2)
 
     async def test_hotkey(self):
-
         with mock.MagicMock(return_value=None) as m:
             self.ahk.add_hotkey('a', callback=m)
             self.ahk.start_hotkeys()

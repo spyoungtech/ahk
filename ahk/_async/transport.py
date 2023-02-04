@@ -78,6 +78,7 @@ SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
 
 FunctionName = Literal[
+    'AHKBlockInput',
     'AHKControlClick',
     'AHKControlGetPos',
     'AHKControlGetText',
@@ -534,6 +535,8 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKSetClipboard'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKSetClipboardAll'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKBlockInput'], args: Optional[List[str]], *, blocking: bool = True) -> None: ...
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...

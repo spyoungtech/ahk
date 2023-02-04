@@ -35,6 +35,7 @@ class TestScripts(unittest.TestCase):
         assert self.ahk.win_get(title='Untitled - Notepad') is None
         script = 'Run Notepad'
         self.ahk.run_script(script)
+        time.sleep(0.3)
         notepad = self.ahk.win_get(title='Untitled - Notepad')
         assert notepad is not None
 
@@ -42,6 +43,7 @@ class TestScripts(unittest.TestCase):
         assert self.ahk.win_get(title='Untitled - Notepad') is None
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False) as f:
             f.write('Run Notepad')
+        time.sleep(0.3)
         self.ahk.run_script(f.name)
         notepad = self.ahk.win_get(title='Untitled - Notepad')
         assert notepad is not None
@@ -49,9 +51,11 @@ class TestScripts(unittest.TestCase):
     def test_run_script_file_unicode(self):
         assert self.ahk.win_get(title='Untitled - Notepad') is None
         subprocess.Popen('Notepad')
+        time.sleep(0.3)
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False, encoding='utf-8') as f:
             f.write('WinActivate, "Untitled - Notepad"\nSend א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ')
         self.ahk.run_script(f.name)
+        time.sleep(0.3)
         notepad = self.ahk.win_get(title='*Untitled - Notepad')
         assert notepad is not None
         text = notepad.get_text()
