@@ -43,8 +43,8 @@ class TestScripts(unittest.TestCase):
         assert self.ahk.win_get(title='Untitled - Notepad') is None
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False) as f:
             f.write('Run Notepad')
-        time.sleep(0.3)
         self.ahk.run_script(f.name)
+        time.sleep(0.3)
         notepad = self.ahk.win_get(title='Untitled - Notepad')
         assert notepad is not None
 

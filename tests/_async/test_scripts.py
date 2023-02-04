@@ -43,8 +43,8 @@ class TestScripts(unittest.IsolatedAsyncioTestCase):
         assert await self.ahk.win_get(title='Untitled - Notepad') is None
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False) as f:
             f.write('Run Notepad')
-        time.sleep(0.3)
         await self.ahk.run_script(f.name)
+        time.sleep(0.3)
         notepad = await self.ahk.win_get(title='Untitled - Notepad')
         assert notepad is not None
 
