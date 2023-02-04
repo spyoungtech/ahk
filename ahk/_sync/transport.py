@@ -181,10 +181,29 @@ def async_assert_send_nonblocking_type_correct(
     return True
 
 
+class Communicable(Protocol):
+    runargs: List[str]
+
+    def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
+        ...
+
+    def acommunicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
+        ...
+
+    @property
+    def returncode(self) -> Optional[int]:
+        ...
+
+
 class SyncAHKProcess:
     def __init__(self, runargs: List[str]):
         self.runargs = runargs
         self._proc: Optional[SyncIOProcess] = None
+
+    @property
+    def returncode(self) -> Optional[int]:
+        assert self._proc is not None
+        return self._proc.returncode
 
     def start(self) -> None:
         self._proc = sync_create_process(self.runargs)
@@ -213,6 +232,17 @@ class SyncAHKProcess:
     def kill(self) -> None:
         assert self._proc is not None, 'no process to kill'
         self._proc.kill()
+
+    def acommunicate(
+        self, input_bytes: Optional[bytes] = None, timeout: Optional[int] = None
+    ) -> Tuple[bytes, bytes]:
+        assert self._proc is not None
+        return self._proc.communicate(input=input_bytes)
+
+    def communicate(self, input_bytes: Optional[bytes] = None, timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
+        assert self._proc is not None
+        assert isinstance(self._proc, subprocess.Popen)
+        return self._proc.communicate(input=input_bytes, timeout=timeout)
 
 
 
@@ -304,6 +334,12 @@ class Transport(ABC):
     def init(self) -> None:
         self._started = True
         return None
+
+    @abstractmethod
+    def run_script(
+        self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
+    ) -> Union[str, FutureResult[str]]:
+        return NotImplemented
 
     # fmt: off
     @overload
@@ -590,18 +626,29 @@ class DaemonProcessTransport(Transport):
         message_types = {str(tom, 'utf-8'): c.__name__.upper() for tom, c in _message_registry.items()}
         return template.render(directives=self._directives, message_types=message_types, **kwargs)
 
-    def _create_process(self) -> SyncAHKProcess:
-        if self._temp_script is None or not os.path.exists(self._temp_script):
-            script_text = self._render_script()
-            with tempfile.NamedTemporaryFile(
-                mode='w', prefix='python-ahk-', suffix='.ahk', delete=False
-            ) as tempscriptfile:
-                tempscriptfile.write(script_text)  # XXX: can we make this async?
-            self._temp_script = tempscriptfile.name
-            daemon_script = self._temp_script
-            atexit.register(os.remove, tempscriptfile.name)
+    def _create_process(
+        self, template: Optional[jinja2.Template] = None, **template_kwargs: Any
+    ) -> SyncAHKProcess:
+        if template is None:
+            if template_kwargs:
+                raise ValueError('template kwargs were specified, but no template was provided')
+            if self._temp_script is None or not os.path.exists(self._temp_script):
+                script_text = self._render_script()
+                with tempfile.NamedTemporaryFile(
+                    mode='w', prefix='python-ahk-', suffix='.ahk', delete=False
+                ) as tempscriptfile:
+                    tempscriptfile.write(script_text)  # XXX: can we make this async?
+                self._temp_script = tempscriptfile.name
+                daemon_script = self._temp_script
+                atexit.register(os.remove, tempscriptfile.name)
+            else:
+                daemon_script = self._temp_script
         else:
-            daemon_script = self._temp_script
+            script_text = self._render_script(template=template, **template_kwargs)
+            with tempfile.NamedTemporaryFile(mode='w', prefix='python-ahk-', suffix='.ahk', delete=False) as tempscript:
+                tempscript.write(script_text)
+            daemon_script = tempscript.name
+            atexit.register(os.remove, tempscript.name)
         runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
         proc = SyncAHKProcess(runargs=runargs)
         proc.start()
@@ -669,6 +716,46 @@ class DaemonProcessTransport(Transport):
         content = content_buffer.getvalue()[:-1]
         response = ResponseMessage.from_bytes(content, engine=engine)
         return response.unpack()  # type: ignore
+
+
+    def _sync_run_nonblocking(
+        self,
+        proc: Communicable,
+        script_bytes: Optional[bytes],
+        timeout: Optional[int] = None,
+    ) -> FutureResult[str]:
+        pool = ThreadPoolExecutor(max_workers=1)
+
+        def f() -> str:
+            stdout, stderr = proc.communicate(script_bytes, timeout)
+            if proc.returncode != 0:
+                assert proc.returncode is not None
+                raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
+            return stdout.decode('utf-8')
+
+        fut = pool.submit(f)
+        pool.shutdown(wait=False)
+        return FutureResult(fut)
+
+    def run_script(
+        self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
+    ) -> Union[str, FutureResult[str]]:
+        if os.path.exists(script_text_or_path):
+            script_bytes = None
+            runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', script_text_or_path]
+        else:
+            script_bytes = bytes(script_text_or_path, 'utf-8')
+            runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', '*']
+        proc = SyncAHKProcess(runargs)
+        proc.start()
+        if blocking:
+            stdout, stderr = proc.acommunicate(script_bytes, timeout=timeout)
+            if proc.returncode != 0:
+                assert proc.returncode is not None
+                raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
+            return stdout.decode('utf-8')
+        else:
+            return self._sync_run_nonblocking(proc, script_bytes, timeout=timeout)
 
 
 if TYPE_CHECKING:

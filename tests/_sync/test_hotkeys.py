@@ -20,7 +20,8 @@ class TestMouseAsync(TestCase):
     def tearDown(self) -> None:
         self.ahk.stop_hotkeys()
         self.ahk._transport._proc.kill()
-        subprocess.run(['TASKKILL', '/F', '/IM', 'AutoHotkey.exe'])
+        subprocess.run(['TASKKILL', '/F', '/IM', 'AutoHotkey.exe'], capture_output=True)
+        time.sleep(0.2)
 
     def test_hotkey(self):
 

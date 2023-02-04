@@ -1,20 +1,25 @@
+{% block daemon_script %}
+{% block directives %}
 #NoEnv
 #Persistent
 #SingleInstance Off
 
 ; BEGIN user-defined directives
-
+{% block user_directives %}
 {% for directive in directives %}
 {{ directive }}
 
 {% endfor %}
 
 ; END user-defined directives
+{% endblock user_directives %}
+{% endblock directives %}
 
-
+{% block message_types %}
 {% for tom, name in message_types.items() %}
 {{ name }} := "{{ tom }}"
 {% endfor %}
+{% endblock message_types %}
 
 
 NOVALUE_SENTINEL := Chr(57344)
@@ -38,12 +43,15 @@ FormatBinaryResponse(ByRef bin) {
 }
 
 AHKSetDetectHiddenWindows(ByRef command) {
+    {% block AHKSetDetectHiddenWindows %}
     value := command[2]
     DetectHiddenWindows, %value%
     return FormatNoValueResponse()
+    {% endblock AHKSetDetectHiddenWindows %}
 }
 
 AHKSetTitleMatchMode(ByRef command) {
+    {% block AHKSetTitleMatchMode %}
     val1 := command[2]
     val2 := command[3]
     if (val1 != "") {
@@ -53,30 +61,40 @@ AHKSetTitleMatchMode(ByRef command) {
         SetTitleMatchMode, %val2%
     }
     return FormatNoValueResponse()
+    {% endblock AHKSetTitleMatchMode %}
 }
 
 AHKGetTitleMatchMode(ByRef command) {
+    {% block AHKGetTitleMatchMode %}
     global STRINGRESPONSEMESSAGE
     return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchMode)
+    {% endblock AHKGetTitleMatchMode %}
 }
 
 AHKGetTitleMatchSpeed(ByRef command) {
+    {% block AHKGetTitleMatchSpeed %}
     global STRINGRESPONSEMESSAGE
     return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchModeSpeed)
+    {% endblock AHKGetTitleMatchSpeed %}
 }
 
 AHKSetSendLevel(ByRef command) {
+    {% block AHKSetSendLevel %}
     level := command[2]
     SendLevel, %level%
     return FormatNoValueResponse()
+    {% endblock AHKSetSendLevel %}
 }
 
 AHKGetSendLevel(ByRef command) {
+    {% block AHKGetSendLevel %}
     global INTEGERRESPONSEMESSAGE
     return FormatResponse(INTEGERRESPONSEMESSAGE, A_SendLevel)
+    {% endblock AHKGetSendLevel %}
 }
 
 AHKWinExist(ByRef command) {
+    {% block AHKWinExist %}
     global BOOLEANRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -112,9 +130,11 @@ AHKWinExist(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return resp
+    {% endblock AHKWinExist %}
 }
 
 AHKWinClose(ByRef command) {
+    {% block AHKWinClose %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -145,9 +165,11 @@ AHKWinClose(ByRef command) {
     WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
     return FormatNoValueResponse()
+    {% endblock AHKWinClose %}
 }
 
 AHKWinKill(ByRef command) {
+    {% block AHKWinKill %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -179,9 +201,11 @@ AHKWinKill(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return FormatNoValueResponse()
+    {% endblock AHKWinKill %}
 }
 
 AHKWinWait(ByRef command) {
+    {% block AHKWinWait %}
     global WINDOWRESPONSEMESSAGE
     global TIMEOUTRESPONSEMESSAGE
 
@@ -223,10 +247,12 @@ AHKWinWait(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return resp
+    {% endblock AHKWinWait %}
 }
 
 
 AHKWinWaitActive(ByRef command) {
+    {% block AHKWinWaitActive %}
     global WINDOWRESPONSEMESSAGE
     global TIMEOUTRESPONSEMESSAGE
 
@@ -268,10 +294,12 @@ AHKWinWaitActive(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return resp
+    {% endblock AHKWinWaitActive %}
 }
 
 
 AHKWinWaitNotActive(ByRef command) {
+    {% block AHKWinWaitNotActive %}
     global WINDOWRESPONSEMESSAGE
     global TIMEOUTRESPONSEMESSAGE
 
@@ -313,11 +341,13 @@ AHKWinWaitNotActive(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return resp
+    {% endblock AHKWinWaitNotActive %}
 }
 
 
 
 AHKWinMinimize(ByRef command) {
+    {% block AHKWinMinimize %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -349,9 +379,11 @@ AHKWinMinimize(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return FormatNoValueResponse()
+    {% endblock AHKWinMinimize %}
 }
 
 AHKWinMaximize(ByRef command) {
+    {% block AHKWinMaximize %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -382,9 +414,11 @@ AHKWinMaximize(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return FormatNoValueResponse()
+    {% endblock AHKWinMaximize %}
 }
 
 AHKWinRestore(ByRef command) {
+    {% block AHKWinRestore %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -416,9 +450,11 @@ AHKWinRestore(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return FormatNoValueResponse()
+    {% endblock AHKWinRestore %}
 }
 
 AHKWinIsActive(ByRef command) {
+    {% block AHKWinIsActive %}
     global BOOLEANRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -451,9 +487,11 @@ AHKWinIsActive(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinIsActive %}
 }
 
 AHKWinGetID(ByRef command) {
+    {% block AHKWinGetID %}
     global WINDOWRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -488,9 +526,11 @@ AHKWinGetID(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetID %}
 }
 
 AHKWinGetTitle(ByRef command) {
+    {% block AHKWinGetTitle %}
     global STRINGRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -521,9 +561,11 @@ AHKWinGetTitle(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return FormatResponse(STRINGRESPONSEMESSAGE, text)
+    {% endblock AHKWinGetTitle %}
 }
 
 AHKWinGetIDLast(ByRef command) {
+    {% block AHKWinGetIDLast %}
     global WINDOWRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -558,10 +600,12 @@ AHKWinGetIDLast(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetIDLast %}
 }
 
 
 AHKWinGetPID(ByRef command) {
+    {% block AHKWinGetPID %}
     global INTEGERRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -596,10 +640,12 @@ AHKWinGetPID(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetPID %}
 }
 
 
 AHKWinGetProcessName(ByRef command) {
+    {% block AHKWinGetProcessName %}
     global STRINGRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -611,12 +657,12 @@ AHKWinGetProcessName(ByRef command) {
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
-if (match_mode != "") {
-    SetTitleMatchMode, %match_mode%
-}
-if (match_speed != "") {
-    SetTitleMatchMode, %match_speed%
-}
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
@@ -634,9 +680,11 @@ if (match_speed != "") {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetProcessName %}
 }
 
 AHKWinGetProcessPath(ByRef command) {
+    {% block AHKWinGetProcessPath %}
     global STRINGRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -671,10 +719,12 @@ AHKWinGetProcessPath(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetProcessPath %}
 }
 
 
 AHKWinGetCount(ByRef command) {
+    {% block AHKWinGetCount %}
     global INTEGERRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -709,11 +759,13 @@ AHKWinGetCount(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetCount %}
 }
 
 
 
 AHKWinGetMinMax(ByRef command) {
+    {% block AHKWinGetMinMax %}
     global INTEGERRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -748,9 +800,11 @@ AHKWinGetMinMax(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetMinMax %}
 }
 
 AHKWinGetControlList(ByRef command) {
+    {% block AHKWinGetControlList %}
     global EXCEPTIONRESPONSEMESSAGE
     global WINDOWCONTROLLISTRESPONSEMESSAGE
     title := command[2]
@@ -809,9 +863,11 @@ AHKWinGetControlList(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetControlList %}
 }
 
 AHKWinGetTransparent(ByRef command) {
+    {% block AHKWinGetTransparent %}
     global INTEGERRESPONSEMESSAGE
     title := command[2]
     text := command[3]
@@ -842,8 +898,10 @@ AHKWinGetTransparent(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetTransparent %}
 }
 AHKWinGetTransColor(ByRef command) {
+    {% block AHKWinGetTransColor %}
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
     global NOVALUERESPONSEMESSAGE
@@ -876,8 +934,10 @@ AHKWinGetTransColor(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetTransColor %}
 }
 AHKWinGetStyle(ByRef command) {
+    {% block AHKWinGetStyle %}
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
     global NOVALUERESPONSEMESSAGE
@@ -910,8 +970,10 @@ AHKWinGetStyle(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetStyle %}
 }
 AHKWinGetExStyle(ByRef command) {
+    {% block AHKWinGetExStyle %}
     global STRINGRESPONSEMESSAGE
     global INTEGERRESPONSEMESSAGE
     global NOVALUERESPONSEMESSAGE
@@ -944,9 +1006,11 @@ AHKWinGetExStyle(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetExStyle %}
 }
 
 AHKWinGetText(ByRef command) {
+    {% block AHKWinGetText %}
     global STRINGRESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     title := command[2]
@@ -983,11 +1047,13 @@ AHKWinGetText(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetText %}
 }
 
 
 
 AHKWinSetTitle(ByRef command) {
+    {% block AHKWinSetTitle %}
     new_title := command[2]
     title := command[3]
     text := command[4]
@@ -1015,9 +1081,11 @@ AHKWinSetTitle(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetTitle %}
 }
 
 AHKWinSetAlwaysOnTop(ByRef command) {
+    {% block AHKWinSetAlwaysOnTop %}
     toggle := command[2]
     title := command[3]
     text := command[4]
@@ -1046,9 +1114,11 @@ AHKWinSetAlwaysOnTop(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetAlwaysOnTop %}
 }
 
 AHKWinSetBottom(ByRef command) {
+    {% block AHKWinSetBottom %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1077,9 +1147,11 @@ AHKWinSetBottom(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetBottom %}
 }
 
 AHKWinShow(ByRef command) {
+    {% block AHKWinShow %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1108,9 +1180,11 @@ AHKWinShow(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinShow %}
 }
 
 AHKWinHide(ByRef command) {
+    {% block AHKWinHide %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1139,10 +1213,12 @@ AHKWinHide(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinHide %}
 }
 
 
 AHKWinSetTop(ByRef command) {
+    {% block AHKWinSetTop %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1171,9 +1247,11 @@ AHKWinSetTop(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetTop %}
 }
 
 AHKWinSetEnable(ByRef command) {
+    {% block AHKWinSetEnable %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1202,9 +1280,11 @@ AHKWinSetEnable(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetEnable %}
 }
 
 AHKWinSetDisable(ByRef command) {
+    {% block AHKWinSetDisable %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1233,9 +1313,11 @@ AHKWinSetDisable(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetDisable %}
 }
 
 AHKWinSetRedraw(ByRef command) {
+    {% block AHKWinSetRedraw %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1264,9 +1346,11 @@ AHKWinSetRedraw(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetRedraw %}
 }
 
 AHKWinSetStyle(ByRef command) {
+    {% block AHKWinSetStyle %}
     global BOOLEANRESPONSEMESSAGE
     style := command[2]
     title := command[3]
@@ -1302,9 +1386,11 @@ AHKWinSetStyle(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return resp
+    {% endblock AHKWinSetStyle %}
 }
 
 AHKWinSetExStyle(ByRef command) {
+    {% block AHKWinSetExStyle %}
     global BOOLEANRESPONSEMESSAGE
     style := command[2]
     title := command[3]
@@ -1340,9 +1426,11 @@ AHKWinSetExStyle(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return resp
+    {% endblock AHKWinSetExStyle %}
 }
 
 AHKWinSetRegion(ByRef command) {
+    {% block AHKWinSetRegion %}
     global BOOLEANRESPONSEMESSAGE
     options := command[2]
     title := command[3]
@@ -1378,9 +1466,11 @@ AHKWinSetRegion(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return resp
+    {% endblock AHKWinSetRegion %}
 }
 
 AHKWinSetTransparent(ByRef command) {
+    {% block AHKWinSetTransparent %}
     global BOOLEANRESPONSEMESSAGE
     transparency := command[2]
     title := command[3]
@@ -1411,9 +1501,11 @@ AHKWinSetTransparent(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetTransparent %}
 }
 
 AHKWinSetTransColor(ByRef command) {
+    {% block AHKWinSetTransColor %}
     global BOOLEANRESPONSEMESSAGE
     color := command[2]
     title := command[3]
@@ -1441,9 +1533,11 @@ AHKWinSetTransColor(ByRef command) {
 
     WinSet, TransColor, %color%, %title%, %text%, %extitle%, %extext%
     return FormatNoValueResponse()
+    {% endblock AHKWinSetTransColor %}
 }
 
 AHKImageSearch(ByRef command) {
+    {% block AHKImageSearch %}
     global COORDINATERESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     imagepath := command[6]
@@ -1468,9 +1562,11 @@ AHKImageSearch(ByRef command) {
     }
 
     return s
+    {% endblock AHKImageSearch %}
 }
 
 AHKPixelGetColor(ByRef command) {
+    {% block AHKPixelGetColor %}
     global STRINGRESPONSEMESSAGE
     x := command[2]
     y := command[3]
@@ -1491,9 +1587,11 @@ AHKPixelGetColor(ByRef command) {
     }
 
     return FormatResponse(STRINGRESPONSEMESSAGE, color)
+    {% endblock AHKPixelGetColor %}
 }
 
 AHKPixelSearch(ByRef command) {
+    {% block AHKPixelSearch %}
     global COORDINATERESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     x1 := command[2]
@@ -1528,10 +1626,12 @@ AHKPixelSearch(ByRef command) {
         return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Unexpected error. This is probably a bug. Please report this at https://github.com/spyoungtech/ahk/issues")
     }
 
+    {% endblock AHKPixelSearch %}
 }
 
 
 AHKMouseGetPos(ByRef command) {
+    {% block AHKMouseGetPos %}
     global COORDINATERESPONSEMESSAGE
     coord_mode := command[2]
     current_coord_mode := Format("{}", A_CoordModeMouse)
@@ -1548,9 +1648,11 @@ AHKMouseGetPos(ByRef command) {
     }
 
     return resp
+    {% endblock AHKMouseGetPos %}
 }
 
 AHKKeyState(ByRef command) {
+    {% block AHKKeyState %}
     global INTEGERRESPONSEMESSAGE
     global FLOATRESPONSEMESSAGE
     global STRINGRESPONSEMESSAGE
@@ -1578,9 +1680,11 @@ AHKKeyState(ByRef command) {
         return FormatResponse(STRINGRESPONSEMESSAGE, state)
 
     return FormatResponse(EXCEPTIONRESPONSEMESSAGE, state)
+    {% endblock AHKKeyState %}
 }
 
 AHKMouseMove(ByRef command) {
+    {% block AHKMouseMove %}
     x := command[2]
     y := command[3]
     speed := command[4]
@@ -1592,10 +1696,12 @@ AHKMouseMove(ByRef command) {
     }
     resp := FormatNoValueResponse()
     return resp
+    {% endblock AHKMouseMove %}
 }
 
 
 AHKClick(ByRef command) {
+    {% block AHKClick %}
     x := command[2]
     y := command[3]
     button := command[4]
@@ -1617,9 +1723,11 @@ AHKClick(ByRef command) {
 
     return FormatNoValueResponse()
 
+    {% endblock AHKClick %}
 }
 
 AHKGetCoordMode(ByRef command) {
+    {% block AHKGetCoordMode %}
     global STRINGRESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     target := command[2]
@@ -1640,17 +1748,21 @@ AHKGetCoordMode(ByRef command) {
         return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeMenu)
     }
     return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Invalid coord mode")
+    {% endblock AHKGetCoordMode %}
 }
 
 AHKSetCoordMode(ByRef command) {
+    {% block AHKSetCoordMode %}
     target := command[2]
     relative_to := command[3]
     CoordMode, %target%, %relative_to%
 
     return FormatNoValueResponse()
+    {% endblock AHKSetCoordMode %}
 }
 
 AHKMouseClickDrag(ByRef command) {
+    {% block AHKMouseClickDrag %}
     button := command[2]
     x1 := command[3]
     y1 := command[4]
@@ -1674,32 +1786,42 @@ AHKMouseClickDrag(ByRef command) {
 
     return FormatNoValueResponse()
 
+    {% endblock AHKMouseClickDrag %}
 }
 
 RegRead(ByRef command) {
+    {% block RegRead %}
     keyname := command[3]
     RegRead, output, %keyname%, command[4]
     return output
+    {% endblock RegRead %}
 }
 
 SetRegView(ByRef command) {
+    {% block SetRegView %}
     view := command[2]
     SetRegView, %view%
+    {% endblock SetRegView %}
 }
 
 RegWrite(ByRef command) {
+    {% block RegWrite %}
     valuetype := command[2]
     keyname := command[3]
 
     RegWrite, %valuetype%, %keyname%, command[4]
+    {% endblock RegWrite %}
 }
 
 RegDelete(ByRef command) {
+    {% block RegDelete %}
     keyname := command[2]
     RegDelete, %keyname%, command[3]
+    {% endblock RegDelete %}
 }
 
 AHKKeyWait(ByRef command) {
+    {% block AHKKeyWait %}
     global INTEGERRESPONSEMESSAGE
     keyname := command[2]
     if (command.Length() = 2) {
@@ -1709,24 +1831,19 @@ AHKKeyWait(ByRef command) {
         KeyWait,% keyname,% options
     }
     return FormatResponse(INTEGERRESPONSEMESSAGE, ErrorLevel)
+    {% endblock AHKKeyWait %}
 }
 
 SetKeyDelay(ByRef command) {
+    {% block SetKeyDelay %}
     SetKeyDelay, command[2], command[3]
+    {% endblock SetKeyDelay %}
 }
 
-Join(sep, params*) {
-    for index,param in params
-        str := param . sep
-    return SubStr(str, 1, -StrLen(sep))
-}
 
-Unescape(HayStack) {
-    ReplacedStr := StrReplace(Haystack, "``n" , "`n")
-    return ReplacedStr
-}
 
 AHKSend(ByRef command) {
+    {% block AHKSend %}
     str := command[2]
     key_delay := command[3]
     key_press_duration := command[4]
@@ -1743,9 +1860,11 @@ AHKSend(ByRef command) {
         SetKeyDelay, %current_delay%, %current_key_duration%
     }
     return FormatNoValueResponse()
+    {% endblock AHKSend %}
 }
 
 AHKSendRaw(ByRef command) {
+    {% block AHKSendRaw %}
     str := command[2]
     key_delay := command[3]
     key_press_duration := command[4]
@@ -1762,9 +1881,11 @@ AHKSendRaw(ByRef command) {
         SetKeyDelay, %current_delay%, %current_key_duration%
     }
     return FormatNoValueResponse()
+    {% endblock AHKSendRaw %}
 }
 
 AHKSendInput(ByRef command) {
+    {% block AHKSendInput %}
     str := command[2]
     key_delay := command[3]
     key_press_duration := command[4]
@@ -1781,10 +1902,12 @@ AHKSendInput(ByRef command) {
         SetKeyDelay, %current_delay%, %current_key_duration%
     }
     return FormatNoValueResponse()
+    {% endblock AHKSendInput %}
 }
 
 
 AHKSendEvent(ByRef command) {
+    {% block AHKSendEvent %}
     str := command[2]
     key_delay := command[3]
     key_press_duration := command[4]
@@ -1801,9 +1924,11 @@ AHKSendEvent(ByRef command) {
         SetKeyDelay, %current_delay%, %current_key_duration%
     }
     return FormatNoValueResponse()
+    {% endblock AHKSendEvent %}
 }
 
 AHKSendPlay(ByRef command) {
+    {% block AHKSendPlay %}
     str := command[2]
     key_delay := command[3]
     key_press_duration := command[4]
@@ -1820,9 +1945,11 @@ AHKSendPlay(ByRef command) {
         SetKeyDelay, %current_delay%, %current_key_duration%
     }
     return FormatNoValueResponse()
+    {% endblock AHKSendPlay %}
 }
 
 AHKSetCapsLockState(ByRef command) {
+    {% block AHKSetCapsLockState %}
     state := command[2]
     if (state = "") {
         SetCapsLockState % !GetKeyState("CapsLock", "T")
@@ -1830,21 +1957,25 @@ AHKSetCapsLockState(ByRef command) {
         SetCapsLockState, %state%
     }
     return FormatNoValueResponse()
+    {% endblock AHKSetCapsLockState %}
 }
 
 HideTrayTip(ByRef command) {
+    {% block HideTrayTip %}
     TrayTip ; Attempt to hide it the normal way.
     if SubStr(A_OSVersion,1,3) = "10." {
         Menu Tray, NoIcon
         Sleep 200 ; It may be necessary to adjust this sleep.
         Menu Tray, Icon
     }
+    {% endblock HideTrayTip %}
 }
 
 
 
 
 AHKWinGetClass(ByRef command) {
+    {% block AHKWinGetClass %}
     global STRINGRESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     title := command[2]
@@ -1881,9 +2012,11 @@ AHKWinGetClass(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
+    {% endblock AHKWinGetClass %}
 }
 
 AHKWinActivate(ByRef command) {
+    {% block AHKWinActivate %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -1914,12 +2047,14 @@ AHKWinActivate(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return FormatNoValueResponse()
+    {% endblock AHKWinActivate %}
 }
 
 
 
 
 AHKWindowList(ByRef command) {
+    {% block AHKWindowList %}
     global WINDOWLISTRESPONSEMESSAGE
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
@@ -1956,11 +2091,13 @@ AHKWindowList(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return resp
+    {% endblock AHKWindowList %}
 }
 
 
 
 AHKControlClick(ByRef command) {
+    {% block AHKControlClick %}
     global EXCEPTIONRESPONSEMESSAGE
     ctrl := command[2]
     title := command[3]
@@ -2001,9 +2138,11 @@ AHKControlClick(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return response
+    {% endblock AHKControlClick %}
 }
 
 AHKControlGetText(ByRef command) {
+    {% block AHKControlGetText %}
     global STRINGRESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     ctrl := command[2]
@@ -2041,10 +2180,12 @@ AHKControlGetText(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return response
+    {% endblock AHKControlGetText %}
 }
 
 
 AHKControlGetPos(ByRef command) {
+    {% block AHKControlGetPos %}
     global POSITIONRESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
     ctrl := command[2]
@@ -2085,9 +2226,11 @@ AHKControlGetPos(ByRef command) {
     return response
 
 
+    {% endblock AHKControlGetPos %}
 }
 
 AHKControlSend(ByRef command) {
+    {% block AHKControlSend %}
     ctrl := command[2]
     keys := command[3]
     title := command[4]
@@ -2116,12 +2259,14 @@ AHKControlSend(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return FormatNoValueResponse()
+    {% endblock AHKControlSend %}
 }
 
 
 
 
 AHKWinFromMouse(ByRef command) {
+    {% block AHKWinFromMouse %}
     global WINDOWRESPONSEMESSAGE
     MouseGetPos,,, MouseWin
 
@@ -2130,10 +2275,12 @@ AHKWinFromMouse(ByRef command) {
     }
 
     return FormatResponse(WINDOWRESPONSEMESSAGE, MouseWin)
+    {% endblock AHKWinFromMouse %}
 }
 
 
 AHKWinIsAlwaysOnTop(ByRef command) {
+    {% block AHKWinIsAlwaysOnTop %}
     global BOOLEANRESPONSEMESSAGE
     title := command[2]
     WinGet, ExStyle, ExStyle, %title%
@@ -2144,10 +2291,12 @@ AHKWinIsAlwaysOnTop(ByRef command) {
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
     else
         return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+    {% endblock AHKWinIsAlwaysOnTop %}
 }
 
 
 AHKWinMove(ByRef command) {
+    {% block AHKWinMove %}
     title := command[2]
     text := command[3]
     extitle := command[4]
@@ -2182,9 +2331,11 @@ AHKWinMove(ByRef command) {
 
     return FormatNoValueResponse()
 
+    {% endblock AHKWinMove %}
 }
 
 AHKWinGetPos(ByRef command) {
+    {% block AHKWinGetPos %}
     global POSITIONRESPONSEMESSAGE
     global EXCEPTIONRESPONSEMESSAGE
 
@@ -2224,10 +2375,12 @@ AHKWinGetPos(ByRef command) {
     SetTitleMatchMode, %current_match_speed%
 
     return response
+    {% endblock AHKWinGetPos %}
 }
 
 
 AHKGetVolume(ByRef command) {
+    {% block AHKGetVolume %}
     global EXCEPTIONRESPONSEMESSAGE
     global FLOATRESPONSEMESSAGE
     device_number := command[2]
@@ -2244,16 +2397,20 @@ AHKGetVolume(ByRef command) {
         response := FormatResponse(FLOATRESPONSEMESSAGE, Format("{}", retval))
     }
     return response
+    {% endblock AHKGetVolume %}
 }
 
 AHKSoundBeep(ByRef command) {
+    {% block AHKSoundBeep %}
     freq := command[2]
     duration := command[3]
     SoundBeep , %freq%, %duration%
     return FormatNoValueResponse()
+    {% endblock AHKSoundBeep %}
 }
 
 AHKSoundGet(ByRef command) {
+    {% block AHKSoundGet %}
     global STRINGRESPONSEMESSAGE
     device_number := command[2]
     component_type := command[3]
@@ -2262,28 +2419,35 @@ AHKSoundGet(ByRef command) {
     SoundGet, retval, %component_type%, %control_type%, %device_number%
     ; TODO interpret return type
     return FormatResponse(STRINGRESPONSEMESSAGE, Format("{}", retval))
+    {% endblock AHKSoundGet %}
 }
 
 AHKSoundSet(ByRef command) {
+    {% block AHKSoundSet %}
     device_number := command[2]
     component_type := command[3]
     control_type := command[4]
     value := command[5]
     SoundSet, %value%, %component_type%, %control_type%, %device_number%
     return FormatNoValueResponse()
+    {% endblock AHKSoundSet %}
 }
 
 AHKSoundPlay(ByRef command) {
+    {% block AHKSoundPlay %}
     filename := command[2]
     SoundPlay, %filename%
     return FormatNoValueResponse()
+    {% endblock AHKSoundPlay %}
 }
 
 AHKSetVolume(ByRef command) {
+    {% block AHKSetVolume %}
     device_number := command[2]
     value := command[3]
     SoundSetWaveVolume, %value%, %device_number%
     return FormatNoValueResponse()
+    {% endblock AHKSetVolume %}
 }
 
 CountNewlines(ByRef s) {
@@ -2294,11 +2458,14 @@ CountNewlines(ByRef s) {
 }
 
 AHKEcho(ByRef command) {
+    {% block AHKEcho %}
     global STRINGRESPONSEMESSAGE
     return FormatResponse(STRINGRESPONSEMESSAGE, command)
+    {% endblock AHKEcho %}
 }
 
 AHKTraytip(ByRef command) {
+    {% block AHKTraytip %}
     title := command[2]
     text := command[3]
     second := command[4]
@@ -2306,29 +2473,38 @@ AHKTraytip(ByRef command) {
 
     TrayTip, %title%, %text%, %second%, %option%
     return FormatNoValueResponse()
+    {% endblock AHKTraytip %}
 }
 
 AHKGetClipboard(ByRef command) {
+    {% block AHKGetClipboard %}
     global STRINGRESPONSEMESSAGE
     return FormatResponse(STRINGRESPONSEMESSAGE, Clipboard)
+    {% endblock AHKGetClipboard %}
 }
 
 AHKGetClipboardAll(ByRef command) {
+    {% block AHKGetClipboardAll %}
     data := ClipboardAll
     return FormatBinaryResponse(data)
+    {% endblock AHKGetClipboardAll %}
 }
 
 AHKSetClipboard(ByRef command) {
+    {% block AHKSetClipboard %}
     text := command[2]
     Clipboard := text
     return FormatNoValueResponse()
+    {% endblock AHKSetClipboard %}
 }
 
 AHKSetClipboardAll(ByRef command) {
+    {% block AHKSetClipboardAll %}
     ; TODO there should be a way for us to accept a base64 string instead
     filename := command[2]
     FileRead, Clipboard, %filename%
     return FormatNoValueResponse()
+    {% endblock AHKSetClipboardAll %}
 }
 
 b64decode(ByRef pszString) {
@@ -2425,6 +2601,11 @@ CommandArrayFromQuery(ByRef text) {
     return decoded_commands
 }
 
+
+{% block before_autoexecute %}
+{% endblock before_autoexecute %}
+
+{% block autoexecute %}
 stdin  := FileOpen("*", "r `n", "UTF-8")  ; Requires [v1.1.17+]
 pyresp := ""
 
@@ -2433,16 +2614,25 @@ Loop {
     commandArray := CommandArrayFromQuery(query)
     try {
         func := commandArray[1]
+        {% block before_function %}
+        {% endblock before_function %}
         pyresp := %func%(commandArray)
+        {% block after_function %}
+        {% endblock after_function %}
     } catch e {
+        {% block function_error_handle %}
         message := Format("Error occurred in {}. The error message was: {}", e.What, e.message)
         pyresp := FormatResponse(EXCEPTIONRESPONSEMESSAGE, message)
+        {% endblock function_error_handle %}
     }
-
+    {% block send_response %}
     if (pyresp) {
         FileAppend, %pyresp%, *, UTF-8
     } else {
         msg := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("Unknown Error when calling {}", func))
         FileAppend, %msg%, *, UTF-8
     }
+    {% endblock send_response %}
 }
+{% endblock autoexecute %}
+{% endblock daemon_script %}

@@ -12,7 +12,6 @@ from ahk import AHK
 
 class TestScreen(TestCase):
     def setUp(self) -> None:
-        print('setting up')
         self.ahk = AHK()
         self.before_windows = self.ahk.list_windows()
         self.im = Image.new('RGB', (20, 20))
@@ -21,12 +20,9 @@ class TestScreen(TestCase):
         time.sleep(1)
 
     def tearDown(self):
-        print('tearing down')
         for win in self.ahk.list_windows():
             if win not in self.before_windows:
-                print('closing', win)
                 win.kill()
-        print('killing proc')
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 

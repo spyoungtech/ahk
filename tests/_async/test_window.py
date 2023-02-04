@@ -29,6 +29,7 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
             pass
         self.p.communicate()
         self.ahk._transport._proc.kill()
+        subprocess.run(['TASKKILL', '/F', '/IM', 'notepad.exe'], capture_output=True)
         time.sleep(0.2)
 
     async def test_exists(self):
@@ -112,9 +113,9 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         assert await self.win.get_title() == 'Foo'
 
     async def test_control_send_window(self):
-        await self.win.send('Hello World')
+        await self.win.send('hello world')
         text = await self.win.get_text()
-        assert 'Hello World' in text
+        assert 'hello world' in text
 
     async def test_send_literal_comma(self):
         await self.win.send('hello, world')

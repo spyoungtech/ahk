@@ -12,7 +12,6 @@ from ahk import AsyncAHK
 
 class TestScreen(IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
-        print('setting up')
         self.ahk = AsyncAHK()
         self.before_windows = await self.ahk.list_windows()
         self.im = Image.new('RGB', (20, 20))
@@ -21,12 +20,9 @@ class TestScreen(IsolatedAsyncioTestCase):
         time.sleep(1)
 
     async def asyncTearDown(self):
-        print('tearing down')
         for win in await self.ahk.list_windows():
             if win not in self.before_windows:
-                print('closing', win)
                 await win.kill()
-        print('killing proc')
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 

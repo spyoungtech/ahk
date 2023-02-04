@@ -654,7 +654,7 @@ class AHK:
         resp = self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
-    def a_run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
+    def a_run_script(self, script_text: str, blocking: bool = True) -> Union[str, FutureResult[str]]:
         raise NotImplementedError()
 
     # fmt: off
@@ -954,8 +954,8 @@ class AHK:
         resp = self._transport.function_call('AHKKeyWait', args)
         return resp
 
-    def run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
-        raise NotImplementedError()
+    def run_script(self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None) -> Union[str, FutureResult[str]]:
+        return self._transport.run_script(script_text_or_path, blocking=blocking, timeout=timeout)
 
     def set_send_level(self, level: int) -> None:
         if not isinstance(level, int):

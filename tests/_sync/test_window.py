@@ -29,6 +29,7 @@ class TestWindowAsync(TestCase):
             pass
         self.p.communicate()
         self.ahk._transport._proc.kill()
+        subprocess.run(['TASKKILL', '/F', '/IM', 'notepad.exe'], capture_output=True)
         time.sleep(0.2)
 
     def test_exists(self):
@@ -112,9 +113,9 @@ class TestWindowAsync(TestCase):
         assert self.win.get_title() == 'Foo'
 
     def test_control_send_window(self):
-        self.win.send('Hello World')
+        self.win.send('hello world')
         text = self.win.get_text()
-        assert 'Hello World' in text
+        assert 'hello world' in text
 
     def test_send_literal_comma(self):
         self.win.send('hello, world')

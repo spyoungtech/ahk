@@ -662,7 +662,7 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
-    async def a_run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
+    async def a_run_script(self, script_text: str, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
         raise NotImplementedError()
 
     # fmt: off
@@ -965,8 +965,10 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKKeyWait', args)
         return resp
 
-    async def run_script(self, script_text: str, decode: bool = True, blocking: bool = True, **runkwargs: Any) -> str:
-        raise NotImplementedError()
+    async def run_script(
+        self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
+    ) -> Union[str, AsyncFutureResult[str]]:
+        return await self._transport.run_script(script_text_or_path, blocking=blocking, timeout=timeout)
 
     async def set_send_level(self, level: int) -> None:
         if not isinstance(level, int):
