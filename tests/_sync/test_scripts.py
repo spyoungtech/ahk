@@ -19,6 +19,7 @@ class TestScripts(unittest.TestCase):
             self.ahk._transport._proc.kill()
         except:
             pass
+        subprocess.run([])
         subprocess.run(['TASKKILL', '/F', '/IM', 'notepad.exe'], capture_output=True)
         time.sleep(0.2)
 

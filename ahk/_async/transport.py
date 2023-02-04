@@ -12,6 +12,7 @@ from abc import abstractmethod
 from io import BytesIO
 from shutil import which
 from typing import Any
+from typing import Callable
 from typing import Generic
 from typing import List
 from typing import Literal
@@ -328,6 +329,12 @@ class AsyncTransport(ABC):
         self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
         self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path)
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
+
+    def on_clipboard_change(
+        self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
+    ) -> None:
+        self._hotkey_transport.on_clipboard_change(callback, ex_handler)
+        return None
 
     def add_hotkey(self, hotkey: Hotkey) -> None:
         with warnings.catch_warnings(record=True) as caught_warnings:

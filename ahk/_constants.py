@@ -2648,7 +2648,11 @@ Loop {
 
 """
 
-HOTKEYS_SCRIPT_TEMPLATE = r"""KEEPALIVE := Chr(57344)
+HOTKEYS_SCRIPT_TEMPLATE = r"""#Persistent
+{% if on_clipboard %}
+OnClipboardChange("ClipChanged")
+{% endif %}
+KEEPALIVE := Chr(57344)
 SetTimer, keepalive, 1000
 
 
@@ -2719,6 +2723,17 @@ b64decode(ByRef pszString) {
 
 
 {% endfor %}
+
+{% if on_clipboard %}
+
+
+ClipChanged(Type) {
+    CLIPBOARD_SENTINEL := Chr(57345)
+    ret := Format("{}{}`n", CLIPBOARD_SENTINEL, Type)
+    FileAppend, %ret%, *, UTF-8
+    return
+}
+{% endif %}
 
 
 keepalive:

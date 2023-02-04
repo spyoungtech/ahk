@@ -42,9 +42,17 @@ T_HotkeyCallbackReturn = TypeVar('T_HotkeyCallbackReturn')
 
 _KEEPALIVE_SENTINEL = b'\xee\x80\x80'
 
+_CLIPBOARD_SENTINEL = '\ue001'
 
-def _default_ex_handler(hotkey: str, ex: Exception) -> None:
-    logging.error(f'Failure in hotkey {hotkey!r}', exc_info=True)
+
+def _default_ex_handler(failure: Union[str, int], ex: Exception) -> None:
+    if isinstance(failure, str):
+        logging.error(f'Failure in hotkey/hotstring {failure!r}', exc_info=True)
+    elif isinstance(failure, int):
+        logging.error(f'Failure in clipboard callback {failure!r}', exc_info=True)
+    else:
+        logging.fatal(f'Ex handler called with bad value {failure!r}', exc_info=False)
+        raise TypeError(f'bad value for ex handler {failure!r}') from ex
 
 
 class HotkeyTransportBase(ABC):
@@ -55,6 +63,8 @@ class HotkeyTransportBase(ABC):
         self._hotstrings: Dict[str, Hotstring] = {}
         self._running: bool = False
         self._get_callback_registry = functools.lru_cache(maxsize=None)(self._callback_registry_uncached)
+        self._clipboard_callback: Optional[Callable[[int], Any]] = None
+        self._clipboard_ex_handler: Optional[Callable[[int, Exception], Any]] = None
 
     @property
     def _callback_registry(self) -> Dict[str, Union[Hotkey, Hotstring]]:
@@ -92,6 +102,15 @@ class HotkeyTransportBase(ABC):
         # TODO: add support for adding IfWinActive/IfWinExist
         return None
 
+    def on_clipboard_change(
+        self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
+    ) -> None:
+        self._clipboard_callback = callback
+        if ex_handler is not None:
+            self._clipboard_ex_handler = ex_handler
+        if self._running:
+            self.restart()
+
 
 class STOP:
     ...
@@ -116,14 +135,17 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
             self._template = self._jinja_env.from_string(_HOTKEY_SCRIPT)
 
     def _do_callback(
-        self, hotkey: str, cb: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
+        self,
+        hotkey_or_clip_change_type: Union[str, int],
+        cb: Callable[[], Any],
+        ex_handler: Optional[Union[Callable[[str, Exception], Any], Callable[[int, Exception], Any]]] = None,
     ) -> None:
         if ex_handler is None:
             ex_handler = self._default_ex_handler
         try:
             cb()
         except Exception as cb_exc:
-            ex_handler(hotkey, cb_exc)
+            ex_handler(hotkey_or_clip_change_type, cb_exc)  # type: ignore[arg-type]
         return None
 
     def start(self) -> None:
@@ -168,21 +190,37 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
 
     def dispatcher(self) -> None:
         while True:
+            ex_handler: Union[Callable[[str, Exception], Any], Callable[[int, Exception], Any]]
+            cb: Union[Callable[[], Any], Callable[[int], Any]]
             job = self._callback_queue.get()
             if job is STOP:
                 self._callback_queue.task_done()
                 break
-
             assert isinstance(job, str)
-            if job not in self._callback_registry:
+            if job.startswith(_CLIPBOARD_SENTINEL):
+                assert self._clipboard_callback is not None
+                clip_change_type = int(job.lstrip(_CLIPBOARD_SENTINEL))
+                callback = self._clipboard_callback
+
+                def f() -> None:
+                    callback(clip_change_type)
+
+                cb = f
+                if self._clipboard_ex_handler is not None:
+                    ex_handler = self._clipboard_ex_handler
+                else:
+                    ex_handler = _default_ex_handler
+            elif job not in self._callback_registry:
                 logging.warning(f'Received request to dispatch unregistered hotkey: {job!r}. Ignoring.')
                 self._callback_queue.task_done()
                 continue
-
-            hot_thing: Union[Hotstring, Hotkey] = self._hotkeys[job]
-            cb = hot_thing.callback
+            else:
+                hot_thing: Union[Hotstring, Hotkey] = self._callback_registry[job]
+                assert hot_thing.callback is not None
+                cb = hot_thing.callback
+                assert hot_thing.ex_handler is not None
+                ex_handler = hot_thing.ex_handler
             assert cb is not None
-            ex_handler = hot_thing.ex_handler
             assert ex_handler is not None
             t = threading.Thread(target=self._do_callback, args=(job, cb, ex_handler), daemon=True)
             self._callback_threads.append(t)
@@ -190,7 +228,13 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
             self._callback_queue.task_done()  # maybe _do_callback should handle this?
 
     def _render_hotkey_tempate(self) -> str:
-        ret = self._template.render(hotkeys=list(self._hotkeys.values()), hotstrings=self._hotstrings.values())
+        if self._clipboard_callback is not None:
+            on_clipboard = True
+        else:
+            on_clipboard = False
+        ret = self._template.render(
+            hotkeys=list(self._hotkeys.values()), hotstrings=self._hotstrings.values(), on_clipboard=on_clipboard
+        )
         return ret
 
     def listener(self) -> None:

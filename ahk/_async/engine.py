@@ -2872,6 +2872,11 @@ class AsyncAHK:
             except Exception:
                 pass
 
+    def on_clipboard_change(
+        self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
+    ) -> None:
+        self._transport.on_clipboard_change(callback, ex_handler)
+
     async def block_input(
         self,
         value: Literal['On', 'Off', 'Default', 'Send', 'Mouse', 'MouseMove', 'MouseMoveOff', 'SendAndMouse'],

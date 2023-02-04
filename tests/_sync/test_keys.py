@@ -3,13 +3,16 @@ import os
 import subprocess
 import sys
 import time
-from unittest import TestCase
+import unittest.mock
 
 from ahk import AHK
 from ahk import Window
 
 
-class TestWindowAsync(TestCase):
+sleep = time.sleep
+
+
+class TestWindowAsync(unittest.TestCase):
     win: Window
 
     def setUp(self) -> None:
@@ -43,3 +46,13 @@ class TestWindowAsync(TestCase):
         time.sleep(2)
 
         assert 'by the way' in self.win.get_text()
+
+    def test_hotstring_callback(self):
+        with unittest.mock.MagicMock(return_value=None) as m:
+            self.ahk.add_hotstring('btw', m)
+            self.ahk.start_hotkeys()
+            self.ahk.set_send_level(1)
+            self.win.activate()
+            self.ahk.send('btw ')
+            sleep(1)
+            m.assert_called()

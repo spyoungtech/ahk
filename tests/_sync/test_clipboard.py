@@ -1,10 +1,14 @@
+import asyncio
 import time
-from unittest import TestCase
+import unittest.mock
 
 from ahk import AHK
 
 
-class TestWindowAsync(TestCase):
+sleep = time.sleep
+
+
+class TestWindowAsync(unittest.TestCase):
     def setUp(self) -> None:
         self.ahk = AHK()
 
@@ -25,3 +29,12 @@ class TestWindowAsync(TestCase):
         self.ahk.set_clipboard_all(data)
         assert data == self.ahk.get_clipboard_all()
         assert self.ahk.get_clipboard() == 'Hello \N{EARTH GLOBE AMERICAS}'
+
+    def test_on_clipboard_change(self):
+        with unittest.mock.MagicMock(return_value=None) as m:
+            self.ahk.on_clipboard_change(m)
+            self.ahk.start_hotkeys()
+            self.ahk.set_clipboard('foo')
+            self.ahk.set_clipboard('bar')
+            sleep(1)
+            m.assert_called()
