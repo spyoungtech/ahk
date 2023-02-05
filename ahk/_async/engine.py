@@ -135,7 +135,7 @@ class AsyncAHK:
         self._transport: AsyncTransport = transport
 
     def add_hotkey(
-        self, keyname: str, callback: Callable[[], Any], *, ex_handler: Optional[Callable[[str, Exception], Any]] = None
+        self, keyname: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
     ) -> None:
         """
         Register a function to be called when a hotkey is pressed.
@@ -161,7 +161,6 @@ class AsyncAHK:
         self,
         trigger: str,
         replacement_or_callback: Union[str, Callable[[], Any]],
-        *,
         ex_handler: Optional[Callable[[str, Exception], Any]] = None,
         options: str = '',
     ) -> None:
@@ -247,17 +246,16 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def control_click(
         self,
-        *,
         button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L',
         click_count: int = 1,
         options: str = '',
@@ -266,6 +264,7 @@ class AsyncAHK:
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -564,21 +563,21 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[AsyncWindow]: ...
+    async def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[AsyncWindow]: ...
     @overload
-    async def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
+    async def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
     @overload
-    async def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[AsyncWindow]: ...
+    async def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[AsyncWindow]: ...
     @overload
-    async def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
+    async def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]: ...
     # fmt: on
     async def list_windows(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -596,16 +595,16 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[True]) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[True]) -> Tuple[int, int]: ...
     @overload
-    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
     @overload
-    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
     @overload
-    async def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
     # fmt: on
     async def get_mouse_position(
-        self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True
+        self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True
     ) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]:
         if coord_mode:
             args = [str(coord_mode)]
@@ -2245,21 +2244,21 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def right_click(
         self,
         x: Optional[Union[int, Tuple[int, int]]] = None,
         y: Optional[int] = None,
-        *,
         click_count: Optional[int] = None,
         direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None,
+        *,
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
@@ -2278,22 +2277,22 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def click(
         self,
         x: Optional[Union[int, Tuple[int, int]]] = None,
         y: Optional[int] = None,
-        *,
         button: Optional[Union[MouseButton, str]] = None,
         click_count: Optional[int] = None,
         direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None,
+        *,
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
@@ -2471,22 +2470,22 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: bool = True, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def win_close(
         self,
         title: str = '',
-        *,
         text: str = '',
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         blocking: bool = True,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
@@ -2506,22 +2505,22 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def win_kill(
         self,
-        *,
         title: str = '',
         text: str = '',
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2541,21 +2540,21 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def win_minimize(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2573,21 +2572,21 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def win_maximize(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2605,21 +2604,21 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    async def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    async def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    async def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
+    async def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def win_restore(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2637,11 +2636,11 @@ class AsyncAHK:
 
     async def win_wait(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         timeout: Optional[int] = None,
@@ -2661,11 +2660,11 @@ class AsyncAHK:
 
     async def win_wait_active(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         timeout: Optional[int] = None,
@@ -2685,11 +2684,11 @@ class AsyncAHK:
 
     async def win_wait_not_active(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         timeout: Optional[int] = None,
@@ -2843,17 +2842,19 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKWinMove', args, blocking=blocking)
         return resp
 
-    async def get_clipboard(self, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
+    async def get_clipboard(self, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
         return await self._transport.function_call('AHKGetClipboard', blocking=blocking)
 
-    async def set_clipboard(self, s: str, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    async def set_clipboard(self, s: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         args = [s]
         return await self._transport.function_call('AHKSetClipboard', args, blocking=blocking)
 
-    async def get_clipboard_all(self, blocking: bool = True) -> Union[bytes, AsyncFutureResult[bytes]]:
+    async def get_clipboard_all(self, *, blocking: bool = True) -> Union[bytes, AsyncFutureResult[bytes]]:
         return await self._transport.function_call('AHKGetClipboardAll', blocking=blocking)
 
-    async def set_clipboard_all(self, contents: bytes, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    async def set_clipboard_all(
+        self, contents: bytes, *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
         # TODO: figure out how to do this without a tempfile
         if not isinstance(contents, bytes):
             raise ValueError('Malformed data. Can only set bytes as returned by get_clipboard_all')

@@ -131,7 +131,7 @@ class AHK:
         self._transport: Transport = transport
 
     def add_hotkey(
-        self, keyname: str, callback: Callable[[], Any], *, ex_handler: Optional[Callable[[str, Exception], Any]] = None
+        self, keyname: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None
     ) -> None:
         """
         Register a function to be called when a hotkey is pressed.
@@ -157,7 +157,6 @@ class AHK:
         self,
         trigger: str,
         replacement_or_callback: Union[str, Callable[[], Any]],
-        *,
         ex_handler: Optional[Callable[[str, Exception], Any]] = None,
         options: str = '',
     ) -> None:
@@ -243,17 +242,16 @@ class AHK:
 
     # fmt: off
     @overload
-    def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
+    def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def control_click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def control_click(self, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', control: str = '', title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def control_click(
         self,
-        *,
         button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L',
         click_count: int = 1,
         options: str = '',
@@ -262,6 +260,7 @@ class AHK:
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -560,21 +559,21 @@ class AHK:
 
     # fmt: off
     @overload
-    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[Window]: ...
+    def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[Window]: ...
     @overload
-    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[Window], FutureResult[List[Window]]]: ...
+    def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[Window], FutureResult[List[Window]]]: ...
     @overload
-    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[Window]: ...
+    def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[Window]: ...
     @overload
-    def list_windows(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[List[Window], FutureResult[List[Window]]]: ...
+    def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[List[Window], FutureResult[List[Window]]]: ...
     # fmt: on
     def list_windows(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -592,16 +591,16 @@ class AHK:
 
     # fmt: off
     @overload
-    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[True]) -> Tuple[int, int]: ...
+    def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[True]) -> Tuple[int, int]: ...
     @overload
-    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: Literal[False]) -> FutureResult[Tuple[int, int]]: ...
+    def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[False]) -> FutureResult[Tuple[int, int]]: ...
     @overload
-    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
+    def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
     @overload
-    def get_mouse_position(self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
+    def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
     # fmt: on
     def get_mouse_position(
-        self, *, coord_mode: Optional[CoordModeRelativeTo] = None, blocking: bool = True
+        self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True
     ) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]:
         if coord_mode:
             args = [str(coord_mode)]
@@ -2234,21 +2233,21 @@ class AHK:
 
     # fmt: off
     @overload
-    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> FutureResult[None]: ...
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> FutureResult[None]: ...
     @overload
-    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]: ...
+    def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def right_click(
         self,
         x: Optional[Union[int, Tuple[int, int]]] = None,
         y: Optional[int] = None,
-        *,
         click_count: Optional[int] = None,
         direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None,
+        *,
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
@@ -2267,22 +2266,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> FutureResult[None]: ...
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> FutureResult[None]: ...
     @overload
-    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, *, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]: ...
+    def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def click(
         self,
         x: Optional[Union[int, Tuple[int, int]]] = None,
         y: Optional[int] = None,
-        *,
         button: Optional[Union[MouseButton, str]] = None,
         click_count: Optional[int] = None,
         direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None,
+        *,
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
@@ -2460,22 +2459,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
+    def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def win_close(self, title: str = '', *, text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', blocking: bool = True, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[None, FutureResult[None]]: ...
+    def win_close(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, blocking: bool = True, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def win_close(
         self,
         title: str = '',
-        *,
         text: str = '',
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         blocking: bool = True,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
@@ -2495,22 +2494,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
+    def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
     @overload
-    def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def win_kill(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
+    def win_kill(self, title: str = '', text: str = '', seconds_to_wait: Optional[int] = None, exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def win_kill(
         self,
-        *,
         title: str = '',
         text: str = '',
         seconds_to_wait: Optional[int] = None,
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2530,21 +2529,21 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
+    def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
     @overload
-    def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def win_minimize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
+    def win_minimize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def win_minimize(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2562,21 +2561,21 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
+    def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
     @overload
-    def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def win_maximize(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
+    def win_maximize(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def win_maximize(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2594,21 +2593,21 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
+    def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> None: ...
     @overload
-    def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
+    def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
     @overload
-    def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
+    def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def win_restore(self, *, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
+    def win_restore(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True,) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def win_restore(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
@@ -2626,11 +2625,11 @@ class AHK:
 
     def win_wait(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         timeout: Optional[int] = None,
@@ -2650,11 +2649,11 @@ class AHK:
 
     def win_wait_active(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         timeout: Optional[int] = None,
@@ -2674,11 +2673,11 @@ class AHK:
 
     def win_wait_not_active(
         self,
-        *,
         title: str = '',
         text: str = '',
         exclude_title: str = '',
         exclude_text: str = '',
+        *,
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         timeout: Optional[int] = None,
@@ -2832,17 +2831,19 @@ class AHK:
         resp = self._transport.function_call('AHKWinMove', args, blocking=blocking)
         return resp
 
-    def get_clipboard(self, blocking: bool = True) -> Union[str, FutureResult[str]]:
+    def get_clipboard(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
         return self._transport.function_call('AHKGetClipboard', blocking=blocking)
 
-    def set_clipboard(self, s: str, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def set_clipboard(self, s: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         args = [s]
         return self._transport.function_call('AHKSetClipboard', args, blocking=blocking)
 
-    def get_clipboard_all(self, blocking: bool = True) -> Union[bytes, FutureResult[bytes]]:
+    def get_clipboard_all(self, *, blocking: bool = True) -> Union[bytes, FutureResult[bytes]]:
         return self._transport.function_call('AHKGetClipboardAll', blocking=blocking)
 
-    def set_clipboard_all(self, contents: bytes, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def set_clipboard_all(
+        self, contents: bytes, *, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
         # TODO: figure out how to do this without a tempfile
         if not isinstance(contents, bytes):
             raise ValueError('Malformed data. Can only set bytes as returned by get_clipboard_all')
@@ -2861,7 +2862,9 @@ class AHK:
             except Exception:
                 pass
 
-    def on_clipboard_change(self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None) -> None:
+    def on_clipboard_change(
+        self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
+    ) -> None:
         self._transport.on_clipboard_change(callback, ex_handler)
 
     def block_input(
