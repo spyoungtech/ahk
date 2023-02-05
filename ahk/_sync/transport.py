@@ -103,6 +103,7 @@ FunctionName = Literal[
     'AHKSetSendLevel',
     'AHKSetTitleMatchMode',
     'AHKSetVolume',
+    'AHKShowToolTip',
     'AHKSoundBeep',
     'AHKSoundGet',
     'AHKSoundPlay',
@@ -311,7 +312,9 @@ class Transport(ABC):
         self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path)
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
 
-    def on_clipboard_change(self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None) -> None:
+    def on_clipboard_change(
+        self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
+    ) -> None:
         self._hotkey_transport.on_clipboard_change(callback, ex_handler)
         return None
 
@@ -523,11 +526,11 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKSetClipboardAll'], args: Optional[List[str]], *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKBlockInput'], args: Optional[List[str]], *, blocking: bool = True) -> None: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKShowToolTip'], args: Optional[List[str]], *, blocking: bool = True) -> None: ...
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
-    # @overload
-    # async def function_call(self, function_name: Literal['BaseCheck'], args: Optional[List[str]] = None) -> None: ...
     # @overload
     # async def function_call(self, function_name: Literal['WinWait'], args: Optional[List[str]] = None) -> str: ...
     # @overload

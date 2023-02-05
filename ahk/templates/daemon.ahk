@@ -2476,6 +2476,17 @@ AHKTraytip(ByRef command) {
     {% endblock AHKTraytip %}
 }
 
+AHKShowToolTip(ByRef command) {
+    {% block AHKShowToolTip %}
+    text := command[2]
+    x := command[3]
+    y := command[4]
+    which := command[5]
+    ToolTip, %text%, %x%, %y%, %which%
+    return FormatNoValueResponse()
+    {% endblock AHKShowToolTip %}
+}
+
 AHKGetClipboard(ByRef command) {
     {% block AHKGetClipboard %}
     global STRINGRESPONSEMESSAGE

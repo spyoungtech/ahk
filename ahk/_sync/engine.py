@@ -653,8 +653,9 @@ class AHK:
         resp = self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
-    def a_run_script(self, script_text: str, blocking: bool = True) -> Union[str, FutureResult[str]]:
-        raise NotImplementedError()
+    def a_run_script(self, *args: Any, **kwargs: Any) -> Union[str, FutureResult[str]]:
+        warnings.warn('a_run_script is deprecated. Use run_script instead.', DeprecationWarning, stacklevel=2)
+        return self.run_script(*args, **kwargs)
 
     # fmt: off
     @overload
@@ -1178,15 +1179,28 @@ class AHK:
 
     def show_tooltip(
         self,
-        text: str,
+        text: str = '',
         x: Optional[int] = None,
         y: Optional[int] = None,
+        which: int = 1,
         *,
-        second: float = 1.0,
-        id: Optional[str] = None,
         blocking: bool = True,
     ) -> None:
-        raise NotImplementedError()
+        if which not in range(1, 21):
+            raise ValueError('which must be an integer between 1 and 20')
+        args = [text]
+        if x is not None:
+            args.append(str(x))
+        else:
+            args.append('')
+        if y is not None:
+            args.append(str(y))
+        else:
+            args.append('')
+        self._transport.function_call('AHKShowToolTip', args, blocking=blocking)
+
+    def hide_tooltip(self, which: int = 1) -> None:
+        self.show_tooltip(which=which)
 
     def sound_beep(
         self, frequency: int = 523, duration: int = 150, *, blocking: bool = True
