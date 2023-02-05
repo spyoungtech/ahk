@@ -33,30 +33,25 @@ class TestScripts(unittest.IsolatedAsyncioTestCase):
 
     async def test_run_script_text(self):
         assert await self.ahk.win_get(title='Untitled - Notepad') is None
-        script = 'Run Notepad'
-        await self.ahk.run_script(script)
-        time.sleep(0.3)
-        notepad = await self.ahk.win_get(title='Untitled - Notepad')
-        assert notepad is not None
+        script = 'FileAppend, foobar, *, UTF-8'
+        result = await self.ahk.run_script(script)
+        assert result == 'foobar'
 
     async def test_run_script_file(self):
         assert await self.ahk.win_get(title='Untitled - Notepad') is None
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False) as f:
-            f.write('Run Notepad')
-        await self.ahk.run_script(f.name)
-        time.sleep(0.3)
-        notepad = await self.ahk.win_get(title='Untitled - Notepad')
-        assert notepad is not None
+            f.write('FileAppend, foobar, *, UTF-8')
+        res = await self.ahk.run_script(f.name)
+        assert res == 'foobar'
 
     async def test_run_script_file_unicode(self):
         assert await self.ahk.win_get(title='Untitled - Notepad') is None
         subprocess.Popen('Notepad')
-        time.sleep(0.3)
+        await self.ahk.win_wait(title='Untitled - Notepad', timeout=3)
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False, encoding='utf-8') as f:
             f.write('WinActivate, "Untitled - Notepad"\nSend א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ')
         await self.ahk.run_script(f.name)
-        time.sleep(0.3)
-        notepad = await self.ahk.win_get(title='*Untitled - Notepad')
+        notepad = await self.ahk.win_wait(title='*Untitled - Notepad', timeout=3)
         assert notepad is not None
         text = await notepad.get_text()
         assert 'א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ' in text
