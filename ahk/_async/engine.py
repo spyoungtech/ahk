@@ -2894,11 +2894,11 @@ class AsyncAHK:
 
     async def clip_wait(
         self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True
-    ) -> None:
+    ) -> Union[None, AsyncFutureResult[None]]:
         args = [str(timeout) if timeout else '']
         if wait_for_any_data:
             args.append('1')
-        await self._transport.function_call('AHKClipWait', args, blocking=blocking)
+        return await self._transport.function_call('AHKClipWait', args, blocking=blocking)
 
     async def block_input(
         self,
@@ -2906,6 +2906,38 @@ class AsyncAHK:
         /,  # flake8: noqa
     ) -> None:
         await self._transport.function_call('AHKBlockInput', args=[value])
+
+    async def reg_delete(
+        self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [key_name, value_name if value_name is not None else '']
+        return await self._transport.function_call('AHKRegDelete', args, blocking=blocking)
+
+    async def reg_write(
+        self,
+        value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'],
+        key_name: str,
+        value_name: Optional[str] = None,
+        value: Optional[str] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        args = [value_type, key_name]
+        if value_name is not None:
+            args.append(value_name)
+        else:
+            args.append('')
+        if value is not None:
+            args.append(value)
+        return await self._transport.function_call('AHKRegWrite', args, blocking=blocking)
+
+    async def reg_read(
+        self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
+    ) -> Union[str, AsyncFutureResult[str]]:
+        args = [key_name]
+        if value_name is not None:
+            args.append(value_name)
+        return await self._transport.function_call('AHKRegRead', args, blocking=blocking)
 
     async def block_forever(self) -> NoReturn:
         while True:

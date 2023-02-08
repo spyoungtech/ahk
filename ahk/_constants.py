@@ -1792,34 +1792,54 @@ AHKMouseClickDrag(ByRef command) {
     {% endblock AHKMouseClickDrag %}
 }
 
-RegRead(ByRef command) {
+AHKRegRead(ByRef command) {
     {% block RegRead %}
-    keyname := command[3]
-    RegRead, output, %keyname%, command[4]
-    return output
+    global STRINGRESPONSEMESSAGE
+    global EXCEPTIONRESPONSEMESSAGE
+    key_name := command[2]
+    value_name := command[3]
+
+    RegRead, output, %key_name%, %value_name%
+
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("registry error: {}", A_LastError))
+    }
+    else {
+        resp := FormatResponse(STRINGRESPONSEMESSAGE, Format("{}", output))
+    }
+    return resp
     {% endblock RegRead %}
 }
 
-SetRegView(ByRef command) {
-    {% block SetRegView %}
-    view := command[2]
-    SetRegView, %view%
-    {% endblock SetRegView %}
-}
 
-RegWrite(ByRef command) {
+
+AHKRegWrite(ByRef command) {
     {% block RegWrite %}
-    valuetype := command[2]
-    keyname := command[3]
+    global EXCEPTIONRESPONSEMESSAGE
+    value_type := command[2]
+    key_name := command[3]
+    value_name := command[4]
+    value := command[5]
+    RegWrite, %value_type%, %key_name%, %value_name%, %value%
+    if (ErrorLevel = 1) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("registry error: {}", A_LastError))
+    }
 
-    RegWrite, %valuetype%, %keyname%, command[4]
+    return FormatNoValueResponse()
     {% endblock RegWrite %}
 }
 
-RegDelete(ByRef command) {
+AHKRegDelete(ByRef command) {
     {% block RegDelete %}
-    keyname := command[2]
-    RegDelete, %keyname%, command[3]
+    global EXCEPTIONRESPONSEMESSAGE
+    key_name := command[2]
+    value_name := command[3]
+    RegDelete, %key_name%, %value_name%
+    if (ErrorLevel = 1) {
+        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("registry error: {}", A_LastError))
+    }
+    return FormatNoValueResponse()
+
     {% endblock RegDelete %}
 }
 

@@ -2883,11 +2883,11 @@ class AHK:
 
     def clip_wait(
         self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True
-    ) -> None:
+    ) -> Union[None, FutureResult[None]]:
         args = [str(timeout) if timeout else '']
         if wait_for_any_data:
             args.append('1')
-        self._transport.function_call('AHKClipWait', args, blocking=blocking)
+        return self._transport.function_call('AHKClipWait', args, blocking=blocking)
 
     def block_input(
         self,
@@ -2895,6 +2895,38 @@ class AHK:
         /,  # flake8: noqa
     ) -> None:
         self._transport.function_call('AHKBlockInput', args=[value])
+
+    def reg_delete(
+        self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
+        args = [key_name, value_name if value_name is not None else '']
+        return self._transport.function_call('AHKRegDelete', args, blocking=blocking)
+
+    def reg_write(
+        self,
+        value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'],
+        key_name: str,
+        value_name: Optional[str] = None,
+        value: Optional[str] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        args = [value_type, key_name]
+        if value_name is not None:
+            args.append(value_name)
+        else:
+            args.append('')
+        if value is not None:
+            args.append(value)
+        return self._transport.function_call('AHKRegWrite', args, blocking=blocking)
+
+    def reg_read(
+        self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
+    ) -> Union[str, FutureResult[str]]:
+        args = [key_name]
+        if value_name is not None:
+            args.append(value_name)
+        return self._transport.function_call('AHKRegRead', args, blocking=blocking)
 
     def block_forever(self) -> NoReturn:
         while True:
