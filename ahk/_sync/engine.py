@@ -1114,12 +1114,32 @@ class AHK:
         resp = self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    def set_volume(self, value: int, device_number: int = 1) -> None: ...
+    @overload
+    def set_volume(self, value: int, device_number: int = 1, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def set_volume(self, value: int, device_number: int = 1, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def set_volume(self, value: int, device_number: int = 1, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def set_volume(
-        self, value: int, device_number: int = 1, blocking: bool = True
+        self, value: int, device_number: int = 1, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
         args = [str(device_number), str(value)]
         return self._transport.function_call('AHKSetVolume', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def show_traytip(
         self,
         title: str,
@@ -1135,6 +1155,16 @@ class AHK:
         args = [title, text, str(second), str(option)]
         return self._transport.function_call('AHKTrayTip', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def show_error_traytip(
         self,
         title: str,
@@ -1149,6 +1179,16 @@ class AHK:
             title=title, text=text, second=second, type_id=3, silent=silent, large_icon=large_icon, blocking=blocking
         )
 
+    # fmt: off
+    @overload
+    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def show_info_traytip(
         self,
         title: str,
@@ -1163,6 +1203,16 @@ class AHK:
             title=title, text=text, second=second, type_id=1, silent=silent, large_icon=large_icon, blocking=blocking
         )
 
+    # fmt: off
+    @overload
+    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def show_warning_traytip(
         self,
         title: str,
@@ -1183,8 +1233,6 @@ class AHK:
         x: Optional[int] = None,
         y: Optional[int] = None,
         which: int = 1,
-        *,
-        blocking: bool = True,
     ) -> None:
         if which not in range(1, 21):
             raise ValueError('which must be an integer between 1 and 20')
@@ -1197,11 +1245,21 @@ class AHK:
             args.append(str(y))
         else:
             args.append('')
-        self._transport.function_call('AHKShowToolTip', args, blocking=blocking)
+        self._transport.function_call('AHKShowToolTip', args)
 
     def hide_tooltip(self, which: int = 1) -> None:
         self.show_tooltip(which=which)
 
+    # fmt: off
+    @overload
+    def sound_beep(self, frequency: int = 523, duration: int = 150) -> None: ...
+    @overload
+    def sound_beep(self, frequency: int = 523, duration: int = 150, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def sound_beep(self, frequency: int = 523, duration: int = 150, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def sound_beep(self, frequency: int = 523, duration: int = 150, *, blocking: bool = True) -> Optional[FutureResult[None]]: ...
+    # fmt: on
     def sound_beep(
         self, frequency: int = 523, duration: int = 150, *, blocking: bool = True
     ) -> Optional[FutureResult[None]]:
@@ -1209,17 +1267,38 @@ class AHK:
         self._transport.function_call('AHKSoundBeep', args, blocking=blocking)
         return None
 
+    # fmt: off
+    @overload
+    def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME') -> str: ...
+    @overload
+    def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME', *, blocking: Literal[False]) -> FutureResult[str]: ...
+    @overload
+    def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME', *, blocking: Literal[True]) -> str: ...
+    @overload
+    def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME', *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
     def sound_get(
         self,
         device_number: int = 1,
         component_type: str = 'MASTER',
         control_type: str = 'VOLUME',
+        *,
         blocking: bool = True,
     ) -> Union[str, FutureResult[str]]:
         args = [str(device_number), component_type, control_type]
         return self._transport.function_call('AHKSoundGet', args, blocking=blocking)
 
-    def sound_play(self, filename: str, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    # fmt: off
+    @overload
+    def sound_play(self, filename: str) -> None: ...
+    @overload
+    def sound_play(self, filename: str, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def sound_play(self, filename: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def sound_play(self, filename: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def sound_play(self, filename: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         return self._transport.function_call('AHKSoundPlay', [filename], blocking=blocking)
 
     def sound_set(
@@ -1228,6 +1307,7 @@ class AHK:
         device_number: int = 1,
         component_type: str = 'MASTER',
         control_type: str = 'VOLUME',
+        *,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
         args = [str(device_number), component_type, control_type, str(value)]
@@ -2637,6 +2717,16 @@ class AHK:
         resp = self._transport.function_call('AHKWinRestore', args, engine=self, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
+    @overload
+    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
+    @overload
+    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
+    @overload
+    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+    # fmt: on
     def win_wait(
         self,
         title: str = '',
@@ -2661,6 +2751,16 @@ class AHK:
         resp = self._transport.function_call('AHKWinWait', args, blocking=blocking, engine=self)
         return resp
 
+    # fmt: off
+    @overload
+    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
+    @overload
+    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
+    @overload
+    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
+    @overload
+    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+    # fmt: on
     def win_wait_active(
         self,
         title: str = '',
@@ -2685,6 +2785,16 @@ class AHK:
         resp = self._transport.function_call('AHKWinWaitActive', args, blocking=blocking, engine=self)
         return resp
 
+    # fmt: off
+    @overload
+    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
+    @overload
+    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
+    @overload
+    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
+    @overload
+    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+    # fmt: on
     def win_wait_not_active(
         self,
         title: str = '',
@@ -2845,6 +2955,16 @@ class AHK:
         resp = self._transport.function_call('AHKWinMove', args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    def get_clipboard(self) -> str: ...
+    @overload
+    def get_clipboard(self, *, blocking: Literal[False]) -> FutureResult[str]: ...
+    @overload
+    def get_clipboard(self, *, blocking: Literal[True]) -> str: ...
+    @overload
+    def get_clipboard(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
     def get_clipboard(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
         return self._transport.function_call('AHKGetClipboard', blocking=blocking)
 
@@ -2855,6 +2975,16 @@ class AHK:
     def get_clipboard_all(self, *, blocking: bool = True) -> Union[bytes, FutureResult[bytes]]:
         return self._transport.function_call('AHKGetClipboardAll', blocking=blocking)
 
+    # fmt: off
+    @overload
+    def set_clipboard_all(self, contents: bytes) -> None: ...
+    @overload
+    def set_clipboard_all(self, contents: bytes, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def set_clipboard_all(self, contents: bytes, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def set_clipboard_all(self, contents: bytes, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def set_clipboard_all(
         self, contents: bytes, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
@@ -2881,6 +3011,16 @@ class AHK:
     ) -> None:
         self._transport.on_clipboard_change(callback, ex_handler)
 
+    # fmt: off
+    @overload
+    def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False) -> None: ...
+    @overload
+    def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def clip_wait(
         self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
@@ -2896,12 +3036,32 @@ class AHK:
     ) -> None:
         self._transport.function_call('AHKBlockInput', args=[value])
 
+    # fmt: off
+    @overload
+    def reg_delete(self, key_name: str, value_name: Optional[str] = None) -> None: ...
+    @overload
+    def reg_delete(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[False]) -> Union[None, FutureResult[None]]: ...
+    @overload
+    def reg_delete(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def reg_delete(self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def reg_delete(
         self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
         args = [key_name, value_name if value_name is not None else '']
         return self._transport.function_call('AHKRegDelete', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None) -> None: ...
+    @overload
+    def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def reg_write(
         self,
         value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'],
@@ -2920,6 +3080,16 @@ class AHK:
             args.append(value)
         return self._transport.function_call('AHKRegWrite', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    def reg_read(self, key_name: str, value_name: Optional[str] = None) -> str: ...
+    @overload
+    def reg_read(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[False]) -> FutureResult[str]: ...
+    @overload
+    def reg_read(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[True]) -> str: ...
+    @overload
+    def reg_read(self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
     def reg_read(
         self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
     ) -> Union[str, FutureResult[str]]:

@@ -1125,12 +1125,32 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    async def set_volume(self, value: int, device_number: int = 1) -> None: ...
+    @overload
+    async def set_volume(self, value: int, device_number: int = 1, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def set_volume(self, value: int, device_number: int = 1, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def set_volume(self, value: int, device_number: int = 1, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def set_volume(
-        self, value: int, device_number: int = 1, blocking: bool = True
+        self, value: int, device_number: int = 1, *, blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
         args = [str(device_number), str(value)]
         return await self._transport.function_call('AHKSetVolume', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def show_traytip(
         self,
         title: str,
@@ -1146,6 +1166,16 @@ class AsyncAHK:
         args = [title, text, str(second), str(option)]
         return await self._transport.function_call('AHKTrayTip', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def show_error_traytip(
         self,
         title: str,
@@ -1160,6 +1190,16 @@ class AsyncAHK:
             title=title, text=text, second=second, type_id=3, silent=silent, large_icon=large_icon, blocking=blocking
         )
 
+    # fmt: off
+    @overload
+    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def show_info_traytip(
         self,
         title: str,
@@ -1174,6 +1214,16 @@ class AsyncAHK:
             title=title, text=text, second=second, type_id=1, silent=silent, large_icon=large_icon, blocking=blocking
         )
 
+    # fmt: off
+    @overload
+    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def show_warning_traytip(
         self,
         title: str,
@@ -1194,8 +1244,6 @@ class AsyncAHK:
         x: Optional[int] = None,
         y: Optional[int] = None,
         which: int = 1,
-        *,
-        blocking: bool = True,
     ) -> None:
         if which not in range(1, 21):
             raise ValueError('which must be an integer between 1 and 20')
@@ -1208,11 +1256,21 @@ class AsyncAHK:
             args.append(str(y))
         else:
             args.append('')
-        await self._transport.function_call('AHKShowToolTip', args, blocking=blocking)
+        await self._transport.function_call('AHKShowToolTip', args)
 
     async def hide_tooltip(self, which: int = 1) -> None:
         await self.show_tooltip(which=which)
 
+    # fmt: off
+    @overload
+    async def sound_beep(self, frequency: int = 523, duration: int = 150) -> None: ...
+    @overload
+    async def sound_beep(self, frequency: int = 523, duration: int = 150, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def sound_beep(self, frequency: int = 523, duration: int = 150, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def sound_beep(self, frequency: int = 523, duration: int = 150, *, blocking: bool = True) -> Optional[AsyncFutureResult[None]]: ...
+    # fmt: on
     async def sound_beep(
         self, frequency: int = 523, duration: int = 150, *, blocking: bool = True
     ) -> Optional[AsyncFutureResult[None]]:
@@ -1220,17 +1278,38 @@ class AsyncAHK:
         await self._transport.function_call('AHKSoundBeep', args, blocking=blocking)
         return None
 
+    # fmt: off
+    @overload
+    async def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME') -> str: ...
+    @overload
+    async def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME', *, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME', *, blocking: Literal[True]) -> str: ...
+    @overload
+    async def sound_get(self, device_number: int = 1, component_type: str = 'MASTER', control_type: str = 'VOLUME', *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
     async def sound_get(
         self,
         device_number: int = 1,
         component_type: str = 'MASTER',
         control_type: str = 'VOLUME',
+        *,
         blocking: bool = True,
     ) -> Union[str, AsyncFutureResult[str]]:
         args = [str(device_number), component_type, control_type]
         return await self._transport.function_call('AHKSoundGet', args, blocking=blocking)
 
-    async def sound_play(self, filename: str, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    # fmt: off
+    @overload
+    async def sound_play(self, filename: str) -> None: ...
+    @overload
+    async def sound_play(self, filename: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def sound_play(self, filename: str, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def sound_play(self, filename: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def sound_play(self, filename: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
         return await self._transport.function_call('AHKSoundPlay', [filename], blocking=blocking)
 
     async def sound_set(
@@ -1239,6 +1318,7 @@ class AsyncAHK:
         device_number: int = 1,
         component_type: str = 'MASTER',
         control_type: str = 'VOLUME',
+        *,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         args = [str(device_number), component_type, control_type, str(value)]
@@ -2648,6 +2728,16 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKWinRestore', args, engine=self, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    async def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> AsyncWindow: ...
+    @overload
+    async def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[AsyncWindow]: ...
+    @overload
+    async def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> AsyncWindow: ...
+    @overload
+    async def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[AsyncWindow, AsyncFutureResult[AsyncWindow]]: ...
+    # fmt: on
     async def win_wait(
         self,
         title: str = '',
@@ -2672,6 +2762,16 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKWinWait', args, blocking=blocking, engine=self)
         return resp
 
+    # fmt: off
+    @overload
+    async def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> AsyncWindow: ...
+    @overload
+    async def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[AsyncWindow]: ...
+    @overload
+    async def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> AsyncWindow: ...
+    @overload
+    async def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[AsyncWindow, AsyncFutureResult[AsyncWindow]]: ...
+    # fmt: on
     async def win_wait_active(
         self,
         title: str = '',
@@ -2696,6 +2796,16 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKWinWaitActive', args, blocking=blocking, engine=self)
         return resp
 
+    # fmt: off
+    @overload
+    async def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> AsyncWindow: ...
+    @overload
+    async def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[AsyncWindow]: ...
+    @overload
+    async def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> AsyncWindow: ...
+    @overload
+    async def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[AsyncWindow, AsyncFutureResult[AsyncWindow]]: ...
+    # fmt: on
     async def win_wait_not_active(
         self,
         title: str = '',
@@ -2856,6 +2966,16 @@ class AsyncAHK:
         resp = await self._transport.function_call('AHKWinMove', args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    async def get_clipboard(self) -> str: ...
+    @overload
+    async def get_clipboard(self, *, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def get_clipboard(self, *, blocking: Literal[True]) -> str: ...
+    @overload
+    async def get_clipboard(self, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
     async def get_clipboard(self, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
         return await self._transport.function_call('AHKGetClipboard', blocking=blocking)
 
@@ -2866,6 +2986,16 @@ class AsyncAHK:
     async def get_clipboard_all(self, *, blocking: bool = True) -> Union[bytes, AsyncFutureResult[bytes]]:
         return await self._transport.function_call('AHKGetClipboardAll', blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def set_clipboard_all(self, contents: bytes) -> None: ...
+    @overload
+    async def set_clipboard_all(self, contents: bytes, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def set_clipboard_all(self, contents: bytes, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def set_clipboard_all(self, contents: bytes, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def set_clipboard_all(
         self, contents: bytes, *, blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -2892,6 +3022,16 @@ class AsyncAHK:
     ) -> None:
         self._transport.on_clipboard_change(callback, ex_handler)
 
+    # fmt: off
+    @overload
+    async def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False) -> None: ...
+    @overload
+    async def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def clip_wait(self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def clip_wait(
         self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
@@ -2907,12 +3047,32 @@ class AsyncAHK:
     ) -> None:
         await self._transport.function_call('AHKBlockInput', args=[value])
 
+    # fmt: off
+    @overload
+    async def reg_delete(self, key_name: str, value_name: Optional[str] = None) -> None: ...
+    @overload
+    async def reg_delete(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[False]) -> Union[None, AsyncFutureResult[None]]: ...
+    @overload
+    async def reg_delete(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def reg_delete(self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def reg_delete(
         self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
     ) -> Union[None, AsyncFutureResult[None]]:
         args = [key_name, value_name if value_name is not None else '']
         return await self._transport.function_call('AHKRegDelete', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None) -> None: ...
+    @overload
+    async def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def reg_write(self, value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'], key_name: str, value_name: Optional[str] = None, value: Optional[str] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def reg_write(
         self,
         value_type: Literal['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_BINARY'],
@@ -2931,6 +3091,16 @@ class AsyncAHK:
             args.append(value)
         return await self._transport.function_call('AHKRegWrite', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def reg_read(self, key_name: str, value_name: Optional[str] = None) -> str: ...
+    @overload
+    async def reg_read(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[False]) -> AsyncFutureResult[str]: ...
+    @overload
+    async def reg_read(self, key_name: str, value_name: Optional[str] = None, *, blocking: Literal[True]) -> str: ...
+    @overload
+    async def reg_read(self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
     async def reg_read(
         self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
     ) -> Union[str, AsyncFutureResult[str]]:
