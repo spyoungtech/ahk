@@ -2719,13 +2719,13 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
+    def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
     @overload
-    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
+    def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
     @overload
-    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
+    def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
     @overload
-    def win_wait( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+    def win_wait(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
     # fmt: on
     def win_wait(
         self,
@@ -2753,13 +2753,13 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
+    def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
     @overload
-    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
+    def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
     @overload
-    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
+    def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
     @overload
-    def win_wait_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+    def win_wait_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
     # fmt: on
     def win_wait_active(
         self,
@@ -2787,13 +2787,13 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
+    def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> Window: ...
     @overload
-    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
+    def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
     @overload
-    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
+    def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> Window: ...
     @overload
-    def win_wait_not_active( self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+    def win_wait_not_active(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
     # fmt: on
     def win_wait_not_active(
         self,
@@ -2817,6 +2817,40 @@ class AHK:
         )
         args.append(str(timeout) if timeout else '')
         resp = self._transport.function_call('AHKWinWaitNotActive', args, blocking=blocking, engine=self)
+        return resp
+
+    # fmt: off
+    @overload
+    def win_wait_close(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None) -> None: ...
+    @overload
+    def win_wait_close(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def win_wait_close(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    def win_wait_close(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, timeout: Optional[int] = None, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def win_wait_close(
+        self,
+        title: str = '',
+        text: str = '',
+        exclude_title: str = '',
+        exclude_text: str = '',
+        *,
+        title_match_mode: Optional[TitleMatchMode] = None,
+        detect_hidden_windows: Optional[bool] = None,
+        timeout: Optional[int] = None,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        args = self._format_win_args(
+            title=title,
+            text=text,
+            exclude_title=exclude_title,
+            exclude_text=exclude_text,
+            title_match_mode=title_match_mode,
+            detect_hidden_windows=detect_hidden_windows,
+        )
+        args.append(str(timeout) if timeout else '')
+        resp = self._transport.function_call('AHKWinWaitClose', args, blocking=blocking, engine=self)
         return resp
 
     # fmt: off

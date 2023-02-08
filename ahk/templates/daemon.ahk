@@ -344,7 +344,49 @@ AHKWinWaitNotActive(ByRef command) {
     {% endblock AHKWinWaitNotActive %}
 }
 
+AHKWinWaitClose(ByRef command) {
+    {% block AHKWinWaitClose %}
+    global TIMEOUTRESPONSEMESSAGE
 
+    title := command[2]
+    text := command[3]
+    extitle := command[4]
+    extext := command[5]
+    detect_hw := command[6]
+    match_mode := command[7]
+    match_speed := command[8]
+    timeout := command[9]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode, %match_mode%
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode, %match_speed%
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows, %detect_hw%
+    }
+    if (timeout != "") {
+        WinWaitClose, %title%, %text%, %timeout%, %extitle%, %extext%
+    } else {
+        WinWaitClose, %title%, %text%,, %extitle%, %extext%
+    }
+    if (ErrorLevel = 1) {
+        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+    } else {
+        resp := FormatNoValueResponse()
+    }
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
+    return resp
+    {% endblock AHKWinWaitClose %}
+}
 
 AHKWinMinimize(ByRef command) {
     {% block AHKWinMinimize %}

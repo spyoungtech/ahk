@@ -162,6 +162,7 @@ FunctionName = Literal[
     'AHKWindowList',
     'AHKWinWait',
     'AHKWinWaitActive',
+    'AHKWinWaitClose',
     'AHKWinWaitNotActive',
     'AHKClick',
     'AHKSetCapsLockState',
@@ -556,8 +557,8 @@ class AsyncTransport(ABC):
 
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
-    # @overload
-    # async def function_call(self, function_name: Literal['WinWaitClose'], args: Optional[List[str]] = None) -> None: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKWinWaitClose'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKRegRead'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
