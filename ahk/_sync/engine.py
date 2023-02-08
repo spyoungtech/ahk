@@ -2881,6 +2881,14 @@ class AHK:
     ) -> None:
         self._transport.on_clipboard_change(callback, ex_handler)
 
+    def clip_wait(
+        self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True
+    ) -> None:
+        args = [str(timeout) if timeout else '']
+        if wait_for_any_data:
+            args.append('1')
+        self._transport.function_call('AHKClipWait', args, blocking=blocking)
+
     def block_input(
         self,
         value: Literal['On', 'Off', 'Default', 'Send', 'Mouse', 'MouseMove', 'MouseMoveOff', 'SendAndMouse'],

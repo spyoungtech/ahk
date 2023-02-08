@@ -2518,6 +2518,20 @@ AHKSetClipboardAll(ByRef command) {
     {% endblock AHKSetClipboardAll %}
 }
 
+AHKClipWait(ByRef command) {
+    global TIMEOUTRESPONSEMESSAGE
+    timeout := command[2]
+    wait_for_any_data := command[3]
+
+
+    ClipWait, %timeout%, %wait_for_any_data%
+
+    if (ErrorLevel = 1) {
+        return FormatResponse(TIMEOUTRESPONSEMESSAGE, "timed out waiting for clipboard data")
+    }
+    return FormatNoValueResponse()
+}
+
 AHKBlockInput(ByRef command) {
     value := command[2]
     BlockInput, %value%
