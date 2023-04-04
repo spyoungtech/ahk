@@ -93,7 +93,6 @@ class Control:
 
 
 class Window(object):
-
     MINIMIZED = '-1'
     MAXIMIZED = '1'
     NON_MIN_NON_MAX = '0'

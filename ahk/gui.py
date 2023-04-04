@@ -2,7 +2,6 @@ from ahk.script import ScriptEngine, AsyncScriptEngine
 
 
 class GUIMixin(ScriptEngine):
-
     TRAYTIP_INFO = 1
     TRAYTIP_WARNING = 2
     TRAYTIP_ERROR = 3

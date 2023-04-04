@@ -16,7 +16,6 @@ class ScreenMixin(ScriptEngine):
         transparent: str = None,
         icon: int = None,
     ) -> str:
-
         if scale_height and not scale_width:
             scale_width = -1
         elif scale_width and not scale_height:
