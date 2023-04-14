@@ -147,7 +147,10 @@ class AsyncAHK:
         - If you add a hotkey after the hotkey thread/instance is active, it will be restarted automatically
         - `async` functions are not directly supported as callbacks, however you may write a synchronous function that calls `asyncio.run`/`loop.create_task` etc.
 
-        :param hotkey: an instance of ahk.hotkey.Hotkey
+        :param keyname: the key trigger for the hotkey, such as ``#n`` (win+n)
+        :param callback: callback function to call when the hotkey is triggered
+        :param ex_handler: a function which accepts two parameters: the keyname for the hotkey and the exception raised by the callback function.
+        :return:
         """
         hotkey = Hotkey(keyname, callback, ex_handler=ex_handler)
         with warnings.catch_warnings(record=True) as caught_warnings:
@@ -172,7 +175,11 @@ class AsyncAHK:
         - You must call the `start_hotkeys` method for registered hotstrings to be active
         - All hotstrings (and hotkeys) run in a single AHK process instance separate from other AHK processes.
 
-        :param hotstring: an instance of ahk.hotkey.Hotstring
+        :param trigger: the trigger phrase for the hotstring, e.g., ``btw``
+        :param replacement_or_callback: the replacement phrase (e.g., ``by the way``) or a Python callable to execute in response to the hotstring trigger
+        :param ex_handler: a function which accepts two parameters: the hotstring and the exception raised by the callback function.
+        :param options: the hotstring options -- same meanings as in AutoHotkey.
+        :return:
         """
         hotstring = Hotstring(trigger, replacement_or_callback, ex_handler=ex_handler, options=options)
         with warnings.catch_warnings(record=True) as caught_warnings:
@@ -269,6 +276,21 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
+        """
+
+        :param button: the mouse button to use
+        :param click_count: how many times to click
+        :param options: options -- same meaning as in AutoHotkey
+        :param control: the control to click
+        :param title:
+        :param text:
+        :param exclude_title:
+        :param exclude_text:
+        :param title_match_mode:
+        :param detect_hidden_windows:
+        :param blocking:
+        :return:
+        """
         args = [control, title, text, str(button), str(click_count), options, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -325,6 +347,19 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, AsyncFutureResult[str]]:
+        """
+        Analog to ``ControlGetText``
+
+        :param control:
+        :param title:
+        :param text:
+        :param exclude_title:
+        :param exclude_text:
+        :param title_match_mode:
+        :param detect_hidden_windows:
+        :param blocking:
+        :return:
+        """
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -380,6 +415,19 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[Position, AsyncFutureResult[Position]]:
+        """
+        Analog to ``ControlGetPos``
+
+        :param control:
+        :param title:
+        :param text:
+        :param exclude_title:
+        :param exclude_text:
+        :param title_match_mode:
+        :param detect_hidden_windows:
+        :param blocking:
+        :return:
+        """
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -438,7 +486,7 @@ class AsyncAHK:
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         """
-        Analog for ControlSend
+        Analog for ``ControlSend``
 
         Reference: https://www.autohotkey.com/docs/commands/ControlSend.htm
 
@@ -582,6 +630,19 @@ class AsyncAHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[List[AsyncWindow], AsyncFutureResult[List[AsyncWindow]]]:
+        """
+        Enumerate all windows matching the criteria.
+
+
+        :param title:
+        :param text:
+        :param exclude_title:
+        :param exclude_text:
+        :param title_match_mode:
+        :param detect_hidden_windows:
+        :param blocking:
+        :return:
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -606,6 +667,13 @@ class AsyncAHK:
     async def get_mouse_position(
         self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True
     ) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]:
+        """
+        Analog for ``MouseGetPos``
+
+        :param coord_mode:
+        :param blocking:
+        :return:
+        """
         if coord_mode:
             args = [str(coord_mode)]
         else:
@@ -615,6 +683,11 @@ class AsyncAHK:
 
     @property
     def mouse_position(self) -> AsyncPropertyReturnTupleIntInt:
+        """
+        Convenience property for ``get_mouse_position``
+
+        :return:
+        """
         warnings.warn(  # unasync: remove
             _PROPERTY_DEPRECATION_WARNING_MESSAGE.format('mouse_position'), category=DeprecationWarning, stacklevel=2
         )
@@ -622,6 +695,12 @@ class AsyncAHK:
 
     @mouse_position.setter
     def mouse_position(self, new_position: Tuple[int, int]) -> None:
+        """
+        Convenience setter for ``mouse_move``
+
+        :param new_position: a tuple of x,y coordinates to move to
+        :return:
+        """
         raise RuntimeError('Use of the mouse_position setter is not supported in the async API.')  # unasync: remove
         x, y = new_position
         return self.mouse_move(x=x, y=y, speed=0, relative=False)
@@ -645,6 +724,16 @@ class AsyncAHK:
         relative: bool = False,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
+        """
+        Analog for ``MouseMove``
+
+        :param x:
+        :param y:
+        :param speed:
+        :param relative:
+        :param blocking:
+        :return:
+        """
         if relative and (x is None or y is None):
             x = x or 0
             y = y or 0
@@ -678,12 +767,23 @@ class AsyncAHK:
     async def get_active_window(
         self, blocking: bool = True
     ) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]:
+        """
+        Gets the currently active window.
+
+        :param blocking:
+        :return:
+        """
         return await self.win_get(
             title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking
         )
 
     @property
     def active_window(self) -> AsyncPropertyReturnOptionalAsyncWindow:
+        """
+        Gets the currently active window
+
+        :return:
+        """
         warnings.warn(  # unasync: remove
             _PROPERTY_DEPRECATION_WARNING_MESSAGE.format('active_window'), category=DeprecationWarning, stacklevel=2
         )
