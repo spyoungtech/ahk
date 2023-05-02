@@ -442,8 +442,25 @@ code is safe.
 
 ## Run arbitrary AutoHotkey scripts
 
-TBD
+You can also run arbitrary AutoHotkey code either as a `.ahk` script file or as a string containing AHK code.
 
+```python
+from ahk import AHK
+ahk = AHK()
+my_script = '''\
+MouseMove, 100, 100
+; etc...
+'''
+
+ahk.run_script(my_script)
+```
+
+```python
+from ahk import AHK
+ahk = AHK()
+script_path = r'C:\Path\To\myscript.ahk'
+ahk.run_script(script_path)
+```
 
 
 <a name="deps" />
