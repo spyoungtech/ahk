@@ -30,7 +30,7 @@ ahk.mouse_move(x=150, y=150, speed=10, blocking=True) # Moves the mouse to x, y 
 print(ahk.mouse_position)  #  (150, 150)
 ```
 
-![ahk](https://raw.githubusercontent.com/spyoungtech/ahk/master/docs/_static/ahk.gif)
+![ahk](https://raw.githubusercontent.com/spyoungtech/ahk/9d049a327c7a10c9f19dfef89fc63668695023fc/docs/_static/ahk.gif)
 
 # Examples
 
