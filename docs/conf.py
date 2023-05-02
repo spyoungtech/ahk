@@ -39,3 +39,5 @@ autodoc_default_options = {
     'undoc-members': True,
     'special-members': '__init__',
 }
+
+always_document_param_types = True
