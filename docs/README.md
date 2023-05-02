@@ -1,6 +1,6 @@
 # ahk
 
-A Python wrapper around AHK.
+A fully typed Python wrapper around AHK.
 
 [![Docs](https://readthedocs.org/projects/ahk/badge/?version=latest)](https://ahk.readthedocs.io/en/latest/?badge=latest)
 [![Build](https://ci.appveyor.com/api/projects/status/2c53x6gglw9nxgj1/branch/master?svg=true)](https://ci.appveyor.com/project/spyoungtech/ahk/branch/master)
@@ -14,12 +14,9 @@ A Python wrapper around AHK.
 ```
 pip install ahk
 ```
-Requires Python 3.6+
-
-[Async API](#async-api) requires Python 3.8+
+Requires Python 3.8+
 
 See also [Non-Python dependencies](#non-python-dependencies)
-
 
 # Usage
 
@@ -37,7 +34,71 @@ print(ahk.mouse_position)  #  (150, 150)
 
 # Examples
 
-Non-exhaustive examples of some of the functions available with this package. Full documentation coming soon!
+Non-exhaustive examples of some functions available with this package. Full documentation coming soon!
+
+## Hotkeys
+
+Hotkeys can be configured to run python functions as callbacks.
+
+For example:
+
+```python
+from ahk import AHK
+
+def my_callback():
+    print('Hello callback!')
+
+ahk = AHK()
+# when WIN + n is pressed, fire `my_callback`
+ahk.add_hotkey('#n', callback=my_callback)
+ahk.start_hotkeys()  # start the hotkey process thread
+ahk.block_forever()  # not strictly needed in all scripts -- stops the script from exiting; sleep forever
+```
+
+Now whenever you press <kbd>![Windows Key][winlogo]</kbd> + <kbd>n</kbd>, the `my_callback` callback function will be called in a background thread.
+
+You can also add an exception handler for your callback:
+
+```python
+from ahk import AHK
+ahk = AHK()
+
+def go_boom():
+    raise Exception('boom!')
+
+def my_ex_handler(hotkey: str, exception: Exception):
+    print('exception with callback for hotkey', hotkey, 'Here was the error:', exception)
+
+ahk.add_hotkey('#n', callback=go_boom, ex_handler=my_ex_handler)
+```
+
+Note that:
+
+- Hotkeys run in a separate process that must be started manually (with `ahk.start_hotkeys()`)
+- Hotkeys can be stopped with `ahk.stop_hotkeys()` (will not stop actively running callbacks)
+- Hotstrings (discussed below) share the same process with hotkeys and are started/stopped in the same manner
+- If hotkeys or hotstrings are added while the process is running, the underlying AHK process is restarted automatically
+
+
+See also the [relevant AHK documentation](https://www.autohotkey.com/docs/Hotkeys.htm)
+
+## Hotstrings
+
+
+[Hotstrings](https://www.autohotkey.com/docs/Hotstrings.htm) can also be added to the hotkey process thread.
+
+In addition to Hotstrings supporting normal AHK string replacements, you can also provide Python callbacks (with optional exception handlers) in response to hotstrings triggering.
+
+```python
+from ahk import AHK
+ahk = AHK()
+
+def my_callback():
+    print('hello callback!')
+
+ahk.add_hotstring('btw', 'by the way')  # string replacements
+ahk.add_hotstring('btw', my_callback) # call python function in response to the hotstring
+```
 
 ## Mouse
 
@@ -46,12 +107,14 @@ from ahk import AHK
 
 ahk = AHK()
 
-ahk.mouse_position  # Returns a tuple of mouse coordinates (x, y)
+ahk.mouse_position  # Returns a tuple of mouse coordinates (x, y) (relative to active window)
+ahk.get_mouse_position(coord_mode='Screen') # get coordinates relative to the screen
 ahk.mouse_move(100, 100, speed=10, relative=True)  # Moves the mouse reletave to the current position
 ahk.mouse_position = (100, 100)  # Moves the mouse instantly to absolute screen position
 ahk.click()  # Click the primary mouse button
-ahk.double_click() # Clicks the primary mouse button twice
-ahk.click(200, 200)  # Moves the mouse to a particular position and clicks
+ahk.click(200, 200)  # Moves the mouse to a particular position and clicks (relative to active window)
+ahk.click(100, 200, coord_mode='Screen') # click relative to the screen instead of active window
+ahk.click(button='R', click_count=2) # Clicks the right mouse button twice
 ahk.right_click() # Clicks the secondary mouse button
 ahk.mouse_drag(100, 100, relative=True) # Holds down primary button and moves the mouse
 ```
@@ -63,16 +126,18 @@ from ahk import AHK
 
 ahk = AHK()
 
-ahk.type('hello, world!')  # Send keys, as if typed (performs ahk string escapes)
-ahk.send_input('Hello`, World{!}')  # Like AHK SendInput, must escape strings yourself!
+ahk.type('hello, world!')  # Send keys, as if typed (performs string escapes for you)
+ahk.send_input('Hello, {U+1F30E}{!}')  # Like AHK SendInput
+                                   # Unlike `type`, control sequences must be escaped manually.
+                                   # For example the characters `!^+#=` and braces (`{` `}`) must be escaped manually.
 ahk.key_state('Control')  # Return True or False based on whether Control key is pressed down
 ahk.key_state('CapsLock', mode='T')  # Check toggle state of a key (like for NumLock, CapsLock, etc)
 ahk.key_press('a')  # Press and release a key
 ahk.key_down('Control')  # Press down (but do not release) Control key
 ahk.key_up('Control')  # Release the key
+ahk.set_capslock_state("On")  # Turn CapsLock on
 ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be pressed. NOTE: This throws
                               # a TimeoutError if the key isn't pressed within the timeout window
-ahk.set_capslock_state("on")  # Turn CapsLock on
 ```
 
 ## Windows
@@ -84,21 +149,20 @@ You can do stuff with windows, too.
 
 ```python
 from ahk import AHK
-from ahk.window import Window
 
 ahk = AHK()
 
 win = ahk.active_window                        # Get the active window
 win = ahk.win_get(title='Untitled - Notepad')  # by title
-win = list(ahk.windows())                      # list of all windows
-win = Window(ahk, ahk_id='0xabc123')           # by ahk_id
-win = Window.from_mouse_position(ahk)          # the window under the mouse cursor
-win = Window.from_pid(ahk, pid='20366')                 # by process ID
+all_windows = ahk.list_windows()               # list of all windows
+win = ahk.win_get_from_mouse_position()        # the window under the mouse cursor
+win = ahk.win_get(title='ahk_pid 20366')       # get window from pid
 
 # Wait for a window
 try:
     # wait up to 5 seconds for notepad
     win = ahk.win_wait(title='Untitled - Notepad', timeout=5)
+    # see also: win_wait_active, win_wait_not_active
 except TimeoutError:
     print('Notepad was not found!')
 ```
@@ -111,13 +175,12 @@ from ahk import AHK
 ahk = AHK()
 
 ahk.run_script('Run Notepad') # Open notepad
-win = ahk.find_window(title=b'Untitled - Notepad') # Find the opened window
+win = ahk.find_window(title='Untitled - Notepad') # Find the opened window
 
 win.send('hello')  # Send keys directly to the window (does not need focus!)
 win.move(x=200, y=300, width=500, height=800)
 
 win.activate()           # Give the window focus
-win.activate_bottom()    # Give the window focus
 win.close()              # Close the window
 win.hide()               # Hide the windwow
 win.kill()               # Kill the window
@@ -130,25 +193,26 @@ win.enable()             # Enable it again
 win.to_top()             # Move the window on top of other windows
 win.to_bottom()          # Move the window to the bottom of the other windows
 
-win.always_on_top = True # Make the window always on top
+win.always_on_top = 'On' # Make the window always on top
+# or
+win.set_always_on_top('On')
 
-for window in ahk.windows():
+for window in ahk.list_windows():
     print(window.title)
 
     # Some more attributes
-    print(window.text)
-    print(window.rect)   # (x, y, width, height)
-    print(window.id)     # ahk_id
-    print(window.pid)
-    print(window.process)
+    print(window.text)           # window text -- or .get_text()
+    print(window.get_position()) # (x, y, width, height)
+    print(window.id)             # the ahk_id of the window
+    print(window.pid)            # process ID -- or .get_pid()
+    print(window.process_path)   # or .get_process_path()
 
 
-if window.active:        # Check if window active
-    window.minimize()
+if win.active:        # or win.is_active()
+    ...
 
-if window.exist:         # Check if window exist
-    window.maximize()
-
+if win.exist:         # or win.exists()
+    ...
 ```
 
 ## Screen
@@ -164,8 +228,36 @@ ahk.image_search('C:\\path\\to\\image.jpg')  # Find an image on screen
 ahk.image_search('C:\\path\\to\\image.jpg', upper_bound=(100, 100),  # upper-left corner of search area
                                             lower_bound=(400, 400))  # lower-right corner of search area
 ahk.pixel_get_color(100, 100)  # Get color of pixel located at coords (100, 100)
-ahk.pixel_search('0x9d6346')  # Get coords of the first pixel with specified color
+ahk.pixel_search(color='0x9d6346', search_region_start=(0, 0), search_region_end=(500, 500))  # Get coords of the first pixel with specified color
 ```
+
+## Clipboard
+
+Get/set `Clipboard` data
+
+```python
+from ahk import AHK
+ahk = AHK()
+
+ahk.set_clipboard('hello \N{EARTH GLOBE AMERICAS}')  # set clipboard text contents
+ahk.get_clipboard() # get clipboard text contents
+# 'hello 🌎'
+```
+
+You may also get/set `ClipboardAll` -- however, you should never try to call `set_clipboard_all` with any other
+data than as _exactly_ as returned by `get_clipboard_all` or unexpected problems may occur.
+
+```python
+from ahk import AHK
+ahk = AHK()
+
+# save all clipboard contents in all formats
+saved_clipboard = ahk.get_clipboard_all()
+ahk.set_clipboard('something else')
+...
+ahk.set_clipboard_all(saved_clipboard)  # restore saved content from earlier
+```
+
 
 ## Sound
 
@@ -185,48 +277,37 @@ ahk.sound_set(50, device_number=1, component_type='MASTER', control_type='VOLUME
 ## GUI
 
 ```python
+import time
 from ahk import AHK
 
 ahk = AHK()
-ahk.show_tooltip("hello4", second=2, x=10, y=10)                              # ToolTip
+ahk.show_tooltip("hello4", x=10, y=10)
+time.sleep(2)
+ahk.hide_tooltip() # hide the tooltip
 ahk.show_info_traytip("Info", "It's also info", silent=False, blocking=True)  # Default info traytip
-ahk.show_warning_traytip("Warning", "It's warning")                           # Warning traytip
-ahk.show_error_traytip("Error", "It's error")                                 # Error trytip
+ahk.show_warning_traytip("Warning", "It's a warning")                           # Warning traytip
+ahk.show_error_traytip("Error", "It's an error")                                 # Error trytip
 ```
 
-## non-blocking modes
+## Global state changes
 
-For some functions, you can also opt for a non-blocking interface, so you can do other stuff while AHK scripts run.
+You can change various global states such as `CoordMode`, `DetectHiddenWindows`, etc. so you don't have to pass
+these parameters directly to function calls
 
 ```python
-import time
-
 from ahk import AHK
 
 ahk = AHK()
 
-ahk.mouse_position = (200, 200)  # Moves the mouse instantly to the start position
-start = time.time()
-ahk.mouse_move(x=100, y=100, speed=30, blocking=False)
-while True:  #  report mouse position while it moves
-    t = round(time.time() - start, 4)
-    position = ahk.mouse_position
-    print(t, position)
-    if position == (100, 100):
-        break
+ahk.set_coord_mode('Mouse', 'Screen')  # set default Mouse CoordMode to be relative to Screen
+ahk.set_detect_hidden_windows(True) # Turn on detect hidden windows by default
+ahk.set_send_level(5)  # Change send https://www.autohotkey.com/docs/v1/lib/SendLevel.htm
+
+ahk.set_title_match_mode('Slow') # change title match speed and/or mode
+ahk.set_title_match_mode('RegEx')
+ahk.set_title_match_mode(('RegEx', 'Slow'))  # or both at the same time
 ```
 
-You should see an output something like
-
-```
-0.032 (187, 187)
-0.094 (173, 173)
-0.137 (164, 164)
-...
-0.788 (100, 103)
-0.831 (100, 101)
-0.873 (100, 100)
-```
 ## Add directives
 
 You can add directives that will be added to all generated scripts.
@@ -241,78 +322,85 @@ ahk = AHK(directives=[NoTrayIcon])
 
 By default, some directives are automatically added to ensure functionality and are merged with any user-provided directives.
 
-## Run arbitrary AutoHotkey scripts
+## Registry methods
+
+You can read/write/delete registry keys:
 
 ```python
+from ahk import AHK
+ahk = AHK()
+
+ahk.reg_write('REG_SZ', r'HKEY_CURRENT_USER\SOFTWARE\my-software', value='test')
+ahk.reg_write('REG_SZ', r'HKEY_CURRENT_USER\SOFTWARE\my-software', value_name='foo', value='bar')
+ahk.reg_read(r'HKEY_CURRENT_USER\SOFTWARE\my-software')  # 'test'
+ahk.reg_delete(r'HKEY_CURRENT_USER\SOFTWARE\my-software')
+```
+
+If a key does not exist or some other problem occurs, an exception is raised.
+
+## non-blocking modes
+
+Most methods in this library supply a non-blocking interface, so your Python scripts can continue executing while
+your AHK scripts run.
+
+By default, all calls are _blocking_ -- each function will execute completely before the next function is ran.
+
+However, sometimes you may want to run other code while AHK executes some code.  When the `blocking` keyword
+argument is supplied with `False`, function calls will return immediately while the AHK function is carried out
+in the background.
+
+
+As an example, you can move the mouse slowly and report its position as it moves:
+
+```python
+import time
+
 from ahk import AHK
 
 ahk = AHK()
 
-ahk_script = 'Run Notepad'
-ahk.run_script(ahk_script, blocking=False)
+ahk.mouse_position = (200, 200)  # Moves the mouse instantly to the start position
+start = time.time()
+
+# move the mouse very slowly
+ahk.mouse_move(x=100, y=100, speed=30, blocking=False)
+
+# This code begins executing right away, even though the mouse is still moving
+while True:
+    t = round(time.time() - start, 4)
+    position = ahk.mouse_position
+    print(t, position) #  report mouse position while it moves
+    if position == (100, 100):
+        break
 ```
 
 
-### Communicating data from ahk to Python
+When you specify `blocking=False` you will always receive a special `FutureResult` object (or `AsyncFutureResult` object in the async API, discussed below)
+which allows you to wait on the function to complete and retrieve return value through a `get_result` function. Even
+when a function normally returns `None`, this can be useful to ensure AHK has finished executing the function.
 
-If you're writing your own ahk scripts to use with this library, you can use `FileAppend` with the `*` parameter to get data from your ahk script into Python.
+nonblocking calls:
 
-Suppose you have a script like so
-
-```autohotkey
-#Persistent
-data := "Hello Data!"
-FileAppend, %data%, *, UTF-8 ; send data var to stdout
-ExitApp
-```
-
-```py
-result = ahk.run_script(my_script)
-print(result)  # Hello Data!
-```
-
-If your autohotkey returns something that can't be decoded, add the keyword argument `decode=False` in which case you'll get back a `CompletedProcess` object where stdout (and stderr) will be bytes and you can handle it however you choose.
-
-```py
-result = ahk.run_script(my_script, decode=False)
-print(result.stdout)  # b'Hello Data!'
-```
-
-
-## Preview features
-
-Preview features are experimental features that are may not be fully functional.
-These features are (even more) likely to have breaking changes without warning.
-
-Github issues are provided for convenience to collect feedback on these features.
-
-
-## AHKDaemon
-
-Normally, `AHK` works by creating a new subprocess for every command invocation. Because processes are expensive
-to create in Windows, this can lead to performance issues for some use-cases. `AHKDaemon` allows all AHK commands to be
-carried out in a single process, as opposed to running each command in a new subprocess, improving performance.
-
-Some other details change in Daemon mode, such as persistence of state (e.g. changes to CoordMode).
-
+- Are isolated in a new AHK process that will terminate after the call is complete
+- Always start immediately
+- Do not inherit previous global state changes (e.g., from `set_coord_mode` calls or similar) -- this may change in a future version.
+- will not block other calls from starting
+- will always return a special `FutureResult` object (or `AsyncFutureResult` object in the async API, discussed below)
+which allows you to wait on the function to complete and retrieve return value through the `result` function. Even
+when a function normally returns `None`, this can be useful to ensure AHK has finished executing the function.
 
 ```python
-from ahk.daemon import AHKDaemon
-daemon = AHKDaemon()
-daemon.start()
-daemon.mouse_move(100, 100)
+from ahk import AHK
+ahk = AHK()
+future_result = ahk.mouse_move(100, 100, speed=40, blocking=False)
+...
+# wait on the mouse_move to finish
+future_result.result(timeout=10) # timeout keyword is optional
 ```
 
-For the most part, the AHK Daemon works just like the regular `AHK` class, with a few caveats. Most notably, AHKDaemon
-does not allow you to run arbitrary AutoHotkey scripts and does not yet support Hotkeys. However, you can always use
-the normal `AHK` class alongside the daemon for these needs.
-
-`AsyncAHKDaemon` is also available for asyncio support.
-
-In the future, AHKDaemon may become the default implementation.
 
 
-## Async API
+## Async API (asyncio)
 
 An async API is provided so functions can be called using `async`/`await`.
 All the same methods from the synchronous API are available in the async API.
@@ -329,143 +417,49 @@ async def main():
 
 asyncio.run(main())
 ```
-For the most part, the async API is identical to that of the normal API, with a few exceptions:
 
-While properties (like `.mouse_position` or `.title` for windows) can be `await`ed,
-additional methods (like `get_mouse_position()` and `get_title()`) have been added for a more intuitive API.
+The async API is identical to that of the normal API, with a few notable differences:
 
-Property setters have different (probably undesired) behavior
-in the async API. Instead, you should use a comparable method. If you _do_ use the property setters, the invocation is created using `asyncio.create_task()`, which means
-that the task won't run until control is yielded back to the event loop. For now, this will also raise a warning to the same.
+- While properties (like `.mouse_position` or `.title` for windows) can be `await`ed,
+additional methods (like `get_mouse_position()` and `get_title()`) have been added for a more intuitive API and
+are recommended over the use of properties.
+- Property _setters_ (e.g., `ahk.mouse_postion = (200, 200)`) are not allowed in the async API (a RunTimeError is raised).
+Property setters remain available in the sync API.
+- `AsyncFutureResult` objects (returned when specifying `blocking=False`) work the same as the `FutureResult` objects in the sync API, except the `timeout` keyword is not supported for the `result` method).
 
-
-Lastly, while it's possible to pass `blocking=False` in the async API, this sometimes will cause problems with certain functions. For now, a warning is raised in this case.
-
-```python
-ahk = AsyncAHK()
-async def main():
-    pos = ahk.mouse_position  # BAD! Does not work!
-    pos = await ahk.mouse_position # OK. Works, but looks kind of weird
-    pos = await ahk.get_mouse_position() # GOOD!
-
-    # BAD: You probably don't want to do this
-    ahk.mouse_position = (100, 100) # won't do anything right away. Raises warning
-    print(await ahk.get_mouse_position()) # probably won't be 100,100
-
-    # GOOD: Instead, do this:
-    await ahk.mouse_move(100, 100, speed=0)
-    assert await ahk.get_mouse_position() == (100, 100)
-```
+Note also that:
+- by default, awaited tasks on a single `AsyncAHK` instance will not run concurrently. You must either
+use `blocking=False`, as in the sync API, or use multiple instances of `AsyncAHK`.
+- There is no difference in working with hotkeys (and their callbacks) in the async vs sync API.
 
 
-### Hotkeys
+## type-hints and mypy
 
-[GH-9]
-
-Hotkeys now have a primitive implementation. You give it a hotkey (a string the same as in an ahk script, without the `::`)
-and the body of an AHK script to execute as a response to the hotkey.
-
-Right now, only AHK code is supported as callbacks for hotkeys.
-Support for Python callbacks via the Async API is planned.
-
-```python
-from ahk import AHK, Hotkey
-
-ahk = AHK()
-
-key_combo = '#n' # Define an AutoHotkey key combonation
-script = 'Run Notepad' # Define an ahk script
-hotkey = Hotkey(ahk, key_combo, script) # Create Hotkey
-hotkey.start()  #  Start listening for hotkey
-```
-At this point, the hotkey is active.
-If you press <kbd>![Windows Key][winlogo]</kbd> + <kbd>n</kbd>, the script `Run Notepad` will execute.
-
-There is no need to add `return` to the provided script, as it is provided by the template.
-
-To stop the hotkey call the `stop()` method.
-
-```python
-hotkey.stop()
-```
-
-See also the [relevant AHK documentation](https://www.autohotkey.com/docs/Hotkeys.htm)
-
-### ActionChain
-
-[GH-25]
-
-`ActionChain`s let you define a set of actions to be performed in order at a later time.
-
-They work just like the `AHK` class, except the actions are deferred until the `perform` method is called.
-
-An additional method `sleep` is provided to allow for waiting between actions.
-
-```python
-from ahk import ActionChain
-
-ac = ActionChain()
-
-# An Action Chain doesn't perform the actions until perform() is called on the chain
-
-ac.mouse_move(100, 100, speed=10)  # nothing yet
-ac.sleep(1)  # still nothing happening
-ac.mouse_move(500, 500, speed=10)  # not yet
-ac.perform()  # *now* each of the actions run in order
-```
-
-Just like anywhere else, scripts running simultaneously may conflict with one another, so using blocking interfaces is
-generally recommended. Currently, there is limited support for interacting with windows in actionchains, you may want to use `win_set`)
+This library is fully type-hinted, allowing you to leverage tools like `mypy` to help validate the type-correctness
+of your code. IDEs that implement type-checking features are also able to leverage type hints to help ensure your
+code is safe.
 
 
-### find_window/find_windows methods
+## Run arbitrary AutoHotkey scripts
 
-[GH-26]
+TBD
 
-Right now, these are implemented by iterating over all window handles and filtering with Python.
-They may be optimized in the future.
 
-`AHK.find_windows` returns a generator filtering results based on attributes provided as keyword arguments.
-`AHK.find_window` is similar, but returns the first matching window instead of all matching windows.
-
-There are couple convenience functions, but not sure if these will stay around or maybe we'll add more, depending on feedback.
-
-* find_windows_by_title
-* find_window_by_title
-* find_windows_by_text
-* find_window_by_text
-
-## Errors and Debugging
-
-You can enable debug logging, which will output script text before execution, and some other potentially useful
-debugging information.
-
-```python
-import logging
-logging.basicConfig(level=logging.DEBUG)
-```
-(See the [logging module documentation](https://docs.python.org/3/library/logging.html) for more information)
-
-Also note that, for now, errors with running AHK scripts will often pass silently. In the future, better error handling
-will be added.
 
 <a name="deps" />
 
-## Non-Python dependencies
+# Non-Python dependencies
 
 To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). It's expected to be on PATH by default.
 
-A convenient way to do this is to install the `binary` extra (requires version 0.13 or higher of this package)
+Note: this should be AutoHotkey V1. AutoHotkey V2 is not yet supported.
+
+A convenient way to do this is to install the `binary` extra
 
 ```
 pip install "ahk[binary]"
 ```
 
-For versions < 0.13 you can install the ahk-binary package directly:
-
-```
-pip install "ahk-binary<2"
-```
 
 You can also use the `AHK_PATH` environment variable to specify the executable location.
 
@@ -488,17 +482,8 @@ All contributions are welcomed and appreciated.
 
 Please feel free to open a GitHub issue or PR for feedback, ideas, feature requests or questions.
 
-There's still some work to be done in the way of implementation. The ideal interfaces are still yet to be determined and
-*your* help would be invaluable.
-
-
-The vision is to provide access to the most useful features of the AutoHotkey API in a Pythonic way.
-
-
 [winlogo]: http://i.stack.imgur.com/Rfuw7.png
-[GH-9]: https://github.com/spyoungtech/ahk/issues/9
-[GH-25]: https://github.com/spyoungtech/ahk/issues/25
-[GH-26]: https://github.com/spyoungtech/ahk/issues/26
+
 
 # Similar projects
 

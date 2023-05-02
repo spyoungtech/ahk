@@ -15,8 +15,8 @@ ahk Python wrapper documentation
    :caption: Contents:
 
    quickstart
-   api/index
    README
+   api/index
 
 
 

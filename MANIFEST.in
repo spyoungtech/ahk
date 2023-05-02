@@ -1,3 +1,4 @@
-include LICENSE
+include ahk/templates/daemon.ahk
+include ahk/templates/hotkeys.ahk
 include docs/README.md
-recursive-include ahk/templates *
+include buildunasync.py

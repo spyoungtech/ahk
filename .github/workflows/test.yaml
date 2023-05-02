@@ -1,0 +1,36 @@
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ["3.10", "3.9", "3.8", "3.11"]
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+          python -m pip install .
+          python -m pip install tox
+          python -m pip install ahk-binary
+      - name: Test with coverage/pytest
+        timeout-minutes: 5
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          tox -e py
+      - name: Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install --upgrade coveralls
+          coveralls --service=github

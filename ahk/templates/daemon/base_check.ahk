@@ -1,1 +1,0 @@
-BaseCheck,{{ command }},{{ title }}
