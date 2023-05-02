@@ -95,7 +95,7 @@ SyncPropertyReturnOptionalAsyncWindow: TypeAlias = Optional[Window]
 _PROPERTY_DEPRECATION_WARNING_MESSAGE = 'Use of the {0} property is not recommended (in the async API only) and may be removed in a future version. Use the get_{0} method instead'
 
 
-def resolve_button(button: Union[str, int]) -> str:
+def _resolve_button(button: Union[str, int]) -> str:
     """
     Resolve a string of a button name to a canonical name used for AHK script
     :param button:
@@ -2487,7 +2487,7 @@ class AHK:
             assert x is not None and y is not None, 'If provided, position must be specified by x AND y'
         if button is None:
             button = 'L'
-        button = resolve_button(button)
+        button = _resolve_button(button)
 
         if relative:
             r = 'Rel'
