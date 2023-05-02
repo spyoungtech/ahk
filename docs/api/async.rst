@@ -19,6 +19,12 @@ AsyncWindow
    :members:
    :undoc-members:
 
+AsyncControl
+------------
+.. autoclass:: ahk._async.window.AsyncControl
+   :members:
+   :undoc-members:
+
 
 AsyncAHK
 --------

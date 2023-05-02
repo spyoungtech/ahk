@@ -13,3 +13,4 @@ about the programming interface. This is largely auto-generated documentation.
    sync
    async
    methods
+   directives

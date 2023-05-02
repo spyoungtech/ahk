@@ -23,6 +23,11 @@ Window
    :members:
    :undoc-members:
 
+AsyncControl
+------------
+.. autoclass:: ahk._sync.window.Control
+   :members:
+   :undoc-members:
 
 AHK
 ---

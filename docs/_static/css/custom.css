@@ -1,0 +1,7 @@
+a > code.xref > span {
+    color: rgb(85, 199, 255);
+}
+
+a:visited > code.xref > span {
+    color: rgb(110, 140, 192)
+}
