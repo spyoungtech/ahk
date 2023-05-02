@@ -1,6 +1,6 @@
-sphinx<3
+sphinx
 mistune<2
 sphinx-rtd-theme
-sphinx-autodoc-typehints<1.11
+sphinx-autodoc-typehints
 m2r
 jinja2
