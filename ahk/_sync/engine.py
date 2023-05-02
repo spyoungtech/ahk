@@ -189,9 +189,7 @@ class AHK:
         """
         Sets the default title match mode
 
-        Has no effect for `Window`/`Control` instance methods (these always use hwnd)
-
-        Does not affect methods called with `blocking=True` (because these run in a separate AHK process)
+        Does not affect methods called with ``blocking=True`` (because these run in a separate AHK process)
 
         Reference: https://www.autohotkey.com/docs/commands/SetTitleMatchMode.htm
 
@@ -221,7 +219,7 @@ class AHK:
         """
         Get the title match mode.
 
-        I.E. the current value of `A_TitleMatchMode`
+        I.E. the current value of ``A_TitleMatchMode``
 
         """
         resp = self._transport.function_call('AHKGetTitleMatchMode')
@@ -231,18 +229,24 @@ class AHK:
         """
         Get the title match mode speed.
 
-        I.E. the current value of `A_TitleMatchModeSpeed`
+        I.E. the current value of ``A_TitleMatchModeSpeed``
 
         """
         resp = self._transport.function_call('AHKGetTitleMatchSpeed')
         return resp
 
     def set_coord_mode(self, target: CoordModeTargets, relative_to: CoordModeRelativeTo = 'Screen') -> None:
+        """
+        Analog of `CoordMode <https://www.autohotkey.com/docs/commands/CoordMode.htm>`_
+        """
         args = [str(target), str(relative_to)]
         self._transport.function_call('AHKSetCoordMode', args)
         return None
 
     def get_coord_mode(self, target: CoordModeTargets) -> str:
+        """
+        Analog for ``A_CoordMode<target>``
+        """
         args = [str(target)]
         resp = self._transport.function_call('AHKGetCoordMode', args)
         return resp
@@ -273,19 +277,7 @@ class AHK:
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
         """
-
-        :param button: the mouse button to use
-        :param click_count: how many times to click
-        :param options: options -- same meaning as in AutoHotkey
-        :param control: the control to click
-        :param title:
-        :param text:
-        :param exclude_title:
-        :param exclude_text:
-        :param title_match_mode:
-        :param detect_hidden_windows:
-        :param blocking:
-        :return:
+        Analog for `ControlClick <https://www.autohotkey.com/docs/commands/ControlClick.htm>`_
         """
         args = [control, title, text, str(button), str(click_count), options, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -344,17 +336,7 @@ class AHK:
         blocking: bool = True,
     ) -> Union[str, FutureResult[str]]:
         """
-        Analog to ``ControlGetText``
-
-        :param control:
-        :param title:
-        :param text:
-        :param exclude_title:
-        :param exclude_text:
-        :param title_match_mode:
-        :param detect_hidden_windows:
-        :param blocking:
-        :return:
+        Analog for `ControlGetText <https://www.autohotkey.com/docs/commands/ControlGetText.htm>`_
         """
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -412,17 +394,7 @@ class AHK:
         blocking: bool = True,
     ) -> Union[Position, FutureResult[Position]]:
         """
-        Analog to ``ControlGetPos``
-
-        :param control:
-        :param title:
-        :param text:
-        :param exclude_title:
-        :param exclude_text:
-        :param title_match_mode:
-        :param detect_hidden_windows:
-        :param blocking:
-        :return:
+        Analog to `ControlGetPos <https://www.autohotkey.com/docs/commands/ControlGetPos.htm>`_
         """
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -482,20 +454,7 @@ class AHK:
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
         """
-        Analog for ``ControlSend``
-
-        Reference: https://www.autohotkey.com/docs/commands/ControlSend.htm
-
-        :param keys:
-        :param control:
-        :param title:
-        :param text:
-        :param exclude_title:
-        :param exclude_text:
-        :param title_match_mode:
-        :param detect_hidden_windows:
-        :param blocking:
-        :return:
+        Analog for `ControlSend <https://www.autohotkey.com/docs/commands/ControlSend.htm>`_
         """
         args = [control, keys, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
@@ -541,17 +500,16 @@ class AHK:
 
     def stop_hotkeys(self) -> None:
         """
-        Stop the Autohotkey process for triggering hotkeys
+        Stop the Autohotkey process for triggering hotkeys/hotstrings
 
         """
         return self._transport.stop_hotkeys()
 
     def set_detect_hidden_windows(self, value: bool) -> None:
         """
-        Analog for AutoHotkey's `DetectHiddenWindows`
+        Analog for `DetectHiddenWindows <https://www.autohotkey.com/docs/commands/DetectHiddenWindows.htm>`_
 
-        :param value: The setting value. `True` to turn on hidden window detection, `False` to turn it off.
-
+        :param value: The setting value. ``True`` to turn on hidden window detection, ``False`` to turn it off.
         """
 
         if value not in (True, False):
@@ -629,15 +587,7 @@ class AHK:
         """
         Enumerate all windows matching the criteria.
 
-
-        :param title:
-        :param text:
-        :param exclude_title:
-        :param exclude_text:
-        :param title_match_mode:
-        :param detect_hidden_windows:
-        :param blocking:
-        :return:
+        Analog for `WinGet List subcommand <https://www.autohotkey.com/docs/v1/lib/WinGet.htm#List>_`
         """
         args = self._format_win_args(
             title=title,
@@ -664,11 +614,7 @@ class AHK:
         self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True
     ) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]:
         """
-        Analog for ``MouseGetPos``
-
-        :param coord_mode:
-        :param blocking:
-        :return:
+        Analog for `MouseGetPos <https://www.autohotkey.com/docs/commands/MouseGetPos.htm>`_
         """
         if coord_mode:
             args = [str(coord_mode)]
@@ -680,9 +626,9 @@ class AHK:
     @property
     def mouse_position(self) -> SyncPropertyReturnTupleIntInt:
         """
-        Convenience property for ``get_mouse_position``
+        Convenience property for :py:meth:`get_mouse_position`
 
-        :return:
+        Setter accepts a tuple of x,y coordinates passed to :py:meth:`mouse_mouse`
         """
         return self.get_mouse_position()
 
@@ -692,7 +638,6 @@ class AHK:
         Convenience setter for ``mouse_move``
 
         :param new_position: a tuple of x,y coordinates to move to
-        :return:
         """
         x, y = new_position
         return self.mouse_move(x=x, y=y, speed=0, relative=False)
@@ -717,14 +662,7 @@ class AHK:
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
         """
-        Analog for ``MouseMove``
-
-        :param x:
-        :param y:
-        :param speed:
-        :param relative:
-        :param blocking:
-        :return:
+        Analog for `MouseMove <https://www.autohotkey.com/docs/commands/MouseMove.htm>`_
         """
         if relative and (x is None or y is None):
             x = x or 0
@@ -744,7 +682,7 @@ class AHK:
 
     def a_run_script(self, *args: Any, **kwargs: Any) -> Union[str, FutureResult[str]]:
         """
-        Deprecated. Use ``run_script`` instead.
+        Deprecated. Use :py:meth:`run_script` instead.
         """
         warnings.warn('a_run_script is deprecated. Use run_script instead.', DeprecationWarning, stacklevel=2)
         return self.run_script(*args, **kwargs)
@@ -764,9 +702,6 @@ class AHK:
     ) -> Union[Optional[Window], FutureResult[Optional[Window]]]:
         """
         Gets the currently active window.
-
-        :param blocking:
-        :return:
         """
         return self.win_get(
             title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking
@@ -775,9 +710,7 @@ class AHK:
     @property
     def active_window(self) -> SyncPropertyReturnOptionalAsyncWindow:
         """
-        Gets the currently active window
-
-        :return:
+        Gets the currently active window. Convenience property for :py:meth:`get_active_window`
         """
         return self.get_active_window()
 
@@ -911,6 +844,9 @@ class AHK:
         return windows[0] if windows else None
 
     def get_volume(self, device_number: int = 1) -> float:
+        """
+        Analog for `SoundGetWaveVolume <https://www.autohotkey.com/docs/commands/SoundGetWaveVolume.htm>`_
+        """
         args = [str(device_number)]
         response = self._transport.function_call('AHKGetVolume', args)
         return response
@@ -926,6 +862,9 @@ class AHK:
     def key_down(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def key_down(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        """
+        Shortcut for :py:meth:`send_input` but transforms specified key to perform a key "DOWN" only (no release)
+        """
         if isinstance(key, str):
             key = Key(key_name=key)
         if blocking:
@@ -947,6 +886,10 @@ class AHK:
     def key_press(
         self, key: Union[str, Key], *, release: bool = True, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
+        """
+        Press (and release) a key. Sends `:py:meth:`key_down` then, if ``release`` is ``True`` (the default), sends
+        :py:meth:`key_up` subsequently.
+        """
         if blocking:
             self.key_down(key, blocking=True)
             if release:
@@ -969,6 +912,9 @@ class AHK:
     def key_release(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def key_release(self, key: Union[str, Key], *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        """
+        Alias for :py:meth:`key_up`
+        """
         if blocking:
             self.key_up(key=key, blocking=True)
             return None
@@ -997,6 +943,9 @@ class AHK:
         FutureResult[float],
         FutureResult[None],
     ]:
+        """
+        Analog for `GetKeyState <https://www.autohotkey.com/docs/commands/GetKeyState.htm#command>`_
+        """
         args: List[str] = [key_name]
         if mode is not None:
             if mode not in ('T', 'P'):
@@ -1016,6 +965,10 @@ class AHK:
     def key_up(self, key: Union[str, Key], blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def key_up(self, key: Union[str, Key], blocking: bool = True) -> Union[None, FutureResult[None]]:
+        """
+        Shortcut for :py:meth:`send_input` but transforms specified key to perform a key "UP" only. Useful if the key
+        was previously pressed down but not released.
+        """
         if isinstance(key, str):
             key = Key(key_name=key)
         if blocking:
@@ -1043,6 +996,9 @@ class AHK:
         released: bool = False,
         blocking: bool = True,
     ) -> Union[int, FutureResult[int]]:
+        """
+        Analog for `KeyWait <https://www.autohotkey.com/docs/commands/KeyWait.htm>`_
+        """
         options = ''
         if not released:
             options += 'D'
@@ -1054,15 +1010,22 @@ class AHK:
         if options:
             args.append(options)
 
-        resp = self._transport.function_call('AHKKeyWait', args)
+        resp = self._transport.function_call('AHKKeyWait', args, blocking=blocking)
         return resp
 
     def run_script(
         self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
     ) -> Union[str, FutureResult[str]]:
+        """
+        Run an AutoHotkey script.
+        Can either be a path to a script (``.ahk``) file or a string containing script contents
+        """
         return self._transport.run_script(script_text_or_path, blocking=blocking, timeout=timeout)
 
     def set_send_level(self, level: int) -> None:
+        """
+        Analog for `SendLevel <https://www.autohotkey.com/docs/commands/SendLevel.htm>`_
+        """
         if not isinstance(level, int):
             raise TypeError('level must be an integer between 0 and 100')
         if not 0 <= level <= 100:
@@ -1071,6 +1034,10 @@ class AHK:
         self._transport.function_call('AHKSetSendLevel', args)
 
     def get_send_level(self) -> int:
+        """
+        Get the current `SendLevel <https://www.autohotkey.com/docs/commands/SendLevel.htm>`_
+        (I.E. the value of ``A_SendLevel``)
+        """
         resp = self._transport.function_call('AHKGetSendLevel')
         return resp
 
@@ -1093,6 +1060,9 @@ class AHK:
         key_press_duration: Optional[int] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Send <https://www.autohotkey.com/docs/v1/lib/Send.htm>`_
+        """
         args = [s]
         if key_delay:
             args.append(str(key_delay))
@@ -1128,6 +1098,9 @@ class AHK:
         key_press_duration: Optional[int] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SendRaw <https://www.autohotkey.com/docs/v1/lib/Send.htm>`_
+        """
         resp = self.send(
             s, raw=True, key_delay=key_delay, key_press_duration=key_press_duration, blocking=blocking
         )
@@ -1144,6 +1117,9 @@ class AHK:
     def send_input(self, s: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def send_input(self, s: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SendInput <https://www.autohotkey.com/docs/v1/lib/Send.htm>`_
+        """
         args = [s]
         resp = self._transport.function_call('AHKSendInput', args, blocking=blocking)
         return resp
@@ -1159,6 +1135,9 @@ class AHK:
     def type(self, s: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def type(self, s: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        """
+        Like :py:meth:`send_input` but performs necessary escapes for you.
+        """
         resp = self.send_input(type_escape(s), blocking=blocking)
         return resp
 
@@ -1180,6 +1159,9 @@ class AHK:
         key_press_duration: Optional[int] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SendPlay <https://www.autohotkey.com/docs/v1/lib/Send.htm>`_
+        """
         args = [s]
         if key_delay:
             args.append(str(key_delay))
@@ -1206,6 +1188,9 @@ class AHK:
     def set_capslock_state(
         self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
+        """
         args: List[str] = []
         if state is not None:
             if str(state).lower() not in ('1', '0', 'on', 'off', 'alwayson', 'alwaysoff'):
@@ -1230,6 +1215,9 @@ class AHK:
     def set_volume(
         self, value: int, device_number: int = 1, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SoundSetWaveVolume <https://www.autohotkey.com/docs/commands/SoundSetWaveVolume.htm>`_
+        """
         args = [str(device_number), str(value)]
         return self._transport.function_call('AHKSetVolume', args, blocking=blocking)
 
@@ -1254,6 +1242,9 @@ class AHK:
         large_icon: bool = False,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `TrayTip <https://www.autohotkey.com/docs/commands/TrayTip.htm>`_
+        """
         option = type_id + (16 if silent else 0) + (32 if large_icon else 0)
         args = [title, text, str(second), str(option)]
         return self._transport.function_call('AHKTrayTip', args, blocking=blocking)
@@ -1278,6 +1269,9 @@ class AHK:
         large_icon: bool = False,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Convenience method for :py:meth:`show_traytip` for error-style messages
+        """
         return self.show_traytip(
             title=title, text=text, second=second, type_id=3, silent=silent, large_icon=large_icon, blocking=blocking
         )
@@ -1302,6 +1296,9 @@ class AHK:
         large_icon: bool = False,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Convenience method for :py:meth:`show_traytip` for info-style messages
+        """
         return self.show_traytip(
             title=title, text=text, second=second, type_id=1, silent=silent, large_icon=large_icon, blocking=blocking
         )
@@ -1326,6 +1323,9 @@ class AHK:
         large_icon: bool = False,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Convenience method for :py:meth:`show_traytip` for warning-style messages
+        """
         return self.show_traytip(
             title=title, text=text, second=second, type_id=2, silent=silent, large_icon=large_icon, blocking=blocking
         )
@@ -1337,6 +1337,9 @@ class AHK:
         y: Optional[int] = None,
         which: int = 1,
     ) -> None:
+        """
+        Analog for `ToolTip <https://www.autohotkey.com/docs/commands/ToolTip.htm>`_
+        """
         if which not in range(1, 21):
             raise ValueError('which must be an integer between 1 and 20')
         args = [text]
@@ -1366,6 +1369,9 @@ class AHK:
     def sound_beep(
         self, frequency: int = 523, duration: int = 150, *, blocking: bool = True
     ) -> Optional[FutureResult[None]]:
+        """
+        Analog for `SoundBeep <https://www.autohotkey.com/docs/commands/SoundBeep.htm>`_
+        """
         args = [str(frequency), str(duration)]
         self._transport.function_call('AHKSoundBeep', args, blocking=blocking)
         return None
@@ -1388,6 +1394,9 @@ class AHK:
         *,
         blocking: bool = True,
     ) -> Union[str, FutureResult[str]]:
+        """
+        Analog for `SoundGet <https://www.autohotkey.com/docs/commands/SoundGet.htm>`_
+        """
         args = [str(device_number), component_type, control_type]
         return self._transport.function_call('AHKSoundGet', args, blocking=blocking)
 
@@ -1402,6 +1411,9 @@ class AHK:
     def sound_play(self, filename: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def sound_play(self, filename: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SoundPlay <https://www.autohotkey.com/docs/commands/SoundPlay.htm>`_
+        """
         return self._transport.function_call('AHKSoundPlay', [filename], blocking=blocking)
 
     def sound_set(
@@ -1413,6 +1425,9 @@ class AHK:
         *,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SoundSet <https://www.autohotkey.com/docs/commands/SoundSet.htm>`_
+        """
         args = [str(device_number), component_type, control_type, str(value)]
         return self._transport.function_call('AHKSoundSet', args, blocking=blocking)
 
@@ -1437,6 +1452,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[Window, None, FutureResult[Union[None, Window]]]:
+        """
+        Analog for `WinGet <https://www.autohotkey.com/docs/commands/WinGet.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1533,6 +1551,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, FutureResult[str]]:
+        """
+        Analog for `WinGetClass <https://www.autohotkey.com/docs/commands/WinGetClass.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1565,6 +1586,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[Position, None, FutureResult[Union[Position, None]]]:
+        """
+        Analog for `WinGetPos <https://www.autohotkey.com/docs/commands/WinGetPos.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1597,6 +1621,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[Window, None, FutureResult[Union[Window, None]]]:
+        """
+        Like the IDLast subcommand for WinGet
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1629,6 +1656,11 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, None, FutureResult[Union[int, None]]]:
+        """
+        Get a window by process ID.
+
+        Like the pid subcommand for WinGet
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1661,6 +1693,11 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, str, FutureResult[Optional[str]]]:
+        """
+        Get the process name of a window
+
+        Analog for `ProcessName subcommand for WinGet <https://www.autohotkey.com/docs/v1/lib/WinGet.htm#ProcessName>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1693,6 +1730,11 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[str, None, Union[None, str, FutureResult[Optional[str]]]]:
+        """
+        Get the process path for a window.
+
+        Analog for the `ProcessPath subcommand for WinGet <https://www.autohotkey.com/docs/v1/lib/WinGet.htm#ProcessPath>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1725,6 +1767,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[int, FutureResult[int]]:
+        """
+        Analog for the `Count subcommand for WinGet <https://www.autohotkey.com/docs/v1/lib/WinGet.htm#Count>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1757,6 +1802,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, int, FutureResult[Optional[int]]]:
+        """
+        Analog for the `MinMax subcommand for WinGet <https://www.autohotkey.com/docs/v1/lib/WinGet.htm#MinMax>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1789,6 +1837,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[List[Control], None, FutureResult[Optional[List[Control]]]]:
+        """
+        Analog for the `ControlList subcommand for WinGet <https://www.autohotkey.com/docs/v1/lib/WinGet.htm#ControlList>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1869,6 +1920,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinActivate <https://www.autohotkey.com/docs/commands/WinActivate.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -1902,6 +1956,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinSetTitle <https://www.autohotkey.com/docs/commands/WinSetTitle.htm>`_
+        """
         args = [new_title, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -1957,6 +2014,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `AlwaysOnTop subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#AlwaysOnTop>`_
+        """
         args = [str(toggle), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -2011,6 +2071,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Bottom subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Bottom>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2043,6 +2106,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Top subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Top>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2075,6 +2141,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Disable subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Disable>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2107,6 +2176,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Enable subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Enable>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2139,6 +2211,10 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Redraw subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Redraw>`_
+        """
+
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2172,6 +2248,10 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, FutureResult[bool]]:
+        """
+        Analog for `Style subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Style>`_
+        """
+
         args = [style, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -2227,6 +2307,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, FutureResult[bool]]:
+        """
+        Analog for `ExStyle subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#ExStyle>`_
+        """
         args = [style, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -2282,6 +2365,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, FutureResult[bool]]:
+        """
+        Analog for `Region subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Region>`_
+        """
         args = [options, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -2337,6 +2423,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Transparent subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#Transparent>`_
+        """
         args = [str(transparency), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -2392,6 +2481,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `TransColor subcommand of WinSet <https://www.autohotkey.com/docs/v1/lib/WinSet.htm#TransColor>`_
+        """
         args = [str(color), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
@@ -2483,6 +2575,9 @@ class AHK:
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `Click <https://www.autohotkey.com/docs/commands/Click.htm>`_
+        """
         if x or y:
             if y is None and isinstance(x, tuple) and len(x) == 2:
                 #  allow position to be specified by a two-sequence tuple
@@ -2527,7 +2622,7 @@ class AHK:
         blocking: bool = True,
     ) -> Union[Tuple[int, int], None, FutureResult[Optional[Tuple[int, int]]]]:
         """
-        https://www.autohotkey.com/docs/commands/ImageSearch.htm
+        Analog for `ImageSearch <https://www.autohotkey.com/docs/commands/ImageSearch.htm>`_
         """
 
         if scale_height and not scale_width:
@@ -2573,6 +2668,9 @@ class AHK:
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
     ) -> None:
+        """
+        Analog for `MouseClickDrag <https://www.autohotkey.com/docs/commands/MouseClickDrag.htm>`_
+        """
         if from_position:
             x1, y1 = from_position
             args = [str(button), str(x1), str(y1), str(x), str(y)]
@@ -2615,6 +2713,9 @@ class AHK:
         rgb: bool = True,
         blocking: bool = True,
     ) -> Union[str, FutureResult[str]]:
+        """
+        Analog for `PixelGetColor <https://www.autohotkey.com/docs/commands/PixelGetColor.htm>`_
+        """
         args = [str(x), str(y), coord_mode or '']
 
         options = ' '.join(word for word, val in zip(('Alt', 'Slow', 'RGB'), (alt, slow, rgb)) if val)
@@ -2645,6 +2746,9 @@ class AHK:
         rgb: bool = True,
         blocking: bool = True,
     ) -> Union[Optional[Tuple[int, int]], FutureResult[Optional[Tuple[int, int]]]]:
+        """
+        Analog for `PixelSearch <https://www.autohotkey.com/docs/commands/PixelSearch.htm>`_
+        """
         x1, y1 = search_region_start
         x2, y2 = search_region_end
         args = [str(x1), str(y1), str(x2), str(y2), str(color), str(variation)]
@@ -2676,6 +2780,9 @@ class AHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinClose <https://www.autohotkey.com/docs/commands/WinClose.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2711,6 +2818,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinKill <https://www.autohotkey.com/docs/commands/WinKill.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2745,6 +2855,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinMinimize <https://www.autohotkey.com/docs/commands/WinMinimize.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2777,6 +2890,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinMaximize <https://www.autohotkey.com/docs/commands/WinMaximize.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2809,6 +2925,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinRestore <https://www.autohotkey.com/docs/commands/WinRestore.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2842,6 +2961,9 @@ class AHK:
         timeout: Optional[int] = None,
         blocking: bool = True,
     ) -> Union[Window, FutureResult[Window]]:
+        """
+        Analog for `WinWait <https://www.autohotkey.com/docs/commands/WinWait.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2876,6 +2998,9 @@ class AHK:
         timeout: Optional[int] = None,
         blocking: bool = True,
     ) -> Union[Window, FutureResult[Window]]:
+        """
+        Analog for `WinWaitActive <https://www.autohotkey.com/docs/commands/WinWaitActive.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2910,6 +3035,9 @@ class AHK:
         timeout: Optional[int] = None,
         blocking: bool = True,
     ) -> Union[Window, FutureResult[Window]]:
+        """
+        Analog for `WinWaitNotActive <https://www.autohotkey.com/docs/commands/WinWaitActive.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2944,6 +3072,9 @@ class AHK:
         timeout: Optional[int] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinWaitClose <https://www.autohotkey.com/docs/commands/WinWaitClose.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -2977,6 +3108,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinShow <https://www.autohotkey.com/docs/commands/WinShow.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -3009,6 +3143,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinHide <https://www.autohotkey.com/docs/commands/WinHide.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -3041,6 +3178,11 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[bool, FutureResult[bool]]:
+        """
+        Check if a window is active.
+
+        Uses `WinActive <https://www.autohotkey.com/docs/v1/lib/WinActive.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -3077,6 +3219,9 @@ class AHK:
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `WinMove <https://www.autohotkey.com/docs/commands/WinMove.htm>`_
+        """
         args = self._format_win_args(
             title=title,
             text=text,
@@ -3103,13 +3248,22 @@ class AHK:
     def get_clipboard(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
     # fmt: on
     def get_clipboard(self, *, blocking: bool = True) -> Union[str, FutureResult[str]]:
+        """
+        Get the string contents of the clipboard
+        """
         return self._transport.function_call('AHKGetClipboard', blocking=blocking)
 
     def set_clipboard(self, s: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+        """
+        Set the contents of the clipboard
+        """
         args = [s]
         return self._transport.function_call('AHKSetClipboard', args, blocking=blocking)
 
     def get_clipboard_all(self, *, blocking: bool = True) -> Union[bytes, FutureResult[bytes]]:
+        """
+        Get the full binary contents of the keyboard. The return value is intended to be used with :py:meth:`set_clipboard_all`
+        """
         return self._transport.function_call('AHKGetClipboardAll', blocking=blocking)
 
     # fmt: off
@@ -3125,6 +3279,9 @@ class AHK:
     def set_clipboard_all(
         self, contents: bytes, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
+        """
+        Set the full binary contents of the clipboard. Expects bytes object as returned by :py:meth:`get_clipboard_all`
+        """
         # TODO: figure out how to do this without a tempfile
         if not isinstance(contents, bytes):
             raise ValueError('Malformed data. Can only set bytes as returned by get_clipboard_all')
@@ -3146,6 +3303,10 @@ class AHK:
     def on_clipboard_change(
         self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
     ) -> None:
+        """
+        call a function in response to clipboard change.
+        Uses `OnClipboardChange() <https://www.autohotkey.com/docs/commands/OnClipboardChange.htm#function>`_
+        """
         self._transport.on_clipboard_change(callback, ex_handler)
 
     # fmt: off
@@ -3161,6 +3322,11 @@ class AHK:
     def clip_wait(
         self, timeout: Optional[float] = None, wait_for_any_data: bool = False, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
+        """
+        Wait until the clipboard contents change
+
+        Analog for `ClipWait <https://www.autohotkey.com/docs/v1/lib/ClipWait.htm>`_
+        """
         args = [str(timeout) if timeout else '']
         if wait_for_any_data:
             args.append('1')
@@ -3171,6 +3337,9 @@ class AHK:
         value: Literal['On', 'Off', 'Default', 'Send', 'Mouse', 'MouseMove', 'MouseMoveOff', 'SendAndMouse'],
         /,  # flake8: noqa
     ) -> None:
+        """
+        Analog for `BlockInput <https://www.autohotkey.com/docs/commands/BlockInput.htm>`_
+        """
         self._transport.function_call('AHKBlockInput', args=[value])
 
     # fmt: off
@@ -3186,6 +3355,9 @@ class AHK:
     def reg_delete(
         self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `RegDelete <https://www.autohotkey.com/docs/commands/RegDelete.htm>`_
+        """
         args = [key_name, value_name if value_name is not None else '']
         return self._transport.function_call('AHKRegDelete', args, blocking=blocking)
 
@@ -3208,6 +3380,9 @@ class AHK:
         *,
         blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `RegWrite <https://www.autohotkey.com/docs/commands/RegWrite.htm>`_
+        """
         args = [value_type, key_name]
         if value_name is not None:
             args.append(value_name)
@@ -3230,11 +3405,17 @@ class AHK:
     def reg_read(
         self, key_name: str, value_name: Optional[str] = None, *, blocking: bool = True
     ) -> Union[str, FutureResult[str]]:
+        """
+        Analog for `RegRead <https://www.autohotkey.com/docs/commands/RegRead.htm>`_
+        """
         args = [key_name]
         if value_name is not None:
             args.append(value_name)
         return self._transport.function_call('AHKRegRead', args, blocking=blocking)
 
     def block_forever(self) -> NoReturn:
+        """
+        Blocks (sleeps) forever. Utility method to prevent script from exiting.
+        """
         while True:
             sleep(1)
