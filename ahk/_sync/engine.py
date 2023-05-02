@@ -743,6 +743,9 @@ class AHK:
         return resp
 
     def a_run_script(self, *args: Any, **kwargs: Any) -> Union[str, FutureResult[str]]:
+        """
+        Deprecated. Use ``run_script`` instead.
+        """
         warnings.warn('a_run_script is deprecated. Use run_script instead.', DeprecationWarning, stacklevel=2)
         return self.run_script(*args, **kwargs)
 
