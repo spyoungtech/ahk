@@ -8,3 +8,7 @@ The sync API is the default API described in most of the README.
 .. autoclass:: ahk._sync.engine.AHK
    :members:
    :undoc-members:
+
+.. autoclass:: ahk._sync.transport.FutureResult
+   :members:
+   :undoc-members:

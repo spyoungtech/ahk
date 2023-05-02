@@ -33,3 +33,9 @@ source_suffix = ['.rst', '.md']
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+
+autodoc_default_options = {
+    'member-order': 'bysource',
+    'undoc-members': True,
+    'special-members': '__init__',
+}
