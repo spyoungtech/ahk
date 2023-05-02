@@ -16,7 +16,7 @@ pip install ahk
 ```
 Requires Python 3.8+
 
-See also [Non-Python dependencies](#non-python-dependencies)
+See also [Non-Python dependencies](#deps)
 
 # Usage
 
@@ -463,7 +463,7 @@ ahk.run_script(script_path)
 ```
 
 
-<a name="deps" />
+<a name="deps"></a>
 
 # Non-Python dependencies
 
