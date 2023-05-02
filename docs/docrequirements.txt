@@ -1,4 +1,4 @@
-sphinx
+sphinx<7
 mistune<2
 sphinx-rtd-theme
 sphinx-autodoc-typehints
