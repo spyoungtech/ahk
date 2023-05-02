@@ -7,8 +7,9 @@ about the programming interface. This is largely auto-generated documentation.
 ``ahk``
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :caption: Contents:
-   :glob:
 
-   *
+   sync
+   async
+   methods
