@@ -87,6 +87,7 @@ FunctionName = Literal[
     'AHKImageSearch',
     'AHKKeyState',
     'AHKKeyWait',
+    'AHKMenuTrayTip',
     'AHKMouseClickDrag',
     'AHKMouseGetPos',
     'AHKMouseMove',
@@ -546,7 +547,8 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKRegWrite'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKRegDelete'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
-
+    @overload
+    def function_call(self, function_name: Literal['AHKMenuTrayTip'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
 
     def function_call(

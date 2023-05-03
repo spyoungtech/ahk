@@ -1356,6 +1356,18 @@ class AHK:
     def hide_tooltip(self, which: int = 1) -> None:
         self.show_tooltip(which=which)
 
+    def menu_tray_tooltip(self, value: str) -> None:
+        """
+        Change the menu tray icon tooltip that appears when hovering the mouse over the tray icon.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+
+        Uses the `Tip subcommand <https://www.autohotkey.com/docs/v1/lib/Menu.htm#Tip>`_
+        """
+
+        args = [value]
+        self._transport.function_call('AHKMenuTrayTip', args)
+        return None
+
     # fmt: off
     @overload
     def sound_beep(self, frequency: int = 523, duration: int = 150) -> None: ...

@@ -2600,6 +2600,12 @@ AHKBlockInput(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKMenuTrayTip(ByRef command) {
+    value := command[2]
+    Menu, Tray, Tip, %value%
+    return FormatNoValueResponse()
+}
+
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
