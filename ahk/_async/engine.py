@@ -1379,6 +1379,31 @@ class AsyncAHK:
         await self._transport.function_call('AHKMenuTrayTip', args)
         return None
 
+    async def menu_tray_icon(self, filename: str = '*', icon_number: int = 1, freeze: Optional[bool] = None) -> None:
+        """
+        Change the tray icon menu.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+
+        Uses the `Icon subcommand <https://www.autohotkey.com/docs/v1/lib/Menu.htm#Icon>`_
+
+        If called with no parameters, the tray icon will be reset to the original default.
+        """
+        args = [filename, str(icon_number)]
+        if freeze is True:
+            args.append('1')
+        elif freeze is False:
+            args.append('0')
+        await self._transport.function_call('AHKMenuTrayIcon', args)
+        return None
+
+    async def menu_tray_icon_show(self) -> None:
+        """
+        Show ('unhide') the tray icon previously hidden by :py:class:`~ahk.directives.NoTrayIcon` directive.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+        """
+        await self._transport.function_call('AHKMenuTrayShow')
+        return None
+
     # fmt: off
     @overload
     async def sound_beep(self, frequency: int = 523, duration: int = 150) -> None: ...

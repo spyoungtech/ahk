@@ -41,8 +41,6 @@ autodoc_default_options = {
 }
 
 always_document_param_types = True
-typehints_use_signature = True
-typehints_use_signature_return = True
 html_css_files = [
     'css/custom.css',
 ]
