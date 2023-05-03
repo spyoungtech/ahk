@@ -322,6 +322,28 @@ ahk = AHK(directives=[NoTrayIcon])
 
 By default, some directives are automatically added to ensure functionality and are merged with any user-provided directives.
 
+## Menu tray icon
+
+As discussed above, you can hide the tray icon if you wish. Additionally, there are some methods available for
+customizing the tray icon.
+
+
+```python
+from ahk import AHK
+ahk = AHK()
+
+# change the tray icon (in this case, using a builtin system icon)
+ahk.menu_tray_icon('Shell32.dll', 174)
+# revert it back to the original:
+ahk.menu_tray_icon()
+
+# change the tooltip that shows up when hovering the mouse over the tray icon
+ahk.menu_tray_tooltip('My Program Name')
+
+# Show the tray icon that was previously hidden by ``NoTrayIcon``
+ahk.menu_tray_icon_show()
+```
+
 ## Registry methods
 
 You can read/write/delete registry keys:

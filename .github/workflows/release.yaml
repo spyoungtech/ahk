@@ -19,7 +19,7 @@ jobs:
     - name: build
       shell: bash
       run: |
-        python -m pip install --upgrade wheel setuptools build
+        python -m pip install --upgrade wheel setuptools build unasync tokenize-rt
         python -m build
     - name: Release PyPI
       shell: bash

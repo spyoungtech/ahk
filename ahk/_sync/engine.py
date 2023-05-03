@@ -1356,6 +1356,43 @@ class AHK:
     def hide_tooltip(self, which: int = 1) -> None:
         self.show_tooltip(which=which)
 
+    def menu_tray_tooltip(self, value: str) -> None:
+        """
+        Change the menu tray icon tooltip that appears when hovering the mouse over the tray icon.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+
+        Uses the `Tip subcommand <https://www.autohotkey.com/docs/v1/lib/Menu.htm#Tip>`_
+        """
+
+        args = [value]
+        self._transport.function_call('AHKMenuTrayTip', args)
+        return None
+
+    def menu_tray_icon(self, filename: str = '*', icon_number: int = 1, freeze: Optional[bool] = None) -> None:
+        """
+        Change the tray icon menu.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+
+        Uses the `Icon subcommand <https://www.autohotkey.com/docs/v1/lib/Menu.htm#Icon>`_
+
+        If called with no parameters, the tray icon will be reset to the original default.
+        """
+        args = [filename, str(icon_number)]
+        if freeze is True:
+            args.append('1')
+        elif freeze is False:
+            args.append('0')
+        self._transport.function_call('AHKMenuTrayIcon', args)
+        return None
+
+    def menu_tray_icon_show(self) -> None:
+        """
+        Show ('unhide') the tray icon previously hidden by :py:class:`~ahk.directives.NoTrayIcon` directive.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+        """
+        self._transport.function_call('AHKMenuTrayShow')
+        return None
+
     # fmt: off
     @overload
     def sound_beep(self, frequency: int = 523, duration: int = 150) -> None: ...
