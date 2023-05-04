@@ -1,2 +1,2 @@
 [build-system]
-requires = ["setuptools", "git+https://github.com/spyoungtech/unasync.git@unasync-remove", "tokenize-rt"]
+requires = ["setuptools", "unasync @ https://github.com/spyoungtech/unasync/archive/refs/heads/unasync-remove.zip", "tokenize-rt"]
