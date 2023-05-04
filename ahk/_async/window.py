@@ -648,6 +648,14 @@ class AsyncWindow:
             blocking=blocking,
         )
 
+    @classmethod
+    async def from_pid(cls, engine: AsyncAHK, pid: int) -> Optional[AsyncWindow]:
+        return await engine.win_get(title=f'ahk_pid {pid}')
+
+    @classmethod
+    async def from_mouse_position(cls, engine: AsyncAHK) -> Optional[AsyncWindow]:
+        return await engine.win_get_from_mouse_position()
+
 
 class AsyncControl:
     def __init__(self, window: AsyncWindow, hwnd: str, control_class: str):

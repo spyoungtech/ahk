@@ -613,16 +613,27 @@ class Window:
             title_match_mode=(1, 'Fast'),
         )
 
-    def move(self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, blocking: bool = True) -> Union[None, FutureResult[None]]:
-        return self._engine.win_move(x=x, y=y,
-                                           width=width,
-                                           height=height,
-                                           title=f'ahk_id {self._ahk_id}',
-                                           detect_hidden_windows=True,
-                                           title_match_mode=(1, 'Fast'),
-                                           blocking=blocking,
-                                           )
+    def move(
+        self, x: int, y: int, *, width: Optional[int] = None, height: Optional[int] = None, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
+        return self._engine.win_move(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=f'ahk_id {self._ahk_id}',
+            detect_hidden_windows=True,
+            title_match_mode=(1, 'Fast'),
+            blocking=blocking,
+        )
 
+    @classmethod
+    def from_pid(cls, engine: AHK, pid: int) -> Optional[Window]:
+        return engine.win_get(title=f'ahk_pid {pid}')
+
+    @classmethod
+    def from_mouse_position(cls, engine: AHK) -> Optional[Window]:
+        return engine.win_get_from_mouse_position()
 
 class Control:
     def __init__(self, window: Window, hwnd: str, control_class: str):
