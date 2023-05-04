@@ -10,7 +10,7 @@ repos:
     files: ^(ahk/_async/.*\.py|\.unasync-rewrite\.py|tests/_async/.*\.py)
     pass_filenames: false
     additional_dependencies:
-        - unasync
+        - git+https://github.com/spyoungtech/unasync.git@unasync-remove
         - tokenize_rt
         - black
   - id: set-constants
