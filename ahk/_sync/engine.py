@@ -2690,6 +2690,9 @@ class AHK:
             args.append(opts + f' {image_path}')
         else:
             args.append(image_path)
+
+        if coord_mode is not None:
+            args.append(coord_mode)
         resp = self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
 
