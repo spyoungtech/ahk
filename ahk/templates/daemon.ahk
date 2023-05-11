@@ -158,11 +158,13 @@ AHKWinClose(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
+
+    WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
+
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
 
-    WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
     return FormatNoValueResponse()
     {% endblock AHKWinClose %}
