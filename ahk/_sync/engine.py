@@ -2687,7 +2687,7 @@ class AHK:
         args = [str(x1), str(y1), str(x2), str(y2)]
         if options:
             opts = ' '.join(f'*{opt}' for opt in options)
-            args.append(opts)
+            args.append(opts + f' {image_path}')
         else:
             args.append(image_path)
         resp = self._transport.function_call('AHKImageSearch', args, blocking=blocking)
