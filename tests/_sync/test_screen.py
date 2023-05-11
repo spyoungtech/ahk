@@ -64,6 +64,16 @@ class TestScreen(TestCase):
         x2, y2 = pos
         assert abs(x2 - x) < 3 and abs(y2 - y) < 3
 
+    def test_image_search_with_option(self):
+        if os.environ.get('CI'):
+            self.skipTest('This test does not work in GitHub Actions')
+            return
+        self._show_in_thread()
+        time.sleep(3)
+        self.im.save('testimage.png')
+        position = self.ahk.image_search('testimage.png', color_variation=50)
+        assert isinstance(position, tuple)
+
     # async def test_pixel_get_color(self):
     #     x, y = await self.ahk.pixel_search(0xFF0000)
     #     result = await self.ahk.pixel_get_color(x, y)

@@ -161,11 +161,13 @@ AHKWinClose(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
+
+    WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
+
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
 
-    WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
     return FormatNoValueResponse()
     {% endblock AHKWinClose %}
@@ -1577,6 +1579,11 @@ AHKWinSetTransColor(ByRef command) {
 
 
     WinSet, TransColor, %color%, %title%, %text%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
     return FormatNoValueResponse()
     {% endblock AHKWinSetTransColor %}
 }
@@ -1590,6 +1597,13 @@ AHKImageSearch(ByRef command) {
     y1 := command[3]
     x2 := command[4]
     y2 := command[5]
+    coord_mode := command[7]
+
+    current_mode := Format("{}", A_CoordModePixel)
+
+    if (coord_mode != "") {
+        CoordMode, Pixel, %coord_mode%
+    }
 
     if (x2 = "A_ScreenWidth") {
         x2 := A_ScreenWidth
@@ -1597,7 +1611,15 @@ AHKImageSearch(ByRef command) {
     if (y2 = "A_ScreenHeight") {
         y2 := A_ScreenHeight
     }
+
     ImageSearch, xpos, ypos,% x1,% y1,% x2,% y2, %imagepath%
+
+
+    if (coord_mode != "") {
+        CoordMode, Pixel, %current_mode%
+    }
+
+
     if (ErrorLevel = 2) {
         s := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "there was a problem that prevented the command from conducting the search (such as failure to open the image file or a badly formatted option)")
     } else if (ErrorLevel = 1) {

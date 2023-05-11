@@ -2698,9 +2698,13 @@ class AsyncAHK:
         args = [str(x1), str(y1), str(x2), str(y2)]
         if options:
             opts = ' '.join(f'*{opt}' for opt in options)
-            args.append(opts)
+            args.append(opts + f' {image_path}')
         else:
             args.append(image_path)
+
+        if coord_mode is not None:
+            args.append(coord_mode)
+
         resp = await self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
 
