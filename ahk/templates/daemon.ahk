@@ -1574,6 +1574,11 @@ AHKWinSetTransColor(ByRef command) {
 
 
     WinSet, TransColor, %color%, %title%, %text%, %extitle%, %extext%
+
+    DetectHiddenWindows, %current_detect_hw%
+    SetTitleMatchMode, %current_match_mode%
+    SetTitleMatchMode, %current_match_speed%
+
     return FormatNoValueResponse()
     {% endblock AHKWinSetTransColor %}
 }
