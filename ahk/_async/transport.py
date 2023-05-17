@@ -632,9 +632,17 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         self.__template: jinja2.Template
         self._jinja_env: jinja2.Environment
         if jinja_loader is None:
-            self._jinja_env = jinja2.Environment(
-                loader=jinja2.PackageLoader('ahk', 'templates'), trim_blocks=True, autoescape=False
-            )
+            try:
+                loader: jinja2.BaseLoader
+                loader = jinja2.PackageLoader('ahk', 'templates')
+            except ValueError:
+                # see: https://github.com/spyoungtech/ahk/issues/201
+                warnings.warn(
+                    'Jinja could not find templates with PackageLoader. Falling back to BaseLoader',
+                    category=UserWarning,
+                )
+                loader = jinja2.BaseLoader()
+            self._jinja_env = jinja2.Environment(loader=loader, trim_blocks=True, autoescape=False)
         else:
             self._jinja_env = jinja2.Environment(loader=jinja_loader, trim_blocks=True, autoescape=False)
         try:

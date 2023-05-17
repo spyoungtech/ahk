@@ -124,9 +124,17 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         self._callback_queue: Queue[Union[str, Type[STOP]]] = Queue()
         self._listener_thread: Optional[threading.Thread] = None
         self._dispatcher_thread: Optional[threading.Thread] = None
-        self._jinja_env: jinja2.Environment = jinja2.Environment(
-            loader=jinja2.PackageLoader('ahk', 'templates'), autoescape=False
-        )
+        loader: jinja2.BaseLoader
+        try:
+            loader = jinja2.PackageLoader('ahk', 'templates')
+        except ValueError:
+            # see: https://github.com/spyoungtech/ahk/issues/201
+            warnings.warn(
+                'Jinja could not find templates with PackageLoader. Falling back to BaseLoader',
+                category=UserWarning,
+            )
+            loader = jinja2.BaseLoader()
+        self._jinja_env: jinja2.Environment = jinja2.Environment(loader=loader, autoescape=False)
         self._template: jinja2.Template
         try:
             self._template = self._jinja_env.get_template('hotkeys.ahk')
