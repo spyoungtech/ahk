@@ -720,7 +720,13 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             content_buffer = BytesIO()
             content_buffer.write(tom)
             content_buffer.write(num_lines)
-            for _ in range(int(num_lines) + 1):
+            try:
+                lines_to_read = int(num_lines) + 1
+            except ValueError as e:
+                raise AHKProtocolError(
+                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+                ) from e
+            for _ in range(lines_to_read):
                 part = await proc.readline()
                 content_buffer.write(part)
             content = content_buffer.getvalue()[:-1]
@@ -767,10 +773,10 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         content_buffer.write(num_lines)
         try:
             lines_to_read = int(num_lines) + 1
-        except ValueError:
+        except ValueError as e:
             raise AHKProtocolError(
                 'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
-            )
+            ) from e
         for _ in range(lines_to_read):
             part = await self._proc.readline()
             content_buffer.write(part)
