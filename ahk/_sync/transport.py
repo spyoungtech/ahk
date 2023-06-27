@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import warnings
 from abc import ABC
 from abc import abstractmethod
@@ -605,6 +606,7 @@ class DaemonProcessTransport(Transport):
         self._temp_script: Optional[str] = None
         self.__template: jinja2.Template
         self._jinja_env: jinja2.Environment
+        self._execution_lock = threading.Lock()
         if jinja_loader is None:
             try:
                 loader: jinja2.BaseLoader
@@ -641,7 +643,8 @@ class DaemonProcessTransport(Transport):
     def start(self) -> None:
         assert self._proc is None, 'cannot start a process twice'
         with warnings.catch_warnings(record=True) as caught_warnings:
-            self._proc = self._create_process()
+            with self.lock:
+                self._proc = self._create_process()
         if caught_warnings:
             for warning in caught_warnings:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
@@ -652,6 +655,10 @@ class DaemonProcessTransport(Transport):
         kwargs['daemon'] = self.__template
         message_types = {str(tom, 'utf-8'): c.__name__.upper() for tom, c in _message_registry.items()}
         return template.render(directives=self._directives, message_types=message_types, **kwargs)
+
+    @property
+    def lock(self) -> Any:
+        return self._execution_lock
 
     def _create_process(
         self, template: Optional[jinja2.Template] = None, **template_kwargs: Any
@@ -730,25 +737,26 @@ class DaemonProcessTransport(Transport):
     ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         msg = request.format()
         assert self._proc is not None
-        self._proc.write(msg)
-        self._proc.drain_stdin()
-        tom = self._proc.readline()
-        num_lines = self._proc.readline()
-        content_buffer = BytesIO()
-        content_buffer.write(tom)
-        content_buffer.write(num_lines)
-        try:
-            lines_to_read = int(num_lines) + 1
-        except ValueError as e:
-            raise AHKProtocolError(
-                'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
-            ) from e
-        for _ in range(lines_to_read):
-            part = self._proc.readline()
-            content_buffer.write(part)
-        content = content_buffer.getvalue()[:-1]
-        response = ResponseMessage.from_bytes(content, engine=engine)
-        return response.unpack()  # type: ignore
+        with self.lock:
+            self._proc.write(msg)
+            self._proc.drain_stdin()
+            tom = self._proc.readline()
+            num_lines = self._proc.readline()
+            content_buffer = BytesIO()
+            content_buffer.write(tom)
+            content_buffer.write(num_lines)
+            try:
+                lines_to_read = int(num_lines) + 1
+            except ValueError as e:
+                raise AHKProtocolError(
+                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+                ) from e
+            for _ in range(lines_to_read):
+                part = self._proc.readline()
+                content_buffer.write(part)
+            content = content_buffer.getvalue()[:-1]
+            response = ResponseMessage.from_bytes(content, engine=engine)
+            return response.unpack()  # type: ignore
 
 
     def _sync_run_nonblocking(

@@ -6,6 +6,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import threading
 import warnings
 from abc import ABC
 from abc import abstractmethod
@@ -631,6 +632,8 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         self._temp_script: Optional[str] = None
         self.__template: jinja2.Template
         self._jinja_env: jinja2.Environment
+        self._execution_lock = threading.Lock()
+        self._a_execution_lock = asyncio.Lock()  # unasync: remove
         if jinja_loader is None:
             try:
                 loader: jinja2.BaseLoader
@@ -667,7 +670,8 @@ class AsyncDaemonProcessTransport(AsyncTransport):
     async def start(self) -> None:
         assert self._proc is None, 'cannot start a process twice'
         with warnings.catch_warnings(record=True) as caught_warnings:
-            self._proc = await self._create_process()
+            async with self.lock:
+                self._proc = await self._create_process()
         if caught_warnings:
             for warning in caught_warnings:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
@@ -678,6 +682,11 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         kwargs['daemon'] = self.__template
         message_types = {str(tom, 'utf-8'): c.__name__.upper() for tom, c in _message_registry.items()}
         return template.render(directives=self._directives, message_types=message_types, **kwargs)
+
+    @property
+    def lock(self) -> Any:
+        return self._a_execution_lock  # unasync: remove
+        return self._execution_lock
 
     async def _create_process(
         self, template: Optional[jinja2.Template] = None, **template_kwargs: Any
@@ -764,25 +773,26 @@ class AsyncDaemonProcessTransport(AsyncTransport):
     ) -> Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]:
         msg = request.format()
         assert self._proc is not None
-        self._proc.write(msg)
-        await self._proc.adrain_stdin()
-        tom = await self._proc.readline()
-        num_lines = await self._proc.readline()
-        content_buffer = BytesIO()
-        content_buffer.write(tom)
-        content_buffer.write(num_lines)
-        try:
-            lines_to_read = int(num_lines) + 1
-        except ValueError as e:
-            raise AHKProtocolError(
-                'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
-            ) from e
-        for _ in range(lines_to_read):
-            part = await self._proc.readline()
-            content_buffer.write(part)
-        content = content_buffer.getvalue()[:-1]
-        response = ResponseMessage.from_bytes(content, engine=engine)
-        return response.unpack()  # type: ignore
+        async with self.lock:
+            self._proc.write(msg)
+            await self._proc.adrain_stdin()
+            tom = await self._proc.readline()
+            num_lines = await self._proc.readline()
+            content_buffer = BytesIO()
+            content_buffer.write(tom)
+            content_buffer.write(num_lines)
+            try:
+                lines_to_read = int(num_lines) + 1
+            except ValueError as e:
+                raise AHKProtocolError(
+                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+                ) from e
+            for _ in range(lines_to_read):
+                part = await self._proc.readline()
+                content_buffer.write(part)
+            content = content_buffer.getvalue()[:-1]
+            response = ResponseMessage.from_bytes(content, engine=engine)
+            return response.unpack()  # type: ignore
 
     async def _async_run_nonblocking(  # unasync: remove
         self, proc: Communicable, script_bytes: Optional[bytes], timeout: Optional[int] = None
