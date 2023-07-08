@@ -205,11 +205,11 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
     def stop(self) -> None:
         assert self._running is True, 'Not running! Must be started first!'
         assert self._dispatcher_thread is not None
-        for i in range(1, 6):
+        for i in range(1, 11):
             if self._proc is not None:
                 break
-            logging.debug(f'stop called before dispatched has started proc. Waiting for proc ({i}/5)')
-            time.sleep(0.2)
+            logging.debug(f'stop called before dispatched has started proc. Waiting for proc ({i}/10)')
+            time.sleep(0.1)
         assert self._proc is not None
         self._running = False
 
