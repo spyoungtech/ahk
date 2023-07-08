@@ -111,7 +111,7 @@ ahk.add_hotstring('btw', my_callback) # call python function in response to the 
 You can also remove hotstrings:
 
 ```python
-ahk.remove_hotstring('btw')  # remove hotkey by the trigger sequence
+ahk.remove_hotstring('btw')  # remove a hotstring by its trigger sequence
 ahk.clear_hotstrings()  # remove all registered hotstrings
 ```
 
