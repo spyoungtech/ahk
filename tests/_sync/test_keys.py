@@ -47,6 +47,26 @@ class TestWindowAsync(unittest.TestCase):
 
         assert 'by the way' in self.win.get_text()
 
+    def test_remove_hotstring(self):
+        self.ahk.add_hotstring('btw', 'by the way')
+        self.ahk.start_hotkeys()
+        self.ahk.set_send_level(1)
+        self.win.activate()
+        self.ahk.remove_hotstring('btw')
+        self.ahk.send('btw ')
+        time.sleep(2)
+        assert 'by the way' not in self.win.get_text()
+
+    def test_clear_hotstrings(self):
+        self.ahk.add_hotstring('btw', 'by the way')
+        self.ahk.start_hotkeys()
+        self.ahk.set_send_level(1)
+        self.win.activate()
+        self.ahk.clear_hotstrings()
+        self.ahk.send('btw ')
+        time.sleep(2)
+        assert 'by the way' not in self.win.get_text()
+
     def test_hotstring_callback(self):
         with unittest.mock.MagicMock(return_value=None) as m:
             self.ahk.add_hotstring('btw', m)

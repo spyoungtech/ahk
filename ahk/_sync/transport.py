@@ -343,6 +343,25 @@ class Transport(ABC):
                 warnings.warn(warning.message, warning.category, stacklevel=2)
         return None
 
+    def remove_hotkey(self, hotkey: Hotkey) -> None:
+        self._hotkey_transport.remove_hotkey(hotkey)
+        return None
+
+    def clear_hotkeys(self) -> None:
+        self._hotkey_transport.clear_hotkeys()
+        return None
+
+    def remove_hotstring(self, hotstring: Hotstring) -> None:
+        self._hotkey_transport.remove_hotstring(hotstring)
+        return None
+
+    def clear_hotstrings(self) -> None:
+        self._hotkey_transport.clear_hotstrings()
+        return None
+
+
+
+
     def start_hotkeys(self) -> None:
         return self._hotkey_transport.start()
 
