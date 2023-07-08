@@ -72,12 +72,20 @@ def my_ex_handler(hotkey: str, exception: Exception):
 ahk.add_hotkey('#n', callback=go_boom, ex_handler=my_ex_handler)
 ```
 
+There are also methods for removing hotkeys:
+
+```python
+# ...
+ahk.remove_hotkey('#n') # remove a hotkey by its keyname
+ahk.clear_hotkeys()  # remove all hotkeys
+```
+
 Note that:
 
 - Hotkeys run in a separate process that must be started manually (with `ahk.start_hotkeys()`)
 - Hotkeys can be stopped with `ahk.stop_hotkeys()` (will not stop actively running callbacks)
 - Hotstrings (discussed below) share the same process with hotkeys and are started/stopped in the same manner
-- If hotkeys or hotstrings are added while the process is running, the underlying AHK process is restarted automatically
+- If hotkeys or hotstrings are added or removed while the process is running, the underlying AHK process is restarted automatically
 
 
 See also the [relevant AHK documentation](https://www.autohotkey.com/docs/Hotkeys.htm)
@@ -98,6 +106,13 @@ def my_callback():
 
 ahk.add_hotstring('btw', 'by the way')  # string replacements
 ahk.add_hotstring('btw', my_callback) # call python function in response to the hotstring
+```
+
+You can also remove hotstrings:
+
+```python
+ahk.remove_hotstring('btw')  # remove hotkey by the trigger sequence
+ahk.clear_hotstrings()  # remove all registered hotstrings
 ```
 
 ## Mouse
