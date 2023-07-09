@@ -7,6 +7,7 @@ import re
 import subprocess
 import sys
 import threading
+import time
 import warnings
 from abc import ABC
 from abc import abstractmethod
@@ -102,6 +103,38 @@ class HotkeyTransportBase(ABC):
         # TODO: add support for adding IfWinActive/IfWinExist
         return None
 
+    def remove_hotkey(self, hotkey: Hotkey) -> None:
+        if hotkey._id not in self._callback_registry:
+            raise ValueError(f'Hotkey {hotkey.keyname!r} is not registered')
+        del self._hotkeys[hotkey._id]
+        self._get_callback_registry.cache_clear()
+        if self._running:
+            self.restart()
+        return None
+
+    def clear_hotkeys(self) -> None:
+        self._hotkeys.clear()
+        self._get_callback_registry.cache_clear()
+        if self._running:
+            self.restart()
+        return None
+
+    def remove_hotstring(self, hotstring: Hotstring) -> None:
+        if hotstring._id not in self._callback_registry:
+            raise ValueError(f'Hostring {hotstring.trigger!r} is not registered')
+        del self._hotstrings[hotstring._id]
+        self._get_callback_registry.cache_clear()
+        if self._running:
+            self.restart()
+        return None
+
+    def clear_hotstrings(self) -> None:
+        self._hotstrings.clear()
+        self._get_callback_registry.cache_clear()
+        if self._running:
+            self.restart()
+        return None
+
     def on_clipboard_change(
         self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
     ) -> None:
@@ -170,6 +203,13 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         dispatcher_thread.start()
 
     def stop(self) -> None:
+        assert self._running is True, 'Not running! Must be started first!'
+        assert self._dispatcher_thread is not None
+        for i in range(1, 11):
+            if self._proc is not None:
+                break
+            logging.debug(f'stop called before dispatched has started proc. Waiting for proc ({i}/10)')
+            time.sleep(0.1)
         assert self._proc is not None
         self._running = False
 

@@ -14,7 +14,7 @@ async_sleep = asyncio.sleep  # unasync: remove
 sleep = time.sleep
 
 
-class TestMouseAsync(IsolatedAsyncioTestCase):
+class TestHotkeysAsync(IsolatedAsyncioTestCase):
     win: AsyncWindow
 
     async def asyncSetUp(self) -> None:
@@ -47,3 +47,23 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
             await self.ahk.key_press('a')
             await async_sleep(1)
             mock_ex_handler.assert_called()
+
+    async def test_remove_hotkey(self):
+        with mock.MagicMock(return_value=None) as m:
+            self.ahk.add_hotkey('a', callback=m)
+            self.ahk.start_hotkeys()
+            self.ahk.remove_hotkey('a')
+            await self.ahk.key_down('a')
+            await self.ahk.key_press('a')
+            await async_sleep(1)
+            m.assert_not_called()
+
+    async def test_clear_hotkeys(self):
+        with mock.MagicMock(return_value=None) as m:
+            self.ahk.add_hotkey('a', callback=m)
+            self.ahk.start_hotkeys()
+            self.ahk.clear_hotkeys()
+            await self.ahk.key_down('a')
+            await self.ahk.key_press('a')
+            await async_sleep(1)
+            m.assert_not_called()

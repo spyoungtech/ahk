@@ -185,6 +185,27 @@ class AHK:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
         return None
 
+    def remove_hotkey(self, keyname: str) -> None:
+        def _() -> None:
+            return None
+        h = Hotkey(keyname=keyname, callback=_)  # XXX: this can probably be avoided
+        self._transport.remove_hotkey(hotkey=h)
+        return None
+
+    def clear_hotkeys(self) -> None:
+        self._transport.clear_hotkeys()
+        return None
+
+    def remove_hotstring(self, trigger: str) -> None:
+        hs = Hotstring(trigger=trigger, replacement_or_callback='')  # XXX: this can probably be avoided
+        self._transport.remove_hotstring(hs)
+        return None
+
+    def clear_hotstrings(self) -> None:
+        self._transport.clear_hotstrings()
+        return None
+
+
     def set_title_match_mode(self, title_match_mode: TitleMatchMode, /) -> None:
         """
         Sets the default title match mode
@@ -2693,6 +2714,7 @@ class AHK:
 
         if coord_mode is not None:
             args.append(coord_mode)
+
         resp = self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
 

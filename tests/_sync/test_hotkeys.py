@@ -11,7 +11,7 @@ from ahk import Window
 sleep = time.sleep
 
 
-class TestMouseAsync(TestCase):
+class TestHotkeysAsync(TestCase):
     win: Window
 
     def setUp(self) -> None:
@@ -44,3 +44,23 @@ class TestMouseAsync(TestCase):
             self.ahk.key_press('a')
             sleep(1)
             mock_ex_handler.assert_called()
+
+    def test_remove_hotkey(self):
+        with mock.MagicMock(return_value=None) as m:
+            self.ahk.add_hotkey('a', callback=m)
+            self.ahk.start_hotkeys()
+            self.ahk.remove_hotkey('a')
+            self.ahk.key_down('a')
+            self.ahk.key_press('a')
+            sleep(1)
+            m.assert_not_called()
+
+    def test_clear_hotkeys(self):
+        with mock.MagicMock(return_value=None) as m:
+            self.ahk.add_hotkey('a', callback=m)
+            self.ahk.start_hotkeys()
+            self.ahk.clear_hotkeys()
+            self.ahk.key_down('a')
+            self.ahk.key_press('a')
+            sleep(1)
+            m.assert_not_called()
