@@ -30,7 +30,8 @@ class Directive(SimpleNamespace, metaclass=DirectiveMeta):
     """
 
     def __init__(self, **kwargs: Any):
-        super().__init__(name=self.name, **kwargs)
+        apply_to_hotkeys = kwargs.pop('apply_to_hotkeys_process', False)
+        super().__init__(name=self.name, apply_to_hotkeys_process=apply_to_hotkeys, **kwargs)
         self._kwargs = kwargs
 
     @property

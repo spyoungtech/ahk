@@ -318,7 +318,7 @@ class Transport(ABC):
         **kwargs: Any,
     ):
         self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
-        self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path)
+        self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path, directives=directives)
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
 
     def on_clipboard_change(
@@ -358,9 +358,6 @@ class Transport(ABC):
     def clear_hotstrings(self) -> None:
         self._hotkey_transport.clear_hotstrings()
         return None
-
-
-
 
     def start_hotkeys(self) -> None:
         return self._hotkey_transport.start()

@@ -2777,6 +2777,10 @@ Loop {
 """
 
 HOTKEYS_SCRIPT_TEMPLATE = r"""#Persistent
+{% for directive in directives %}
+{% if directive.apply_to_hotkeys_process %}{{ directive }}{% endif %}
+{% endfor %}
+
 {% if on_clipboard %}
 OnClipboardChange("ClipChanged")
 {% endif %}

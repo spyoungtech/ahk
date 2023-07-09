@@ -25,6 +25,8 @@ from typing import Union
 
 import jinja2
 
+from .directives import Directive
+
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
@@ -150,13 +152,19 @@ class STOP:
 
 
 class ThreadedHotkeyTransport(HotkeyTransportBase):
-    def __init__(self, executable_path: str, default_ex_handler: Optional[Callable[[str, Exception], Any]] = None):
+    def __init__(
+        self,
+        executable_path: str,
+        default_ex_handler: Optional[Callable[[str, Exception], Any]] = None,
+        directives: Optional[list[Directive | Type[Directive]]] = None,
+    ):
         super().__init__(executable_path=executable_path, default_ex_handler=default_ex_handler)
         self._callback_threads: List[threading.Thread] = []
         self._proc: Optional[subprocess.Popen[bytes]] = None
         self._callback_queue: Queue[Union[str, Type[STOP]]] = Queue()
         self._listener_thread: Optional[threading.Thread] = None
         self._dispatcher_thread: Optional[threading.Thread] = None
+        self._directives = directives
         loader: jinja2.BaseLoader
         try:
             loader = jinja2.PackageLoader('ahk', 'templates')
@@ -281,7 +289,10 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         else:
             on_clipboard = False
         ret = self._template.render(
-            hotkeys=list(self._hotkeys.values()), hotstrings=self._hotstrings.values(), on_clipboard=on_clipboard
+            hotkeys=list(self._hotkeys.values()),
+            hotstrings=self._hotstrings.values(),
+            on_clipboard=on_clipboard,
+            directives=self._directives,
         )
         return ret
 
