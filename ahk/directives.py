@@ -21,6 +21,10 @@ class DirectiveMeta(type):
     def __eq__(cls, other: Any) -> bool:
         return bool(str(cls) == other)
 
+    @property
+    def apply_to_hotkeys_process(cls) -> bool:
+        return False
+
 
 class Directive(SimpleNamespace, metaclass=DirectiveMeta):
     """

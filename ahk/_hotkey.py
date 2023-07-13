@@ -75,7 +75,7 @@ class HotkeyTransportBase(ABC):
         self._clipboard_ex_handler: Optional[Callable[[int, Exception], Any]] = None
         if directives is None:
             directives = []
-        self._directives: list[Directive | Type[Directive]] = directives
+        self._directives: list[Directive | Type[Directive]] = [d for d in directives if d.apply_to_hotkeys_process]
 
     @property
     def _callback_registry(self) -> Dict[str, Union[Hotkey, Hotstring]]:
