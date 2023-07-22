@@ -337,6 +337,20 @@ ahk = AHK(directives=[NoTrayIcon])
 
 By default, some directives are automatically added to ensure functionality and are merged with any user-provided directives.
 
+Directives are not applied for the AHK process used for handling hotkeys and hotstrings (discussed below) by default. To apply a directive
+to the hotkeys process using the keyword argument `apply_to_hotkeys_process=True`:
+
+```python
+from ahk import AHK
+from ahk.directives import NoTrayIcon
+
+directives = [
+    NoTrayIcon(apply_to_hotkeys_process=True)
+]
+
+ahk = AHK(directives=directives)
+```
+
 ## Menu tray icon
 
 As discussed above, you can hide the tray icon if you wish. Additionally, there are some methods available for

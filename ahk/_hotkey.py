@@ -25,6 +25,8 @@ from typing import Union
 
 import jinja2
 
+from .directives import Directive
+
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
@@ -57,7 +59,12 @@ def _default_ex_handler(failure: Union[str, int], ex: Exception) -> None:
 
 
 class HotkeyTransportBase(ABC):
-    def __init__(self, executable_path: str, default_ex_handler: Optional[Callable[[str, Exception], Any]] = None):
+    def __init__(
+        self,
+        executable_path: str,
+        default_ex_handler: Optional[Callable[[str, Exception], Any]] = None,
+        directives: Optional[list[Directive | Type[Directive]]] = None,
+    ):
         self._executable_path = executable_path
         self._hotkeys: Dict[str, Hotkey] = {}
         self._default_ex_handler: Callable[[str, Exception], Any] = default_ex_handler or _default_ex_handler
@@ -66,6 +73,9 @@ class HotkeyTransportBase(ABC):
         self._get_callback_registry = functools.lru_cache(maxsize=None)(self._callback_registry_uncached)
         self._clipboard_callback: Optional[Callable[[int], Any]] = None
         self._clipboard_ex_handler: Optional[Callable[[int, Exception], Any]] = None
+        if directives is None:
+            directives = []
+        self._directives: list[Directive | Type[Directive]] = [d for d in directives if d.apply_to_hotkeys_process]
 
     @property
     def _callback_registry(self) -> Dict[str, Union[Hotkey, Hotstring]]:
@@ -150,8 +160,13 @@ class STOP:
 
 
 class ThreadedHotkeyTransport(HotkeyTransportBase):
-    def __init__(self, executable_path: str, default_ex_handler: Optional[Callable[[str, Exception], Any]] = None):
-        super().__init__(executable_path=executable_path, default_ex_handler=default_ex_handler)
+    def __init__(
+        self,
+        executable_path: str,
+        default_ex_handler: Optional[Callable[[str, Exception], Any]] = None,
+        directives: Optional[list[Directive | Type[Directive]]] = None,
+    ):
+        super().__init__(executable_path=executable_path, default_ex_handler=default_ex_handler, directives=directives)
         self._callback_threads: List[threading.Thread] = []
         self._proc: Optional[subprocess.Popen[bytes]] = None
         self._callback_queue: Queue[Union[str, Type[STOP]]] = Queue()
@@ -281,7 +296,10 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         else:
             on_clipboard = False
         ret = self._template.render(
-            hotkeys=list(self._hotkeys.values()), hotstrings=self._hotstrings.values(), on_clipboard=on_clipboard
+            hotkeys=list(self._hotkeys.values()),
+            hotstrings=self._hotstrings.values(),
+            on_clipboard=on_clipboard,
+            directives=self._directives,
         )
         return ret
 
