@@ -26,3 +26,11 @@ class TestGui(unittest.IsolatedAsyncioTestCase):
         assert win is not None
         with pytest.raises(TimeoutError):
             r = await box.result()
+
+    async def test_input_box(self):
+        box = await self.ahk.input_box(prompt='Question', title='prompt', timeout=3, blocking=False)
+        await async_sleep(1)
+        win = await self.ahk.win_get(title='prompt')
+        assert win is not None
+        with pytest.raises(TimeoutError):
+            r = await box.result()

@@ -25,3 +25,11 @@ class TestGui(unittest.TestCase):
         assert win is not None
         with pytest.raises(TimeoutError):
             r = box.result()
+
+    def test_input_box(self):
+        box = self.ahk.input_box(prompt='Question', title='prompt', timeout=3, blocking=False)
+        sleep(1)
+        win = self.ahk.win_get(title='prompt')
+        assert win is not None
+        with pytest.raises(TimeoutError):
+            r = box.result()
