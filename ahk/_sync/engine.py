@@ -21,6 +21,11 @@ from typing import Union
 
 from .._hotkey import Hotkey
 from .._hotkey import Hotstring
+from .._utils import MsgBoxButtons
+from .._utils import MsgBoxDefaultButton
+from .._utils import MsgBoxIcon
+from .._utils import MsgBoxModality
+from .._utils import MsgBoxOtherOptions
 from .._utils import type_escape
 from ..directives import Directive
 
@@ -35,7 +40,10 @@ from .transport import FutureResult
 from .transport import Transport
 from .window import Control
 from .window import Window
+
+# from .window import AsyncGui
 from ahk.message import Position
+
 
 sleep = time.sleep
 
@@ -188,6 +196,7 @@ class AHK:
     def remove_hotkey(self, keyname: str) -> None:
         def _() -> None:
             return None
+
         h = Hotkey(keyname=keyname, callback=_)  # XXX: this can probably be avoided
         self._transport.remove_hotkey(hotkey=h)
         return None
@@ -204,7 +213,6 @@ class AHK:
     def clear_hotstrings(self) -> None:
         self._transport.clear_hotstrings()
         return None
-
 
     def set_title_match_mode(self, title_match_mode: TitleMatchMode, /) -> None:
         """
@@ -3474,6 +3482,63 @@ class AHK:
         if value_name is not None:
             args.append(value_name)
         return self._transport.function_call('AHKRegRead', args, blocking=blocking)
+
+    # XXX: the main auto-execute loop in the daemon will prevent user interaction with a GUI
+    #      This needs to be addressed before implementing general gui functionality
+    # async def _new_gui(self, title: str, options: Optional[List[str]] = None) -> str:
+    #     if options is not None:
+    #         options.append('+Hwndhwnd')
+    #         arg_options = ' '.join(options)
+    #     else:
+    #         arg_options = '+Hwndhwnd'
+    #
+    #     args = [arg_options, title]
+    #     return await self._transport.function_call('AHKGuiNew', args, engine=self)
+    #
+    # async def new_gui(self, title: str, options: Optional[List[str]] = None) -> AsyncGui:
+    #     hwnd = await self._new_gui(title=title, options=options)
+    #     return AsyncGui(engine=self, hwnd=hwnd)
+
+    # fmt: off
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None) -> str: ...
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None, *, blocking: Literal[False]) -> FutureResult[str]: ...
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None, *, blocking: Literal[True]) -> str: ...
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
+    def msg_box(
+        self,
+        text: str = '',
+        title: str = 'Message',
+        buttons: MsgBoxButtons = MsgBoxButtons.OK,
+        icon: Optional[MsgBoxIcon] = None,
+        default_button: Optional[MsgBoxDefaultButton] = None,
+        modality: Optional[MsgBoxModality] = None,
+        help_button: bool = False,
+        text_right_justified: bool = False,
+        right_to_left_reading: bool = False,
+        timeout: Optional[int] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[str, FutureResult[str]]:
+        options: int = int(buttons)
+        for opt in (icon, default_button, modality):
+            if opt is not None:
+                options += opt
+        if help_button:
+            options += MsgBoxOtherOptions.HELP_BUTTON
+        if text_right_justified:
+            options += MsgBoxOtherOptions.TEXT_RIGHT_JUSTIFIED
+        if right_to_left_reading:
+            options += MsgBoxOtherOptions.RIGHT_TO_LEFT_READING_ORDER
+
+        args = [str(options), title, text]
+        if timeout is not None:
+            args.append(str(timeout))
+        return self._transport.function_call('AHKMsgBox', args, blocking=blocking)
 
     def block_forever(self) -> NoReturn:
         """

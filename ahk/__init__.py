@@ -7,8 +7,23 @@ from ._async import AsyncWindow
 from ._sync import AHK
 from ._sync import Control
 from ._sync import Window
+from ._utils import MsgBoxButtons
+from ._utils import MsgBoxDefaultButton
+from ._utils import MsgBoxIcon
+from ._utils import MsgBoxModality
 
-__all__ = ['AHK', 'Window', 'AsyncWindow', 'AsyncAHK', 'Control', 'AsyncControl']
+__all__ = [
+    'AHK',
+    'Window',
+    'AsyncWindow',
+    'AsyncAHK',
+    'Control',
+    'AsyncControl',
+    'MsgBoxButtons',
+    'MsgBoxDefaultButton',
+    'MsgBoxIcon',
+    'MsgBoxModality',
+]
 
 _global_instance: Optional[AHK] = None
 

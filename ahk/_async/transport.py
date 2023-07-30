@@ -93,12 +93,14 @@ FunctionName = Literal[
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKGetVolume',
+    'AHKGuiNew',
     'AHKImageSearch',
     'AHKKeyState',
     'AHKKeyWait',
     'AHKMenuTrayIcon',
     'AHKMenuTrayShow',
     'AHKMenuTrayTip',
+    'AHKMsgBox',
     'AHKMouseClickDrag',
     'AHKMouseGetPos',
     'AHKMouseMove',
@@ -591,7 +593,10 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKMenuTrayIcon'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKMenuTrayShow'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
-
+    @overload
+    async def function_call(self, function_name: Literal['AHKGuiNew'], args: List[str], *, engine: AsyncAHK) -> str: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKMsgBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
     # fmt: on
 
     async def function_call(

@@ -743,3 +743,21 @@ class AsyncControl:
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} window={self.window!r}, control_hwnd={self.hwnd!r}, control_class={self.control_class!r}>'
+
+
+#
+# class AsyncGui:
+#     def __init__(self, engine: AsyncAHK, hwnd: str):
+#         self._engine = engine
+#         self._hwnd: str = hwnd
+#
+#     @property
+#     def hwnd(self) -> str:
+#         return self._hwnd
+#
+#     @classmethod
+#     async def new(cls, engine: AsyncAHK, title: str, options: Optional[list[str]] = None) -> AsyncGui:
+#         return await engine.new_gui(title=title, options=options)
+#
+#     def to_window(self) -> AsyncWindow:
+#         return AsyncWindow(engine=self._engine, ahk_id=self.hwnd)

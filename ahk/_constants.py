@@ -2644,6 +2644,45 @@ AHKMenuTrayIcon(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKGuiNew(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    options := command[2]
+    title := command[3]
+    Gui, New, %options%, %title%
+    return FormatResponse(STRINGRESPONSEMESSAGE, hwnd)
+}
+
+AHKMsgBox(ByRef command) {
+    global TIMEOUTRESPONSEMESSAGE
+    global STRINGRESPONSEMESSAGE
+    options := command[2]
+    title := command[3]
+    text := command[4]
+    timeout := command[5]
+    MsgBox,% options, %title%, %text%, %timeout%
+    IfMsgBox, Yes
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Yes")
+    IfMsgBox, No
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "No")
+    IfMsgBox, OK
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "OK")
+    IfMsgBox, Cancel
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Cancel")
+    IfMsgBox, Abort
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Abort")
+    IfMsgBox, Ignore
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Ignore")
+    IfMsgBox, Retry
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Retry")
+    IfMsgBox, Continue
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Continue")
+    IfMsgBox, TryAgain
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "TryAgain")
+    IfMsgBox, Timeout
+        ret := FormatResponse(TIMEOUTRESPONSEMESSAGE, "MsgBox timed out")
+    return ret
+}
+
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
