@@ -95,6 +95,7 @@ FunctionName = Literal[
     'AHKGetVolume',
     'AHKGuiNew',
     'AHKImageSearch',
+    'AHKInputBox',
     'AHKKeyState',
     'AHKKeyWait',
     'AHKMenuTrayIcon',
@@ -597,6 +598,8 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKGuiNew'], args: List[str], *, engine: AsyncAHK) -> str: ...
     @overload
     async def function_call(self, function_name: Literal['AHKMsgBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKInputBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, None, AsyncFutureResult[str], AsyncFutureResult[None]]: ...
     # fmt: on
 
     async def function_call(

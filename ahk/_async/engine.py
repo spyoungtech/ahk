@@ -3551,6 +3551,59 @@ class AsyncAHK:
             args.append(str(timeout))
         return await self._transport.function_call('AHKMsgBox', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None) -> Union[None, str]: ...
+    @overload
+    async def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None, *, blocking: Literal[False]) -> Union[AsyncFutureResult[str], AsyncFutureResult[None]]: ...
+    @overload
+    async def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None, *, blocking: Literal[True]) -> Union[str, None]: ...
+    @overload
+    async def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None, *, blocking: bool = True) -> Union[str, None, AsyncFutureResult[str], AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def input_box(
+        self,
+        prompt: str = '',
+        title: str = 'Input',
+        default: str = '',
+        hide: bool = False,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        locale: bool = True,
+        timeout: Optional[int] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, str, AsyncFutureResult[str], AsyncFutureResult[None]]:
+        """
+        Like AHK's ``InputBox``
+
+        If the user presses Cancel or closes the box, ``None`` is returned.
+        Otherwise, the user's input is returned.
+        Raises a ``TimeoutError`` if a timeout is specified and expires.
+        """
+        args = [title, prompt]
+        if hide:
+            args.append('hide')
+        else:
+            args.append('')
+        for opt in (width, height, x, y):
+            if opt is not None:
+                args.append(str(opt))
+            else:
+                args.append('')
+        if locale:
+            args.append('Locale')
+        else:
+            args.append('')
+        if timeout is not None:
+            args.append(str(timeout))
+        else:
+            args.append('')
+        args.append(default)
+        return await self._transport.function_call('AHKInputBox', args, blocking=blocking)
+
     async def block_forever(self) -> NoReturn:
         """
         Blocks (sleeps) forever. Utility method to prevent script from exiting.

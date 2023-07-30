@@ -2683,6 +2683,32 @@ AHKMsgBox(ByRef command) {
     return ret
 }
 
+AHKInputBox(ByRef command) {
+    global INTEGERRESPONSEMESSAGE
+    global STRINGRESPONSEMESSAGE
+    global TIMEOUTRESPONSEMESSAGE
+    title := command[2]
+    prompt := command[3]
+    hide := command[4]
+    width := command[5]
+    height := command[6]
+    x := command[7]
+    y := command[8]
+    locale := command[9]
+    timeout := command[10]
+    default := command[11]
+
+    InputBox, output, %title%, %prompt%, %hide%, %width%, %height%, %x%, %y%, %locale%, %timeout%, %default%
+    if (ErrorLevel = 2) {
+        ret := FormatResponse(TIMEOUTRESPONSEMESSAGE, "Input box timed out")
+    } else if (ErrorLevel = 1) {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return ret
+}
+
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
