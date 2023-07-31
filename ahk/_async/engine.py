@@ -3650,6 +3650,43 @@ class AsyncAHK:
         args = [options, root, title, filter]
         return await self._transport.function_call('AHKFileSelectFile', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    async def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False) -> Union[None, str]: ...
+    @overload
+    async def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: Literal[False]) -> Union[AsyncFutureResult[str], AsyncFutureResult[None]]: ...
+    @overload
+    async def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: Literal[True]) -> Union[str, None]: ...
+    @overload
+    async def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: bool = True) -> Union[str, None, AsyncFutureResult[str], AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def folder_select_box(
+        self,
+        prompt: str = 'Select Folder',
+        root: str = '',
+        chroot: bool = False,
+        enable_new_directories: bool = True,
+        edit_field: bool = False,
+        new_dialog_style: bool = False,
+        *,
+        blocking: bool = True,
+    ) -> Union[str, None, AsyncFutureResult[str], AsyncFutureResult[None]]:
+        if not chroot:
+            starting_folder = '*'
+        else:
+            starting_folder = ''
+        starting_folder += root
+        if enable_new_directories:
+            opts = 1
+        else:
+            opts = 0
+        if edit_field:
+            opts += 2
+        if new_dialog_style:
+            opts += 4
+        args = [starting_folder, str(opts), prompt]
+        return await self._transport.function_call('AHKFileSelectFolder', args, blocking=blocking)
+
     async def block_forever(self) -> NoReturn:
         """
         Blocks (sleeps) forever. Utility method to prevent script from exiting.

@@ -2720,6 +2720,22 @@ AHKFileSelectFile(byRef command) {
     return ret
 }
 
+AHKFileSelectFolder(byRef command) {
+    global STRINGRESPONSEMESSAGE
+    starting_folder := command[2]
+    options := command[3]
+    prompt := command[4]
+
+    FileSelectFolder, output, %starting_folder%, %options%, %prompt%
+
+    if (ErrorLevel = 1) {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return ret
+}
+
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw

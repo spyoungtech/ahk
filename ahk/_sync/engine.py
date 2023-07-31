@@ -3603,7 +3603,21 @@ class AHK:
     @overload
     def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
     # fmt: on
-    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]:
+    def file_select_box(
+        self,
+        title: str = 'Select File',
+        multi: bool = False,
+        root: str = '',
+        filter: str = '',
+        save_button: bool = False,
+        file_must_exist: bool = False,
+        path_must_exist: bool = False,
+        prompt_create_new_file: bool = False,
+        prompt_override_file: bool = False,
+        follow_shortcuts: bool = True,
+        *,
+        blocking: bool = True,
+    ) -> Union[str, None, FutureResult[str], FutureResult[None]]:
         opts = 0
         if file_must_exist:
             opts += 1
@@ -3625,7 +3639,42 @@ class AHK:
         args = [options, root, title, filter]
         return self._transport.function_call('AHKFileSelectFile', args, blocking=blocking)
 
-
+    # fmt: off
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False) -> Union[None, str]: ...
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: Literal[False]) -> Union[FutureResult[str], FutureResult[None]]: ...
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: Literal[True]) -> Union[str, None]: ...
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
+    # fmt: on
+    def folder_select_box(
+        self,
+        prompt: str = 'Select Folder',
+        root: str = '',
+        chroot: bool = False,
+        enable_new_directories: bool = True,
+        edit_field: bool = False,
+        new_dialog_style: bool = False,
+        *,
+        blocking: bool = True,
+    ) -> Union[str, None, FutureResult[str], FutureResult[None]]:
+        if not chroot:
+            starting_folder = '*'
+        else:
+            starting_folder = ''
+        starting_folder += root
+        if enable_new_directories:
+            opts = 1
+        else:
+            opts = 0
+        if edit_field:
+            opts += 2
+        if new_dialog_style:
+            opts += 4
+        args = [starting_folder, str(opts), prompt]
+        return self._transport.function_call('AHKFileSelectFolder', args, blocking=blocking)
 
     def block_forever(self) -> NoReturn:
         """
