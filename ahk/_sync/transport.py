@@ -78,6 +78,7 @@ FunctionName = Literal[
     'AHKControlGetPos',
     'AHKControlGetText',
     'AHKControlSend',
+    'AHKFileSelectFile',
     'AHKGetClipboard',
     'AHKGetClipboardAll',
     'AHKGetCoordMode',
@@ -581,6 +582,9 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKMsgBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKInputBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKFileSelectFile'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
+
     # fmt: on
 
     def function_call(

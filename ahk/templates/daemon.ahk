@@ -2681,7 +2681,6 @@ AHKMsgBox(ByRef command) {
 }
 
 AHKInputBox(ByRef command) {
-    global INTEGERRESPONSEMESSAGE
     global STRINGRESPONSEMESSAGE
     global TIMEOUTRESPONSEMESSAGE
     title := command[2]
@@ -2699,6 +2698,21 @@ AHKInputBox(ByRef command) {
     if (ErrorLevel = 2) {
         ret := FormatResponse(TIMEOUTRESPONSEMESSAGE, "Input box timed out")
     } else if (ErrorLevel = 1) {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return ret
+}
+
+AHKFileSelectFile(byRef command) {
+    global STRINGRESPONSEMESSAGE
+    options := command[2]
+    root := command[3]
+    title := command[4]
+    filter := command[5]
+    FileSelectFile, output, %options%, %root%, %title%, %filter%
+    if (ErrorLevel = 1) {
         ret := FormatNoValueResponse()
     } else {
         ret := FormatResponse(STRINGRESPONSEMESSAGE, output)

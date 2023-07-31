@@ -3593,6 +3593,40 @@ class AHK:
         args.append(default)
         return self._transport.function_call('AHKInputBox', args, blocking=blocking)
 
+    # fmt: off
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True) -> Union[None, str]: ...
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: Literal[False]) -> Union[FutureResult[str], FutureResult[None]]: ...
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: Literal[True]) -> Union[str, None]: ...
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
+    # fmt: on
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]:
+        opts = 0
+        if file_must_exist:
+            opts += 1
+        if path_must_exist:
+            opts += 2
+        if prompt_create_new_file:
+            opts += 8
+        if prompt_override_file:
+            opts += 8
+        if not follow_shortcuts:
+            opts += 32
+        options = ''
+        if multi:
+            options += 'M'
+        if save_button:
+            options += 'S'
+        if opts:
+            options += str(opts)
+        args = [options, root, title, filter]
+        return self._transport.function_call('AHKFileSelectFile', args, blocking=blocking)
+
+
+
     def block_forever(self) -> NoReturn:
         """
         Blocks (sleeps) forever. Utility method to prevent script from exiting.
