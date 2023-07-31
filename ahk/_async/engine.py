@@ -3494,22 +3494,6 @@ class AsyncAHK:
             args.append(value_name)
         return await self._transport.function_call('AHKRegRead', args, blocking=blocking)
 
-    # XXX: the main auto-execute loop in the daemon will prevent user interaction with a GUI
-    #      This needs to be addressed before implementing general gui functionality
-    # async def _new_gui(self, title: str, options: Optional[List[str]] = None) -> str:
-    #     if options is not None:
-    #         options.append('+Hwndhwnd')
-    #         arg_options = ' '.join(options)
-    #     else:
-    #         arg_options = '+Hwndhwnd'
-    #
-    #     args = [arg_options, title]
-    #     return await self._transport.function_call('AHKGuiNew', args, engine=self)
-    #
-    # async def new_gui(self, title: str, options: Optional[List[str]] = None) -> AsyncGui:
-    #     hwnd = await self._new_gui(title=title, options=options)
-    #     return AsyncGui(engine=self, hwnd=hwnd)
-
     # fmt: off
     @overload
     async def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None) -> str: ...
