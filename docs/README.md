@@ -291,6 +291,9 @@ ahk.sound_set(50, device_number=1, component_type='MASTER', control_type='VOLUME
 
 ## GUI
 
+
+Tooltips/traytips
+
 ```python
 import time
 from ahk import AHK
@@ -302,6 +305,18 @@ ahk.hide_tooltip() # hide the tooltip
 ahk.show_info_traytip("Info", "It's also info", silent=False, blocking=True)  # Default info traytip
 ahk.show_warning_traytip("Warning", "It's a warning")                           # Warning traytip
 ahk.show_error_traytip("Error", "It's an error")                                 # Error trytip
+```
+
+Dialog boxes
+
+```python
+from ahk import AHK, MsgBoxButtons
+ahk = AHK()
+
+ahk.msg_box(text='Do you like message boxes?', title='My Title', buttons=MsgBoxButtons.YES_NO)
+ahk.input_box(prompt='Password', title='Enter your password', hide=True)
+ahk.file_select_box(title='Select one or more mp3 files', multi=True, filter='*.mp3', file_must_exist=True)
+ahk.folder_select_box(prompt='Select a folder')
 ```
 
 ## Global state changes

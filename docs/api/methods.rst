@@ -416,7 +416,8 @@ GUI
 ^^^
 
 GUI methods are largely unimplmented, except ``ToolTip`` and ``TrayTip``.
-We recommend using one of the many Python GUI libraries, such as `easygui <https://github.com/robertlugg/easygui>`_\ , `pysimplegui <https://www.pysimplegui.org/en/latest/>`_ or similar.
+We recommend using one of the many `Python GUI libraries <https://wiki.python.org/moin/GuiProgramming>`_, such as ``tkinter`` from the standard library or a third
+party package such as `pyqt <https://wiki.python.org/moin/PyQt>`_ , `pysimplegui <https://www.pysimplegui.org/en/latest/>`_ or similar.
 
 .. list-table::
    :header-rows: 1
@@ -440,14 +441,20 @@ We recommend using one of the many Python GUI libraries, such as `easygui <https
      - Not Implemented
      -
    * - `Gui TreeView control <https://www.autohotkey.com/docs/commands/TreeView.htm>`_
-     - Not Implemented
+     - Not planned
      -
    * - `IfMsgBox <https://www.autohotkey.com/docs/commands/IfMsgBox.htm>`_
-     - Not Implemented
+     - Not planned
      -
    * - `InputBox <https://www.autohotkey.com/docs/commands/InputBox.htm>`_
-     - Not Implemented
-     -
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.input_box`
+   * - `FileSelectFile <https://www.autohotkey.com/docs/commands/FileSelectFile.htm>`_
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.file_select_box`
+   * - `FileSelectFolder <https://www.autohotkey.com/docs/commands/FileSelectFile.htm>`_
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.folder_select_box`
    * - `LoadPicture() <https://www.autohotkey.com/docs/commands/LoadPicture.htm>`_
      - Not Implemented
      -
@@ -455,25 +462,25 @@ We recommend using one of the many Python GUI libraries, such as `easygui <https
      - Not Implemented
      -
    * - `MenuGetHandle() <https://www.autohotkey.com/docs/commands/MenuGetHandle.htm>`_
-     - Not Implemented
+     - Not Planned
      -
    * - `MenuGetName() <https://www.autohotkey.com/docs/commands/MenuGetName.htm>`_
-     - Not Implemented
+     - Not Planned
      -
    * - `MsgBox <https://www.autohotkey.com/docs/commands/MsgBox.htm>`_
-     - Not Implemented
-     -
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.msg_box`
    * - `OnMessage() <https://www.autohotkey.com/docs/commands/OnMessage.htm>`_
-     - Not Implemented
+     - Not Planned
      -
    * - `Progress <https://www.autohotkey.com/docs/commands/Progress.htm>`_
-     - Not Implemented
+     - Not Planned
      -
    * - `SplashImage <https://www.autohotkey.com/docs/commands/Progress.htm>`_
-     - Not Implemented
+     - Not Planned
      -
    * - `SplashTextOn/Off <https://www.autohotkey.com/docs/commands/SplashTextOn.htm>`_
-     - Not Implemented
+     - Not Planned
      -
    * - `ToolTip <https://www.autohotkey.com/docs/commands/ToolTip.htm>`_
      - Implemented
