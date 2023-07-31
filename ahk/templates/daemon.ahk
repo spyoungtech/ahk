@@ -2641,6 +2641,101 @@ AHKMenuTrayIcon(ByRef command) {
     return FormatNoValueResponse()
 }
 
+AHKGuiNew(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    options := command[2]
+    title := command[3]
+    Gui, New, %options%, %title%
+    return FormatResponse(STRINGRESPONSEMESSAGE, hwnd)
+}
+
+AHKMsgBox(ByRef command) {
+    global TIMEOUTRESPONSEMESSAGE
+    global STRINGRESPONSEMESSAGE
+    options := command[2]
+    title := command[3]
+    text := command[4]
+    timeout := command[5]
+    MsgBox,% options, %title%, %text%, %timeout%
+    IfMsgBox, Yes
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Yes")
+    IfMsgBox, No
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "No")
+    IfMsgBox, OK
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "OK")
+    IfMsgBox, Cancel
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Cancel")
+    IfMsgBox, Abort
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Abort")
+    IfMsgBox, Ignore
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Ignore")
+    IfMsgBox, Retry
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Retry")
+    IfMsgBox, Continue
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Continue")
+    IfMsgBox, TryAgain
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, "TryAgain")
+    IfMsgBox, Timeout
+        ret := FormatResponse(TIMEOUTRESPONSEMESSAGE, "MsgBox timed out")
+    return ret
+}
+
+AHKInputBox(ByRef command) {
+    global STRINGRESPONSEMESSAGE
+    global TIMEOUTRESPONSEMESSAGE
+    title := command[2]
+    prompt := command[3]
+    hide := command[4]
+    width := command[5]
+    height := command[6]
+    x := command[7]
+    y := command[8]
+    locale := command[9]
+    timeout := command[10]
+    default := command[11]
+
+    InputBox, output, %title%, %prompt%, %hide%, %width%, %height%, %x%, %y%, %locale%, %timeout%, %default%
+    if (ErrorLevel = 2) {
+        ret := FormatResponse(TIMEOUTRESPONSEMESSAGE, "Input box timed out")
+    } else if (ErrorLevel = 1) {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return ret
+}
+
+AHKFileSelectFile(byRef command) {
+    global STRINGRESPONSEMESSAGE
+    options := command[2]
+    root := command[3]
+    title := command[4]
+    filter := command[5]
+    FileSelectFile, output, %options%, %root%, %title%, %filter%
+    if (ErrorLevel = 1) {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return ret
+}
+
+AHKFileSelectFolder(byRef command) {
+    global STRINGRESPONSEMESSAGE
+    starting_folder := command[2]
+    options := command[3]
+    prompt := command[4]
+
+    FileSelectFolder, output, %starting_folder%, %options%, %prompt%
+
+    if (ErrorLevel = 1) {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+    }
+    return ret
+}
+
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw

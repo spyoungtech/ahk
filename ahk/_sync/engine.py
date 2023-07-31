@@ -21,6 +21,11 @@ from typing import Union
 
 from .._hotkey import Hotkey
 from .._hotkey import Hotstring
+from .._utils import MsgBoxButtons
+from .._utils import MsgBoxDefaultButton
+from .._utils import MsgBoxIcon
+from .._utils import MsgBoxModality
+from .._utils import MsgBoxOtherOptions
 from .._utils import type_escape
 from ..directives import Directive
 
@@ -35,7 +40,10 @@ from .transport import FutureResult
 from .transport import Transport
 from .window import Control
 from .window import Window
+
+# from .window import AsyncGui
 from ahk.message import Position
+
 
 sleep = time.sleep
 
@@ -188,6 +196,7 @@ class AHK:
     def remove_hotkey(self, keyname: str) -> None:
         def _() -> None:
             return None
+
         h = Hotkey(keyname=keyname, callback=_)  # XXX: this can probably be avoided
         self._transport.remove_hotkey(hotkey=h)
         return None
@@ -204,7 +213,6 @@ class AHK:
     def clear_hotstrings(self) -> None:
         self._transport.clear_hotstrings()
         return None
-
 
     def set_title_match_mode(self, title_match_mode: TitleMatchMode, /) -> None:
         """
@@ -3474,6 +3482,183 @@ class AHK:
         if value_name is not None:
             args.append(value_name)
         return self._transport.function_call('AHKRegRead', args, blocking=blocking)
+
+    # fmt: off
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None) -> str: ...
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None, *, blocking: Literal[False]) -> FutureResult[str]: ...
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None, *, blocking: Literal[True]) -> str: ...
+    @overload
+    def msg_box(self, text: str = '', title: str = 'Message', buttons: MsgBoxButtons = MsgBoxButtons.OK, icon: Optional[MsgBoxIcon] = None, default_button: Optional[MsgBoxDefaultButton] = None, modality: Optional[MsgBoxModality] = None, help_button: bool = False, text_right_justified: bool = False, right_to_left_reading: bool = False, timeout: Optional[int] = None, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
+    def msg_box(
+        self,
+        text: str = '',
+        title: str = 'Message',
+        buttons: MsgBoxButtons = MsgBoxButtons.OK,
+        icon: Optional[MsgBoxIcon] = None,
+        default_button: Optional[MsgBoxDefaultButton] = None,
+        modality: Optional[MsgBoxModality] = None,
+        help_button: bool = False,
+        text_right_justified: bool = False,
+        right_to_left_reading: bool = False,
+        timeout: Optional[int] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[str, FutureResult[str]]:
+        options: int = int(buttons)
+        for opt in (icon, default_button, modality):
+            if opt is not None:
+                options += opt
+        if help_button:
+            options += MsgBoxOtherOptions.HELP_BUTTON
+        if text_right_justified:
+            options += MsgBoxOtherOptions.TEXT_RIGHT_JUSTIFIED
+        if right_to_left_reading:
+            options += MsgBoxOtherOptions.RIGHT_TO_LEFT_READING_ORDER
+
+        args = [str(options), title, text]
+        if timeout is not None:
+            args.append(str(timeout))
+        return self._transport.function_call('AHKMsgBox', args, blocking=blocking)
+
+    # fmt: off
+    @overload
+    def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None) -> Union[None, str]: ...
+    @overload
+    def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None, *, blocking: Literal[False]) -> Union[FutureResult[str], FutureResult[None]]: ...
+    @overload
+    def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None, *, blocking: Literal[True]) -> Union[str, None]: ...
+    @overload
+    def input_box(self, prompt: str = '', title: str = 'Input', default: str = '', hide: bool = False, width: Optional[int] = None, height: Optional[int] = None, x: Optional[int] = None, y: Optional[int] = None, locale: bool = True, timeout: Optional[int] = None, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
+    # fmt: on
+    def input_box(
+        self,
+        prompt: str = '',
+        title: str = 'Input',
+        default: str = '',
+        hide: bool = False,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
+        locale: bool = True,
+        timeout: Optional[int] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, str, FutureResult[str], FutureResult[None]]:
+        """
+        Like AHK's ``InputBox``
+
+        If the user presses Cancel or closes the box, ``None`` is returned.
+        Otherwise, the user's input is returned.
+        Raises a ``TimeoutError`` if a timeout is specified and expires.
+        """
+        args = [title, prompt]
+        if hide:
+            args.append('hide')
+        else:
+            args.append('')
+        for opt in (width, height, x, y):
+            if opt is not None:
+                args.append(str(opt))
+            else:
+                args.append('')
+        if locale:
+            args.append('Locale')
+        else:
+            args.append('')
+        if timeout is not None:
+            args.append(str(timeout))
+        else:
+            args.append('')
+        args.append(default)
+        return self._transport.function_call('AHKInputBox', args, blocking=blocking)
+
+    # fmt: off
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True) -> Union[None, str]: ...
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: Literal[False]) -> Union[FutureResult[str], FutureResult[None]]: ...
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: Literal[True]) -> Union[str, None]: ...
+    @overload
+    def file_select_box(self, title: str = 'Select File', multi: bool = False, root: str = '', filter: str = '', save_button: bool = False, file_must_exist: bool = False, path_must_exist: bool = False, prompt_create_new_file: bool = False, prompt_override_file: bool = False, follow_shortcuts: bool = True, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
+    # fmt: on
+    def file_select_box(
+        self,
+        title: str = 'Select File',
+        multi: bool = False,
+        root: str = '',
+        filter: str = '',
+        save_button: bool = False,
+        file_must_exist: bool = False,
+        path_must_exist: bool = False,
+        prompt_create_new_file: bool = False,
+        prompt_override_file: bool = False,
+        follow_shortcuts: bool = True,
+        *,
+        blocking: bool = True,
+    ) -> Union[str, None, FutureResult[str], FutureResult[None]]:
+        opts = 0
+        if file_must_exist:
+            opts += 1
+        if path_must_exist:
+            opts += 2
+        if prompt_create_new_file:
+            opts += 8
+        if prompt_override_file:
+            opts += 8
+        if not follow_shortcuts:
+            opts += 32
+        options = ''
+        if multi:
+            options += 'M'
+        if save_button:
+            options += 'S'
+        if opts:
+            options += str(opts)
+        args = [options, root, title, filter]
+        return self._transport.function_call('AHKFileSelectFile', args, blocking=blocking)
+
+    # fmt: off
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False) -> Union[None, str]: ...
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: Literal[False]) -> Union[FutureResult[str], FutureResult[None]]: ...
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: Literal[True]) -> Union[str, None]: ...
+    @overload
+    def folder_select_box(self, prompt: str = 'Select Folder', root: str = '', chroot: bool = False, enable_new_directories: bool = True, edit_field: bool = False, new_dialog_style: bool = False, *, blocking: bool = True) -> Union[str, None, FutureResult[str], FutureResult[None]]: ...
+    # fmt: on
+    def folder_select_box(
+        self,
+        prompt: str = 'Select Folder',
+        root: str = '',
+        chroot: bool = False,
+        enable_new_directories: bool = True,
+        edit_field: bool = False,
+        new_dialog_style: bool = False,
+        *,
+        blocking: bool = True,
+    ) -> Union[str, None, FutureResult[str], FutureResult[None]]:
+        if not chroot:
+            starting_folder = '*'
+        else:
+            starting_folder = ''
+        starting_folder += root
+        if enable_new_directories:
+            opts = 1
+        else:
+            opts = 0
+        if edit_field:
+            opts += 2
+        if new_dialog_style:
+            opts += 4
+        args = [starting_folder, str(opts), prompt]
+        return self._transport.function_call('AHKFileSelectFolder', args, blocking=blocking)
 
     def block_forever(self) -> NoReturn:
         """

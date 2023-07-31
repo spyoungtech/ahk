@@ -86,6 +86,8 @@ FunctionName = Literal[
     'AHKControlGetPos',
     'AHKControlGetText',
     'AHKControlSend',
+    'AHKFileSelectFile',
+    'AHKFileSelectFolder',
     'AHKGetClipboard',
     'AHKGetClipboardAll',
     'AHKGetCoordMode',
@@ -93,12 +95,15 @@ FunctionName = Literal[
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKGetVolume',
+    'AHKGuiNew',
     'AHKImageSearch',
+    'AHKInputBox',
     'AHKKeyState',
     'AHKKeyWait',
     'AHKMenuTrayIcon',
     'AHKMenuTrayShow',
     'AHKMenuTrayTip',
+    'AHKMsgBox',
     'AHKMouseClickDrag',
     'AHKMouseGetPos',
     'AHKMouseMove',
@@ -591,7 +596,16 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKMenuTrayIcon'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKMenuTrayShow'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
-
+    @overload
+    async def function_call(self, function_name: Literal['AHKGuiNew'], args: List[str], *, engine: AsyncAHK) -> str: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKMsgBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKInputBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, None, AsyncFutureResult[str], AsyncFutureResult[None]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKFileSelectFile'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, None, AsyncFutureResult[str], AsyncFutureResult[None]]: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKFileSelectFolder'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, None, AsyncFutureResult[str], AsyncFutureResult[None]]: ...
     # fmt: on
 
     async def function_call(

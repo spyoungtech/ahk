@@ -635,6 +635,7 @@ class Window:
     def from_mouse_position(cls, engine: AHK) -> Optional[Window]:
         return engine.win_get_from_mouse_position()
 
+
 class Control:
     def __init__(self, window: Window, hwnd: str, control_class: str):
         self.window: Window = window
