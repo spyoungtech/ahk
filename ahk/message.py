@@ -143,8 +143,7 @@ class ResponseMessage:
         return NotImplemented
 
 
-_message_registry: dict[bytes, 'ResponseMessageClassTypes']
-_message_registry = {ResponseMessage._type_order_mark: ResponseMessage}
+_message_registry: dict[bytes, 'ResponseMessageClassTypes'] = {}
 
 
 class TupleResponseMessage(ResponseMessage):
