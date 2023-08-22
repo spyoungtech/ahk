@@ -6,6 +6,7 @@ import sys
 import tempfile
 import time
 import warnings
+from functools import partial
 from typing import Any
 from typing import Awaitable
 from typing import Callable
@@ -34,6 +35,7 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias
 
+from ..extensions import Extension, _extension_method_registry, _ExtensionMethodRegistry
 from ..keys import Key
 from .transport import AsyncDaemonProcessTransport
 from .transport import AsyncFutureResult
@@ -135,12 +137,44 @@ class AsyncAHK:
         TransportClass: Optional[Type[AsyncTransport]] = None,
         directives: Optional[list[Directive | Type[Directive]]] = None,
         executable_path: str = '',
+        extensions: list[Extension] | None | Literal['auto'] = None,
     ):
+        self._extension_registry: _ExtensionMethodRegistry
+        self._extensions: list[Extension]
+        if extensions == 'auto':
+            is_async = False
+            is_async = True  # unasync: remove
+            if is_async:
+                extensions = [entry.extension for name, entry in _extension_method_registry.async_methods.items()]
+            else:
+                extensions = [entry.extension for name, entry in _extension_method_registry.sync_methods.items()]
+            self._extension_registry = _extension_method_registry
+            self._extensions = extensions
+        else:
+            self._extensions = extensions or []
+            self._extension_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
+            for ext in self._extensions:
+                self._extension_registry.merge(ext._extension_method_registry)
+
         if TransportClass is None:
             TransportClass = AsyncDaemonProcessTransport
         assert TransportClass is not None
-        transport = TransportClass(executable_path=executable_path, directives=directives)
+        transport = TransportClass(executable_path=executable_path, directives=directives, extensions=extensions)
         self._transport: AsyncTransport = transport
+
+    def __getattr__(self, name: str) -> Callable[..., Any]:
+        is_async = False
+        is_async = True  # unasync: remove
+        if is_async:
+            if name in self._extension_registry.async_methods:
+                method = self._extension_registry.async_methods[name].method
+                return partial(method, self)
+        else:
+            if name in self._extension_registry.sync_methods:
+                method = self._extension_registry.sync_methods[name].method
+                return partial(method, self)
+
+        raise AttributeError(f'{self.__class__.__name__!r} object has no attribute {name!r}')
 
     def add_hotkey(
         self, keyname: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None

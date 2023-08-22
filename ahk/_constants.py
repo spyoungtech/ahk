@@ -6,7 +6,16 @@ DAEMON_SCRIPT_TEMPLATE = r"""{% block daemon_script %}
 #NoEnv
 #Persistent
 #SingleInstance Off
+{% block extension_directives %}
+; BEGIN extension includes
+{% for ext in extensions %}
+{% for inc in ext.includes %}
+{{ inc }}
 
+{% endfor %}
+{% endfor %}
+; END extension includes
+{% endblock extension_directives %}
 ; BEGIN user-defined directives
 {% block user_directives %}
 {% for directive in directives %}
@@ -2833,7 +2842,12 @@ CommandArrayFromQuery(ByRef text) {
     return decoded_commands
 }
 
+; BEGIN extension scripts
+{% for ext in extensions %}
+{{ ext.script_text }}
 
+{% endfor %}
+; END extension scripts
 {% block before_autoexecute %}
 {% endblock before_autoexecute %}
 

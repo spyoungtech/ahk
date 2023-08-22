@@ -61,15 +61,11 @@ class Window:
         return hash(self._ahk_id)
 
     def close(self) -> None:
-        self._engine.win_close(
-            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
-        )
+        self._engine.win_close(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
         return None
 
     def kill(self) -> None:
-        self._engine.win_kill(
-            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
-        )
+        self._engine.win_kill(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
 
     def exists(self) -> bool:
         return self._engine.win_exists(
@@ -591,9 +587,7 @@ class Window:
             blocking=blocking,
         )
 
-    def set_trans_color(
-        self, color: Union[int, str], *, blocking: bool = True
-    ) -> Union[None, FutureResult[None]]:
+    def set_trans_color(self, color: Union[int, str], *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         return self._engine.win_set_trans_color(
             color=color,
             title=f'ahk_id {self._ahk_id}',
