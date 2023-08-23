@@ -140,9 +140,11 @@ class AHK:
         if extensions == 'auto':
             is_async = False
             if is_async:
-                extensions = list(set(entry.extension for name, entry in _extension_method_registry.async_methods.items()))
+                methods = _extension_method_registry.async_methods
             else:
-                extensions = list(set(entry.extension for name, entry in _extension_method_registry.sync_methods.items()))
+                methods = _extension_method_registry.sync_methods
+            extensions = list(set(entry.extension for name, entry in methods.items()))
+
             self._extension_registry = _extension_method_registry
             self._extensions = extensions
         else:
