@@ -145,9 +145,13 @@ class AsyncAHK:
             is_async = False
             is_async = True  # unasync: remove
             if is_async:
-                extensions = [entry.extension for name, entry in _extension_method_registry.async_methods.items()]
+                extensions = list(
+                    set(entry.extension for name, entry in _extension_method_registry.async_methods.items())
+                )
             else:
-                extensions = [entry.extension for name, entry in _extension_method_registry.sync_methods.items()]
+                extensions = list(
+                    set(entry.extension for name, entry in _extension_method_registry.sync_methods.items())
+                )
             self._extension_registry = _extension_method_registry
             self._extensions = extensions
         else:

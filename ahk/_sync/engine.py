@@ -133,16 +133,16 @@ class AHK:
         TransportClass: Optional[Type[Transport]] = None,
         directives: Optional[list[Directive | Type[Directive]]] = None,
         executable_path: str = '',
-        extensions: list[Extension] | None | Literal['auto'] = None
+        extensions: list[Extension] | None | Literal['auto'] = None,
     ):
         self._extension_registry: _ExtensionMethodRegistry
         self._extensions: list[Extension]
         if extensions == 'auto':
             is_async = False
             if is_async:
-                extensions = [entry.extension for name, entry in _extension_method_registry.async_methods.items()]
+                extensions = list(set(entry.extension for name, entry in _extension_method_registry.async_methods.items()))
             else:
-                extensions = [entry.extension for name, entry in _extension_method_registry.sync_methods.items()]
+                extensions = list(set(entry.extension for name, entry in _extension_method_registry.sync_methods.items()))
             self._extension_registry = _extension_method_registry
             self._extensions = extensions
         else:
@@ -150,7 +150,6 @@ class AHK:
             self._extension_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
             for ext in self._extensions:
                 self._extension_registry.merge(ext._extension_method_registry)
-
 
         if TransportClass is None:
             TransportClass = DaemonProcessTransport
