@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 import warnings
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
-from typing import ParamSpec
 from typing import TypeVar
+
+if sys.version_info < (3, 10):
+    from typing_extensions import ParamSpec
+else:
+    from typing import ParamSpec
 
 from .directives import Include
 
@@ -15,6 +20,10 @@ from .directives import Include
 class _ExtensionEntry:
     extension: Extension
     method: Callable[..., Any]
+
+
+T = TypeVar('T')
+P = ParamSpec('P')
 
 
 @dataclass
@@ -63,10 +72,6 @@ class _ExtensionMethodRegistry:
 
 
 _extension_method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
-
-
-T = TypeVar('T')
-P = ParamSpec('P')
 
 
 class Extension:
