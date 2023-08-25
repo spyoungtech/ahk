@@ -236,18 +236,19 @@ For example, suppose you want your method to return a datetime object, you might
 In AHK code, you can reference custom response messages by the their fully qualified name, including the namespace.
 (if you're not sure what this means, you can see this value by calling ``DateTimeResponseMessage.fqn()``)
 
+Notes
+^^^^^
+
+- AHK functions MUST always return a message. Failing to return a message will result in an exception being raised. If the function should return nothing, use ``return FormatNoValueResponse()`` which will translate to ``None`` in Python.
+- You cannot define hotkeys, hotstrings, or write any AutoHotkey code that would cause the end of autoexecution
+- Extensions must be imported *before* instantiating the ``AHK`` instance
+- Although extensions can be declared explicitly, using ``extensions='auto'`` is the recommended method for enabling extensions
 
 
 Packaging
 ^^^^^^^^^
 
 Coming soon.
-
-Notes
-^^^^^
-
-- AHK functions MUST always return a message. Failing to return a message will result in an exception being raised. If the function should return nothing, use ``return FormatNoValueResponse()`` which will translate to ``None`` in Python.
-- You cannot define hotkeys, hotstrings, or write any AutoHotkey code that would cause the end of autoexecution
 
 
 Extending with jinja
