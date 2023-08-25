@@ -24,6 +24,8 @@
 {% endblock user_directives %}
 {% endblock directives %}
 
+Critical, 100
+
 {% block message_types %}
 MESSAGE_TYPES := Object({% for tom, msg_class in message_registry.items() %}"{{ msg_class.fqn() }}", "{{ tom.decode('utf-8') }}"{% if not loop.last %}, {% endif %}{% endfor %})
 {% endblock message_types %}
