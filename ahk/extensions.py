@@ -37,7 +37,8 @@ class _ExtensionMethodRegistry:
                 warnings.warn(
                     f'Method of name {f.__name__!r} has already been registered. '
                     f'Previously registered method {self.async_methods[f.__name__].method!r} '
-                    f'will be overridden by {f!r}'
+                    f'will be overridden by {f!r}',
+                    stacklevel=2,
                 )
             self.async_methods[f.__name__] = _ExtensionEntry(extension=ext, method=f)
         else:
@@ -45,7 +46,8 @@ class _ExtensionMethodRegistry:
                 warnings.warn(
                     f'Method of name {f.__name__!r} has already been registered. '
                     f'Previously registered method {self.sync_methods[f.__name__].method!r} '
-                    f'will be overridden by {f!r}'
+                    f'will be overridden by {f!r}',
+                    stacklevel=2,
                 )
             self.sync_methods[f.__name__] = _ExtensionEntry(extension=ext, method=f)
         return f
