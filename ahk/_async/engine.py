@@ -204,6 +204,12 @@ class AsyncAHK:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
         return None
 
+    async def function_call(self, function_name: str, args: list[str], blocking: bool = True) -> Any:
+        """
+        Call an AHK function defined in the daemon script. This method is intended for use by extension authors.
+        """
+        return await self._transport.function_call(function_name, args, blocking=blocking, engine=self)  # type: ignore[call-overload]
+
     def add_hotstring(
         self,
         trigger: str,
