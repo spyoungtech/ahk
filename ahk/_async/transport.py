@@ -715,7 +715,11 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         kwargs['daemon'] = self.__template
         message_types = {str(tom, 'utf-8'): c.__name__.upper() for tom, c in _message_registry.items()}
         return template.render(
-            directives=self._directives, message_types=message_types, extensions=self._extensions, **kwargs
+            directives=self._directives,
+            message_types=message_types,
+            message_registry=_message_registry,
+            extensions=self._extensions,
+            **kwargs,
         )
 
     @property

@@ -631,7 +631,7 @@ class DaemonProcessTransport(Transport):
         directives: Optional[list[Directive | Type[Directive]]] = None,
         jinja_loader: Optional[jinja2.BaseLoader] = None,
         template: Optional[jinja2.Template] = None,
-        extensions: list[Extension] | None = None
+        extensions: list[Extension] | None = None,
     ):
         self._extensions = extensions or []
         self._proc: Optional[SyncAHKProcess]
@@ -687,7 +687,13 @@ class DaemonProcessTransport(Transport):
             template = self._template
         kwargs['daemon'] = self.__template
         message_types = {str(tom, 'utf-8'): c.__name__.upper() for tom, c in _message_registry.items()}
-        return template.render(directives=self._directives, message_types=message_types, extensions=self._extensions, **kwargs)
+        return template.render(
+            directives=self._directives,
+            message_types=message_types,
+            message_registry=_message_registry,
+            extensions=self._extensions,
+            **kwargs,
+        )
 
     @property
     def lock(self) -> Any:
