@@ -13,9 +13,8 @@ sleep = time.sleep
 
 ext_text = '''\
 AHKDoSomething(ByRef command) {
-    global STRINGRESPONSEMESSAGE
     arg := command[2]
-    return FormatResponse(STRINGRESPONSEMESSAGE, Format("test{}", arg))
+    return FormatResponse("ahk.message.StringResponseMessage", Format("test{}", arg))
 }
 '''
 
@@ -24,7 +23,7 @@ async_extension = Extension(script_text=ext_text)
 
 @async_extension.register
 async def do_something(ahk, arg: str) -> str:
-    res = await ahk._transport.function_call('AHKDoSomething', [arg])
+    res = await ahk.function_call('AHKDoSomething', [arg])
     return res
 
 
