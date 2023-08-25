@@ -13,7 +13,7 @@ class DirectiveMeta(type):
     """
 
     def __str__(cls) -> str:
-        return f'#{cls.__name__}'
+        return (foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,foo, bar, baz,)
 
     def __hash__(self) -> int:
         return hash(str(self))
