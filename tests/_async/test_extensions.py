@@ -1,4 +1,6 @@
 import asyncio
+import random
+import string
 import time
 import unittest
 
@@ -11,11 +13,14 @@ async_sleep = asyncio.sleep  # unasync: remove
 
 sleep = time.sleep
 
-ext_text = '''\
-AHKDoSomething(ByRef command) {
+function_name = 'AHKDoSomething'
+function_name = 'AAHKDoSomething'  # unasync: remove
+
+ext_text = f'''\
+{function_name}(ByRef command) {{
     arg := command[2]
-    return FormatResponse("ahk.message.StringResponseMessage", Format("test{}", arg))
-}
+    return FormatResponse("ahk.message.StringResponseMessage", Format("test{{}}", arg))
+}}
 '''
 
 async_extension = Extension(script_text=ext_text)
@@ -23,7 +28,7 @@ async_extension = Extension(script_text=ext_text)
 
 @async_extension.register
 async def do_something(ahk, arg: str) -> str:
-    res = await ahk.function_call('AHKDoSomething', [arg])
+    res = await ahk.function_call(function_name, [arg])
     return res
 
 
