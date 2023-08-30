@@ -247,6 +247,13 @@ class SyncAHKProcess:
         assert isinstance(line, bytes)
         return line
 
+    def read(self) -> bytes:
+        assert self._proc is not None
+        assert self._proc.stdout is not None
+        b = self._proc.stdout.read()
+        assert isinstance(b, bytes)
+        return b
+
     def kill(self) -> None:
         assert self._proc is not None, 'no process to kill'
         self._proc.kill()
@@ -266,7 +273,7 @@ class SyncAHKProcess:
 
 
 def sync_create_process(runargs: List[str]) -> subprocess.Popen[bytes]:
-    return subprocess.Popen(runargs, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    return subprocess.Popen(runargs, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 
 
 class AhkExecutableNotFoundError(EnvironmentError):
@@ -747,8 +754,13 @@ class DaemonProcessTransport(Transport):
             try:
                 lines_to_read = int(num_lines) + 1
             except ValueError as e:
+                try:
+                    stdout = tom + num_lines + proc.read()
+                except Exception:
+                    stdout = b''
                 raise AHKProtocolError(
-                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process'
+                    + (f': {stdout!r}' if stdout else '')
                 ) from e
             for _ in range(lines_to_read):
                 part = proc.readline()
@@ -791,8 +803,13 @@ class DaemonProcessTransport(Transport):
             try:
                 lines_to_read = int(num_lines) + 1
             except ValueError as e:
+                try:
+                    stdout = tom + num_lines + self._proc.read()
+                except Exception:
+                    stdout = b''
                 raise AHKProtocolError(
-                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process'
+                    + (f': {stdout!r}' if stdout else '')
                 ) from e
             for _ in range(lines_to_read):
                 part = self._proc.readline()

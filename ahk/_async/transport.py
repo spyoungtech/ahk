@@ -260,6 +260,13 @@ class AsyncAHKProcess:
         assert isinstance(line, bytes)
         return line
 
+    async def read(self) -> bytes:
+        assert self._proc is not None
+        assert self._proc.stdout is not None
+        b = await self._proc.stdout.read()
+        assert isinstance(b, bytes)
+        return b
+
     def kill(self) -> None:
         assert self._proc is not None, 'no process to kill'
         self._proc.kill()
@@ -280,12 +287,12 @@ class AsyncAHKProcess:
 
 async def async_create_process(runargs: List[str]) -> asyncio.subprocess.Process:  # unasync: remove
     return await asyncio.subprocess.create_subprocess_exec(
-        *runargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        *runargs, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
 
 
 def sync_create_process(runargs: List[str]) -> subprocess.Popen[bytes]:
-    return subprocess.Popen(runargs, stdin=subprocess.PIPE, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    return subprocess.Popen(runargs, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 
 
 class AhkExecutableNotFoundError(EnvironmentError):
@@ -775,8 +782,13 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             try:
                 lines_to_read = int(num_lines) + 1
             except ValueError as e:
+                try:
+                    stdout = tom + num_lines + await proc.read()
+                except Exception:
+                    stdout = b''
                 raise AHKProtocolError(
-                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process'
+                    + (f': {stdout!r}' if stdout else '')
                 ) from e
             for _ in range(lines_to_read):
                 part = await proc.readline()
@@ -827,8 +839,13 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             try:
                 lines_to_read = int(num_lines) + 1
             except ValueError as e:
+                try:
+                    stdout = tom + num_lines + await self._proc.read()
+                except Exception:
+                    stdout = b''
                 raise AHKProtocolError(
-                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process.'
+                    'Unexpected data received. This is usually the result of an unhandled error in the AHK process'
+                    + (f': {stdout!r}' if stdout else '')
                 ) from e
             for _ in range(lines_to_read):
                 part = await self._proc.readline()
