@@ -35,7 +35,7 @@ class TestExtensions(unittest.IsolatedAsyncioTestCase):
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 
-    async def test_ext(self):
+    async def test_ext_explicit(self):
         res = await self.ahk.do_something('foo')
         assert res == 'testfoo'
 
@@ -48,7 +48,7 @@ class TestExtensionsAuto(unittest.IsolatedAsyncioTestCase):
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 
-    async def test_ext(self):
+    async def test_ext_auto(self):
         res = await self.ahk.do_something('foo')
         assert res == 'testfoo'
 
@@ -62,5 +62,5 @@ class TestNoExtensions(unittest.IsolatedAsyncioTestCase):
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 
-    async def test_ext(self):
+    async def test_ext_no_ext(self):
         assert not hasattr(self.ahk, 'do_something')

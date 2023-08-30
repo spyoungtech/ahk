@@ -35,7 +35,12 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias
 
-from ..extensions import Extension, _extension_method_registry, _ExtensionMethodRegistry
+from ..extensions import (
+    Extension,
+    _ExtensionMethodRegistry,
+    _extension_registry,
+    _resolve_extensions,
+)
 from ..keys import Key
 from .transport import AsyncDaemonProcessTransport
 from .transport import AsyncFutureResult
@@ -142,38 +147,28 @@ class AsyncAHK:
         self._extension_registry: _ExtensionMethodRegistry
         self._extensions: list[Extension]
         if extensions == 'auto':
-            is_async = False
-            is_async = True  # unasync: remove
-            if is_async:
-                methods = _extension_method_registry.async_methods
-            else:
-                methods = _extension_method_registry.sync_methods
-            extensions = list(set(entry.extension for name, entry in methods.items()))
-
-            self._extension_registry = _extension_method_registry
-            self._extensions = extensions
+            self._extensions = list(_extension_registry)
         else:
-            self._extensions = extensions or []
-            self._extension_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
-            for ext in self._extensions:
-                self._extension_registry.merge(ext._extension_method_registry)
-
+            self._extensions = _resolve_extensions(extensions) if extensions else []
+        self._method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
+        for ext in self._extensions:
+            self._method_registry.merge(ext._extension_method_registry)
         if TransportClass is None:
             TransportClass = AsyncDaemonProcessTransport
         assert TransportClass is not None
-        transport = TransportClass(executable_path=executable_path, directives=directives, extensions=extensions)
+        transport = TransportClass(executable_path=executable_path, directives=directives, extensions=self._extensions)
         self._transport: AsyncTransport = transport
 
     def __getattr__(self, name: str) -> Callable[..., Any]:
         is_async = False
         is_async = True  # unasync: remove
         if is_async:
-            if name in self._extension_registry.async_methods:
-                method = self._extension_registry.async_methods[name].method
+            if name in self._method_registry.async_methods:
+                method = self._method_registry.async_methods[name]
                 return partial(method, self)
         else:
-            if name in self._extension_registry.sync_methods:
-                method = self._extension_registry.sync_methods[name].method
+            if name in self._method_registry.sync_methods:
+                method = self._method_registry.sync_methods[name]
                 return partial(method, self)
 
         raise AttributeError(f'{self.__class__.__name__!r} object has no attribute {name!r}')
@@ -204,10 +199,12 @@ class AsyncAHK:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
         return None
 
-    async def function_call(self, function_name: str, args: list[str], blocking: bool = True) -> Any:
+    async def function_call(self, function_name: str, args: list[str] | None = None, blocking: bool = True) -> Any:
         """
         Call an AHK function defined in the daemon script. This method is intended for use by extension authors.
         """
+        if args is None:
+            args = []
         return await self._transport.function_call(function_name, args, blocking=blocking, engine=self)  # type: ignore[call-overload]
 
     def add_hotstring(

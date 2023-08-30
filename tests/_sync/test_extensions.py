@@ -34,7 +34,7 @@ class TestExtensions(unittest.TestCase):
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 
-    def test_ext(self):
+    def test_ext_explicit(self):
         res = self.ahk.do_something('foo')
         assert res == 'testfoo'
 
@@ -47,7 +47,7 @@ class TestExtensionsAuto(unittest.TestCase):
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 
-    def test_ext(self):
+    def test_ext_auto(self):
         res = self.ahk.do_something('foo')
         assert res == 'testfoo'
 
@@ -61,5 +61,5 @@ class TestNoExtensions(unittest.TestCase):
         self.ahk._transport._proc.kill()
         time.sleep(0.2)
 
-    def test_ext(self):
+    def test_ext_no_ext(self):
         assert not hasattr(self.ahk, 'do_something')

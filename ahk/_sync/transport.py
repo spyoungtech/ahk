@@ -38,7 +38,7 @@ else:
 
 import jinja2
 
-from ahk.extensions import Extension
+from ahk.extensions import Extension, _resolve_includes
 from ahk._hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
@@ -662,6 +662,10 @@ class DaemonProcessTransport(Transport):
         if template is None:
             template = self.__template
         self._template: jinja2.Template = template
+        directives = directives or []
+        if extensions:
+            includes = _resolve_includes(extensions)
+            directives = includes + directives
         super().__init__(executable_path=executable_path, directives=directives)
 
     @property

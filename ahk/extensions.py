@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import itertools
 import sys
+import typing
 import warnings
+from collections import deque
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
@@ -10,8 +13,10 @@ from typing import TypeVar
 
 if sys.version_info < (3, 10):
     from typing_extensions import ParamSpec
+    from typing_extensions import Concatenate
 else:
     from typing import ParamSpec
+    from typing import Concatenate
 
 from .directives import Include
 
@@ -26,67 +31,64 @@ T = TypeVar('T')
 P = ParamSpec('P')
 
 
+if typing.TYPE_CHECKING:
+    from ahk import AHK, AsyncAHK
+
+    TAHK = TypeVar('TAHK', bound=typing.Union[AHK, AsyncAHK])
+
+
 @dataclass
 class _ExtensionMethodRegistry:
-    sync_methods: dict[str, _ExtensionEntry]
-    async_methods: dict[str, _ExtensionEntry]
+    sync_methods: dict[str, Callable[..., Any]]
+    async_methods: dict[str, Callable[..., Any]]
 
-    def register(self, ext: Extension, f: Callable[P, T]) -> Callable[P, T]:
+    def register(self, f: Callable[Concatenate[TAHK, P], T]) -> Callable[Concatenate[TAHK, P], T]:
         if asyncio.iscoroutinefunction(f):
             if f.__name__ in self.async_methods:
                 warnings.warn(
                     f'Method of name {f.__name__!r} has already been registered. '
-                    f'Previously registered method {self.async_methods[f.__name__].method!r} '
+                    f'Previously registered method {self.async_methods[f.__name__]!r} '
                     f'will be overridden by {f!r}',
                     stacklevel=2,
                 )
-            self.async_methods[f.__name__] = _ExtensionEntry(extension=ext, method=f)
+            self.async_methods[f.__name__] = f
         else:
             if f.__name__ in self.sync_methods:
                 warnings.warn(
                     f'Method of name {f.__name__!r} has already been registered. '
-                    f'Previously registered method {self.sync_methods[f.__name__].method!r} '
+                    f'Previously registered method {self.sync_methods[f.__name__]!r} '
                     f'will be overridden by {f!r}',
                     stacklevel=2,
                 )
-            self.sync_methods[f.__name__] = _ExtensionEntry(extension=ext, method=f)
+            self.sync_methods[f.__name__] = f
         return f
 
     def merge(self, other: _ExtensionMethodRegistry) -> None:
-        for fname, entry in other.async_methods.items():
-            async_method = entry.method
-            if async_method.__name__ in self.async_methods:
-                warnings.warn(
-                    f'Method of name {async_method.__name__!r} has already been registered. '
-                    f'Previously registered method {self.async_methods[async_method.__name__].method!r} '
-                    f'will be overridden by {async_method!r}'
-                )
-            self.async_methods[async_method.__name__] = entry
-        for fname, entry in other.sync_methods.items():
-            method = entry.method
-            if method.__name__ in self.sync_methods:
-                warnings.warn(
-                    f'Method of name {method.__name__!r} has already been registered. '
-                    f'Previously registered method {self.sync_methods[method.__name__].method!r} '
-                    f'will be overridden by {method!r}'
-                )
-            self.sync_methods[method.__name__] = entry
+        for name, method in other.methods:
+            self.register(method)
+
+    @property
+    def methods(self) -> list[tuple[str, Callable[..., Any]]]:
+        return list(itertools.chain(self.async_methods.items(), self.sync_methods.items()))
 
 
-_extension_method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
+_extension_registry: dict[Extension, _ExtensionMethodRegistry] = {}
 
 
 class Extension:
     def __init__(
         self,
-        includes: list[str] | None = None,
         script_text: str | None = None,
-        # template: str | Template | None = None
+        includes: list[str] | None = None,
+        dependencies: list[Extension] | None = None,
     ):
         self._text: str = script_text or ''
-        # self._template: str | Template | None = template
         self._includes: list[str] = includes or []
-        self._extension_method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
+        self.dependencies: list[Extension] = dependencies or []
+        self._extension_method_registry: _ExtensionMethodRegistry = _ExtensionMethodRegistry(
+            sync_methods={}, async_methods={}
+        )
+        _extension_registry[self] = self._extension_method_registry
 
     @property
     def script_text(self) -> str:
@@ -100,7 +102,47 @@ class Extension:
     def includes(self) -> list[Include]:
         return [Include(inc) for inc in self._includes]
 
-    def register(self, f: Callable[P, T]) -> Callable[P, T]:
-        self._extension_method_registry.register(self, f)
-        _extension_method_registry.register(self, f)
+    def register(self, f: Callable[Concatenate[TAHK, P], T]) -> Callable[Concatenate[TAHK, P], T]:
+        self._extension_method_registry.register(f)
         return f
+
+    def __hash__(self) -> int:
+        return hash((self._text, tuple(self.includes), tuple(self.dependencies)))
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, Extension):
+            return hash(self) == hash(other)
+        return NotImplemented
+
+
+def _resolve_extension(extension: Extension, seen: set[Extension]) -> list[Extension]:
+    ret: deque[Extension] = deque()
+    todo = [extension]
+    while todo:
+        ext = todo.pop()
+        if ext in seen:
+            continue
+        ret.appendleft(ext)
+        seen.add(ext)
+        todo.extend(ext.dependencies)
+    return list(ret)
+
+
+def _resolve_extensions(extensions: list[Extension]) -> list[Extension]:
+    seen: set[Extension] = set()
+    ret: list[Extension] = []
+    for ext in extensions:
+        ret.extend(_resolve_extension(ext, seen=seen))
+    return ret
+
+
+def _resolve_includes(extensions: list[Extension]) -> list[Include]:
+    extensions = _resolve_extensions(extensions)
+    ret = []
+    seen: set[Include] = set()
+    for ext in extensions:
+        for include in ext.includes:
+            if include in seen:
+                continue
+            ret.append(include)
+    return ret
