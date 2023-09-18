@@ -64,3 +64,8 @@ class TestMouseAsync(IsolatedAsyncioTestCase):
         assert pos != current_pos
         assert pos != (500, 500)
         await res.result()
+
+
+class TestMouseAsyncV2(TestMouseAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')

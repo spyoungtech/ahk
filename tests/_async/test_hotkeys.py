@@ -67,3 +67,8 @@ class TestHotkeysAsync(IsolatedAsyncioTestCase):
             await self.ahk.key_press('a')
             await async_sleep(1)
             m.assert_not_called()
+
+
+class TestHotkeysAsyncV2(TestHotkeysAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')

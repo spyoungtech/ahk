@@ -15,7 +15,7 @@ sleep = time.sleep
 function_name = 'AHKDoSomething'
 
 ext_text = f'''\
-{function_name}(ByRef command) {{
+{function_name}(command) {{
     arg := command[2]
     return FormatResponse("ahk.message.StringResponseMessage", Format("test{{}}", arg))
 }}
@@ -67,3 +67,19 @@ class TestNoExtensions(unittest.TestCase):
 
     def test_ext_no_ext(self):
         assert not hasattr(self.ahk, 'do_something')
+
+
+class TestExtensionsV2(TestExtensions):
+    def setUp(self) -> None:
+        self.ahk = AHK(extensions=[async_extension], version='v2')
+
+
+class TestExtensionsAutoV2(TestExtensionsAuto):
+    def setUp(self) -> None:
+        self.ahk = AHK(extensions='auto', version='v2')
+
+
+class TestNoExtensionsV2(TestNoExtensions):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')
+        self.ahk.get_mouse_position()  # cause daemon to start

@@ -39,3 +39,8 @@ class TestWindowAsync(unittest.IsolatedAsyncioTestCase):
             await self.ahk.set_clipboard('bar')
             await async_sleep(1)
             m.assert_called()
+
+
+class TestWindowAsyncV2(TestWindowAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')

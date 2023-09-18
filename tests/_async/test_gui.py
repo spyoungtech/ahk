@@ -34,3 +34,8 @@ class TestGui(unittest.IsolatedAsyncioTestCase):
         assert win is not None
         with pytest.raises(TimeoutError):
             r = await box.result()
+
+
+class TestGuiV2(TestGui):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')

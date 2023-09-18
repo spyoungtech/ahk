@@ -38,3 +38,8 @@ class TestWindowAsync(unittest.TestCase):
             self.ahk.set_clipboard('bar')
             sleep(1)
             m.assert_called()
+
+
+class TestWindowAsyncV2(TestWindowAsync):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')

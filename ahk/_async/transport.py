@@ -299,14 +299,17 @@ class AhkExecutableNotFoundError(EnvironmentError):
     pass
 
 
-def _resolve_executable_path(executable_path: str = '') -> str:
+def _resolve_executable_path(executable_path: str = '', version: Optional[Literal['v1', 'v2']] = None) -> str:
     if not executable_path:
         executable_path = (
             os.environ.get('AHK_PATH', '')
+            or (which('AutoHotkeyV2.exe') if version == 'v2' else '')
+            or (which('AutoHotkey32.exe') if version == 'v2' else '')
+            or (which('AutoHotkey64.exe') if version == 'v2' else '')
             or which('AutoHotkey.exe')
-            or which('AutoHotkeyU64.exe')
-            or which('AutoHotkeyU32.exe')
-            or which('AutoHotkeyA32.exe')
+            or (which('AutoHotkeyU64.exe') if version != 'v2' else '')
+            or (which('AutoHotkeyU32.exe') if version != 'v2' else '')
+            or (which('AutoHotkeyA32.exe') if version != 'v2' else '')
             or ''
         )
 
@@ -347,11 +350,13 @@ class AsyncTransport(ABC):
         /,
         executable_path: str = '',
         directives: Optional[list[Union[Directive, Type[Directive]]]] = None,
+        version: Optional[Literal['v1', 'v2']] = None,
         **kwargs: Any,
     ):
-        self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
+        self._executable_path: str = _resolve_executable_path(executable_path=executable_path, version=version)
         self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path, directives=directives)
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
+        self._version: Literal['v1', 'v2'] = version or 'v1'
 
     def on_clipboard_change(
         self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
@@ -665,6 +670,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         jinja_loader: Optional[jinja2.BaseLoader] = None,
         template: Optional[jinja2.Template] = None,
         extensions: list[Extension] | None = None,
+        version: Optional[Literal['v1', 'v2']] = None,
     ):
         self._extensions = extensions or []
         self._proc: Optional[AsyncAHKProcess]
@@ -674,6 +680,16 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         self._jinja_env: jinja2.Environment
         self._execution_lock = threading.Lock()
         self._a_execution_lock = asyncio.Lock()  # unasync: remove
+
+        if version is None or version == 'v1':
+            template_name = 'daemon.ahk'
+            const_script = _DAEMON_SCRIPT_TEMPLATE
+        elif version == 'v2':
+            template_name = 'daemon-v2.ahk'
+            const_script = ''  # TODO: set v2 constant
+        else:
+            raise ValueError(f'Invalid version {version!r} - must be one of "v1" or "v2"')
+
         if jinja_loader is None:
             try:
                 loader: jinja2.BaseLoader
@@ -689,10 +705,10 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         else:
             self._jinja_env = jinja2.Environment(loader=jinja_loader, trim_blocks=True, autoescape=False)
         try:
-            self.__template = self._jinja_env.get_template('daemon.ahk')
+            self.__template = self._jinja_env.get_template(template_name)
         except jinja2.TemplateNotFound:
             warnings.warn('daemon template missing. Falling back to constant', category=UserWarning)
-            self.__template = self._jinja_env.from_string(_DAEMON_SCRIPT_TEMPLATE)
+            self.__template = self._jinja_env.from_string(const_script)
         if template is None:
             template = self.__template
         self._template: jinja2.Template = template
@@ -700,7 +716,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         if extensions:
             includes = _resolve_includes(extensions)
             directives = includes + directives
-        super().__init__(executable_path=executable_path, directives=directives)
+        super().__init__(executable_path=executable_path, directives=directives, version=version)
 
     @property
     def template(self) -> jinja2.Template:
@@ -730,6 +746,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             message_types=message_types,
             message_registry=_message_registry,
             extensions=self._extensions,
+            ahk_version=self._version,
             **kwargs,
         )
 

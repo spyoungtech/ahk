@@ -51,3 +51,8 @@ class TestScripts(unittest.IsolatedAsyncioTestCase):
         await self.ahk.reg_delete(r'HKEY_CURRENT_USER\SOFTWARE\python-ahk')
         with pytest.raises(AHKExecutionException):
             await self.ahk.reg_read(r'HKEY_CURRENT_USER\SOFTWARE\python-ahk')
+
+
+class TestScriptsV2(TestScripts):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')

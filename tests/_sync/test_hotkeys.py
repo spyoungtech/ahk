@@ -64,3 +64,8 @@ class TestHotkeysAsync(TestCase):
             self.ahk.key_press('a')
             sleep(1)
             m.assert_not_called()
+
+
+class TestHotkeysAsyncV2(TestHotkeysAsync):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')

@@ -63,3 +63,8 @@ class TestMouseAsync(TestCase):
         assert pos != current_pos
         assert pos != (500, 500)
         res.result()
+
+
+class TestMouseAsyncV2(TestMouseAsync):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')

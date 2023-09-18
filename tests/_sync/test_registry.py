@@ -51,3 +51,8 @@ class TestScripts(unittest.TestCase):
         self.ahk.reg_delete(r'HKEY_CURRENT_USER\SOFTWARE\python-ahk')
         with pytest.raises(AHKExecutionException):
             self.ahk.reg_read(r'HKEY_CURRENT_USER\SOFTWARE\python-ahk')
+
+
+class TestScriptsV2(TestScripts):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')

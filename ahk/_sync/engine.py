@@ -139,6 +139,7 @@ class AHK:
         directives: Optional[list[Directive | Type[Directive]]] = None,
         executable_path: str = '',
         extensions: list[Extension] | None | Literal['auto'] = None,
+        version: Optional[Literal['v1', 'v2']] = None,
     ):
         self._extension_registry: _ExtensionMethodRegistry
         self._extensions: list[Extension]
@@ -152,7 +153,9 @@ class AHK:
         if TransportClass is None:
             TransportClass = DaemonProcessTransport
         assert TransportClass is not None
-        transport = TransportClass(executable_path=executable_path, directives=directives, extensions=self._extensions)
+        transport = TransportClass(
+            executable_path=executable_path, directives=directives, extensions=self._extensions, version=version
+        )
         self._transport: Transport = transport
 
     def __getattr__(self, name: str) -> Callable[..., Any]:
@@ -744,6 +747,8 @@ class AHK:
         args = [str(x), str(y), str(speed)]
         if relative:
             args.append('R')
+        else:
+            args.append('')
         resp = self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
@@ -1302,7 +1307,7 @@ class AHK:
         self,
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         type_id: int = 1,
         *,
         silent: bool = False,
@@ -1312,6 +1317,14 @@ class AHK:
         """
         Analog for `TrayTip <https://www.autohotkey.com/docs/commands/TrayTip.htm>`_
         """
+        if second is None:
+            second = 1.0
+        else:
+            if self._transport._version == 'v2':
+                warnings.warn(
+                    'supplying seconds is not supported when using AutoHotkey v2. This parameter will be ignored'
+                )
+
         option = type_id + (16 if silent else 0) + (32 if large_icon else 0)
         args = [title, text, str(second), str(option)]
         return self._transport.function_call('AHKTrayTip', args, blocking=blocking)
@@ -3398,7 +3411,7 @@ class AHK:
         with tempfile.NamedTemporaryFile(prefix='ahk-python', suffix='.clip', mode='wb', delete=False) as f:
             f.write(contents)
 
-        args = [f'*c {f.name}']
+        args = [f'*c {f.name}' if self._transport._version != 'v2' else f.name]
         try:
             resp = self._transport.function_call('AHKSetClipboardAll', args, blocking=blocking)
             return resp
@@ -3498,6 +3511,8 @@ class AHK:
             args.append('')
         if value is not None:
             args.append(value)
+        else:
+            args.append('')
         return self._transport.function_call('AHKRegWrite', args, blocking=blocking)
 
     # fmt: off
@@ -3519,6 +3534,8 @@ class AHK:
         args = [key_name]
         if value_name is not None:
             args.append(value_name)
+        else:
+            args.append('')
         return self._transport.function_call('AHKRegRead', args, blocking=blocking)
 
     # fmt: off

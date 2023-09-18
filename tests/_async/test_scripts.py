@@ -60,3 +60,8 @@ class TestScripts(unittest.IsolatedAsyncioTestCase):
         script = 'FileAppend, foo, *, UTF-8'
         fut = await self.ahk.run_script(script, blocking=False)
         assert await fut.result() == 'foo'
+
+
+class TestScriptsV2(TestScripts):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')

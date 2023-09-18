@@ -60,3 +60,8 @@ class TestScripts(unittest.TestCase):
         script = 'FileAppend, foo, *, UTF-8'
         fut = self.ahk.run_script(script, blocking=False)
         assert fut.result() == 'foo'
+
+
+class TestScriptsV2(TestScripts):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')

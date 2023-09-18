@@ -77,3 +77,13 @@ class TestWindowAsync(unittest.IsolatedAsyncioTestCase):
             await self.ahk.send('btw ')
             await async_sleep(1)
             m.assert_called()
+
+
+class TestWindowAsyncV2(TestWindowAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = await self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
+        await self.ahk.set_capslock_state('Off')

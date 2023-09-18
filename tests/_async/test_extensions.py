@@ -17,7 +17,7 @@ function_name = 'AHKDoSomething'
 function_name = 'AAHKDoSomething'  # unasync: remove
 
 ext_text = f'''\
-{function_name}(ByRef command) {{
+{function_name}(command) {{
     arg := command[2]
     return FormatResponse("ahk.message.StringResponseMessage", Format("test{{}}", arg))
 }}
@@ -69,3 +69,19 @@ class TestNoExtensions(unittest.IsolatedAsyncioTestCase):
 
     async def test_ext_no_ext(self):
         assert not hasattr(self.ahk, 'do_something')
+
+
+class TestExtensionsV2(TestExtensions):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(extensions=[async_extension], version='v2')
+
+
+class TestExtensionsAutoV2(TestExtensionsAuto):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(extensions='auto', version='v2')
+
+
+class TestNoExtensionsV2(TestNoExtensions):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')
+        await self.ahk.get_mouse_position()  # cause daemon to start

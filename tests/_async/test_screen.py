@@ -79,3 +79,13 @@ class TestScreen(IsolatedAsyncioTestCase):
     #     result = await self.ahk.pixel_get_color(x, y)
     #     self.assertIsNotNone(result)
     #     self.assertEqual(int(result, 16), 0xFF0000)
+
+
+class TestScreenV2(TestScreen):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')
+        self.before_windows = await self.ahk.list_windows()
+        self.im = Image.new('RGB', (20, 20))
+        for coord in product(range(20), range(20)):
+            self.im.putpixel(coord, (255, 0, 0))
+        time.sleep(1)

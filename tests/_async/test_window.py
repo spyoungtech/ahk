@@ -188,3 +188,12 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_win_is_active(self):
         await self.win.activate()
         assert await self.win.is_active() is True
+
+
+class TestWindowAsyncV2(TestWindowAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = await self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
