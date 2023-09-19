@@ -339,7 +339,6 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
             while self._running:
                 assert self._proc.stdout is not None
                 line = self._proc.stdout.readline()
-                print(line, file=sys.stderr)
                 if line.rstrip(b'\n') == _KEEPALIVE_SENTINEL:
                     logging.debug('keepalive received')
                     continue
