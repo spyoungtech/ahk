@@ -50,7 +50,7 @@ class Window:
         self._ahk_id: str = ahk_id
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__qualname__} ahk_id={self._ahk_id}>'
+        return f'<{self.__class__.__qualname__} ahk_id={self._ahk_id!r}>'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Window):
@@ -61,11 +61,15 @@ class Window:
         return hash(self._ahk_id)
 
     def close(self) -> None:
-        self._engine.win_close(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+        self._engine.win_close(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
         return None
 
     def kill(self) -> None:
-        self._engine.win_kill(title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast'))
+        self._engine.win_kill(
+            title=f'ahk_id {self._ahk_id}', detect_hidden_windows=True, title_match_mode=(1, 'Fast')
+        )
 
     def exists(self) -> bool:
         return self._engine.win_exists(
@@ -277,17 +281,18 @@ class Window:
 
     # fmt: off
     @overload
-    def send(self, keys: str) -> None: ...
+    def send(self, keys: str, control: str = '') -> None: ...
     @overload
-    def send(self, keys: str, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    def send(self, keys: str, control: str = '', *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    def send(self, keys: str, control: str = '', *, blocking: Literal[True]) -> None: ...
     @overload
-    def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def send(self, keys: str, control: str = '', *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
-    def send(self, keys: str, *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def send(self, keys: str, control: str = '', *, blocking: bool = True) -> Union[None, FutureResult[None]]:
         return self._engine.control_send(
             keys=keys,
+            control=control,
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
@@ -587,7 +592,9 @@ class Window:
             blocking=blocking,
         )
 
-    def set_trans_color(self, color: Union[int, str], *, blocking: bool = True) -> Union[None, FutureResult[None]]:
+    def set_trans_color(
+        self, color: Union[int, str], *, blocking: bool = True
+    ) -> Union[None, FutureResult[None]]:
         return self._engine.win_set_trans_color(
             color=color,
             title=f'ahk_id {self._ahk_id}',

@@ -1192,7 +1192,7 @@ class AHK:
         """
         Analog for `SendInput <https://www.autohotkey.com/docs/v1/lib/Send.htm>`_
         """
-        args = [s]
+        args = [s, '', '']
         resp = self._transport.function_call('AHKSendInput', args, blocking=blocking)
         return resp
 

@@ -162,13 +162,18 @@ AHKWinClose(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinClose(title, text, secondstowait, extitle, extext)
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        if (secondstowait != "") {
+            WinClose(title, text, secondstowait, extitle, extext)
+        } else {
+            WinClose(title, text,, extitle, extext)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinClose %}
 }
@@ -1145,7 +1150,7 @@ AHKWinSetTitle(command) {
         DetectHiddenWindows(detect_hw)
     }
     try {
-        WinSetTitle(title, text, new_title, extitle, extext)
+        WinSetTitle(new_title, title, text, extitle, extext)
     }
     finally {
         DetectHiddenWindows(current_detect_hw)
@@ -1180,6 +1185,15 @@ AHKWinSetAlwaysOnTop(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
+
+    if (toggle = "On") {
+        toggle := 1
+    } else if (toggle = "Off") {
+        toggle := 0
+    } else if (toggle = "") {
+        toggle := 1
+    }
+
     try {
         WinSetAlwaysOnTop(toggle, title, text, extitle, extext)
     }
@@ -2344,7 +2358,11 @@ AHKControlSend(command) {
     }
 
     try {
-        ControlSend(keys, ctrl, title, text, extitle, extext)
+        if (ctrl != "") {
+            ControlSendText(keys, ctrl, title, text, extitle, extext)
+        } else {
+            ControlSendText(keys,, title, text, extitle, extext)
+        }
     }
     finally {
         DetectHiddenWindows(current_detect_hw)
@@ -2412,7 +2430,7 @@ AHKWinMove(command) {
     }
 
     try {
-        WinMove(title, text, x, y, width, height, extitle, extext)
+        WinMove(x, y, width, height, title, text, extitle, extext)
     }
     finally {
         DetectHiddenWindows(current_detect_hw)

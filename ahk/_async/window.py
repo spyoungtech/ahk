@@ -54,7 +54,7 @@ class AsyncWindow:
         self._ahk_id: str = ahk_id
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__qualname__} ahk_id={self._ahk_id}>'
+        return f'<{self.__class__.__qualname__} ahk_id={self._ahk_id!r}>'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, AsyncWindow):
@@ -302,17 +302,20 @@ class AsyncWindow:
 
     # fmt: off
     @overload
-    async def send(self, keys: str) -> None: ...
+    async def send(self, keys: str, control: str = '') -> None: ...
     @overload
-    async def send(self, keys: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def send(self, keys: str, control: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    async def send(self, keys: str, control: str = '', *, blocking: Literal[True]) -> None: ...
     @overload
-    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def send(self, keys: str, control: str = '', *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
-    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    async def send(
+        self, keys: str, control: str = '', *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.control_send(
             keys=keys,
+            control=control,
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
