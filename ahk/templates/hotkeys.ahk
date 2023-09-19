@@ -1,3 +1,4 @@
+#Requires AutoHotkey v1.1.17+
 #Persistent
 {% for directive in directives %}
 {% if directive.apply_to_hotkeys_process %}

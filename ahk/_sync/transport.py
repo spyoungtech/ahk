@@ -44,7 +44,10 @@ from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import Position
 from ahk.message import _message_registry
-from ahk._constants import DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE, DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE
+from ahk._constants import (
+    DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE,
+    DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE,
+)
 from ahk.directives import Directive
 
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -335,7 +338,7 @@ class Transport(ABC):
         **kwargs: Any,
     ):
         self._executable_path: str = _resolve_executable_path(executable_path=executable_path, version=version)
-        self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path, directives=directives)
+        self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path, directives=directives, version=version)
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
         self._version: Literal['v1', 'v2'] = version or 'v1'
 

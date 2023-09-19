@@ -357,7 +357,9 @@ class AsyncTransport(ABC):
         **kwargs: Any,
     ):
         self._executable_path: str = _resolve_executable_path(executable_path=executable_path, version=version)
-        self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path, directives=directives)
+        self._hotkey_transport = ThreadedHotkeyTransport(
+            executable_path=self._executable_path, directives=directives, version=version
+        )
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
         self._version: Literal['v1', 'v2'] = version or 'v1'
 

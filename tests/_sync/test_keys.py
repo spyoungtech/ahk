@@ -12,7 +12,7 @@ from ahk import Window
 sleep = time.sleep
 
 
-class TestWindowAsync(unittest.TestCase):
+class TestKeysAsync(unittest.TestCase):
     win: Window
 
     def setUp(self) -> None:
@@ -78,7 +78,7 @@ class TestWindowAsync(unittest.TestCase):
             m.assert_called()
 
 
-class TestWindowAsyncV2(TestWindowAsync):
+class TestKeysAsyncV2(TestKeysAsync):
     def setUp(self) -> None:
         self.ahk = AHK(version='v2')
         self.p = subprocess.Popen('notepad')

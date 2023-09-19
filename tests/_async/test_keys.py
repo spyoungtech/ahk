@@ -13,7 +13,7 @@ async_sleep = asyncio.sleep  # unasync: remove
 sleep = time.sleep
 
 
-class TestWindowAsync(unittest.IsolatedAsyncioTestCase):
+class TestKeysAsync(unittest.IsolatedAsyncioTestCase):
     win: AsyncWindow
 
     async def asyncSetUp(self) -> None:
@@ -79,7 +79,7 @@ class TestWindowAsync(unittest.IsolatedAsyncioTestCase):
             m.assert_called()
 
 
-class TestWindowAsyncV2(TestWindowAsync):
+class TestKeysAsyncV2(TestKeysAsync):
     async def asyncSetUp(self) -> None:
         self.ahk = AsyncAHK(version='v2')
         self.p = subprocess.Popen('notepad')

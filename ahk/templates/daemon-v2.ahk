@@ -1920,9 +1920,9 @@ AHKRegWrite(command) {
     value := command[5]
 ;    RegWrite(value_type, key_name, value_name, value)
     if (value_name != "") {
-        RegWrite(value, value_type, key_name)
-    } else {
         RegWrite(value, value_type, key_name, value_name)
+    } else {
+        RegWrite(value, value_type, key_name)
     }
     return FormatNoValueResponse()
     {% endblock RegWrite %}
