@@ -3810,9 +3810,7 @@ AHKWinGetControlList(command) {
         return FormatResponse("ahk.message.WindowControlListResponseMessage", Format("('{}', [])", ahkid))
     }
 
-    ; ctrListArr := StrSplit(ctrList, "`n")
-    ; ctrListIDArr := StrSplit(ctrListID, "`n")
-    if (ctrListArr.Length() != ctrListIDArr.Length()) {
+    if (ctrList.Length != ctrListID.Length) {
         return FormatResponse("ahk.message.ExceptionResponseMessage", "Control hwnd/class lists have unexpected lengths")
     }
 
@@ -4832,7 +4830,7 @@ AHKKeyWait(command) {
     {% block AHKKeyWait %}
 
     keyname := command[2]
-    if (command.Length() = 2) {
+    if (command.Length = 2) {
         ret := KeyWait(keyname)
     } else {
         options := command[3]
@@ -5789,7 +5787,7 @@ Loop {
         {% endblock after_function %}
     } catch Any as e {
         {% block function_error_handle %}
-        message := Format("Error occurred in {} (line {}). The error message was: {}. Specifically: {}", e.what, e.line, e.message e.extra)
+        message := Format("Error occurred in {} (line {}). The error message was: {}. Specifically: {}", e.what, e.line, e.message, e.extra)
         pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", message)
         {% endblock function_error_handle %}
     }
