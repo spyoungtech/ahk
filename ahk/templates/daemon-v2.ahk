@@ -2,6 +2,7 @@
 {% block directives %}
 ;#NoEnv
 ;#Persistent
+#Requires Autohotkey >= 2.0-
 #Warn All, Off
 #SingleInstance Off
 ; BEGIN user-defined directives

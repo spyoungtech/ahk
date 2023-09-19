@@ -1,5 +1,6 @@
 {% block daemon_script %}
 {% block directives %}
+#Requires AutoHotkey v1.1.17+
 #NoEnv
 #Persistent
 #SingleInstance Off

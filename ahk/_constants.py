@@ -3,6 +3,7 @@
 
 DAEMON_SCRIPT_TEMPLATE = r"""{% block daemon_script %}
 {% block directives %}
+#Requires AutoHotkey v1.1.17+
 #NoEnv
 #Persistent
 #SingleInstance Off
@@ -2895,6 +2896,7 @@ DAEMON_SCRIPT_V2_TEMPLATE = r"""{% block daemon_script %}
 {% block directives %}
 ;#NoEnv
 ;#Persistent
+#Requires Autohotkey >= 2.0-
 #Warn All, Off
 #SingleInstance Off
 ; BEGIN user-defined directives
