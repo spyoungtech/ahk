@@ -864,6 +864,9 @@ AHKWinGetControlList(ByRef command) {
     ctrListArr := StrSplit(ctrList, "`n")
     ctrListIDArr := StrSplit(ctrListID, "`n")
     if (ctrListArr.Length() != ctrListIDArr.Length()) {
+        DetectHiddenWindows, %current_detect_hw%
+        SetTitleMatchMode, %current_match_mode%
+        SetTitleMatchMode, %current_match_speed%
         return FormatResponse("ahk.message.ExceptionResponseMessage", "Control hwnd/class lists have unexpected lengths")
     }
 
