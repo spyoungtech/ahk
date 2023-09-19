@@ -67,20 +67,20 @@ class TestScriptsV2(TestScripts):
         self.ahk = AHK(version='v2')
 
     def test_run_script_text(self):
-        assert self.ahk.win_get(title='Untitled - Notepad') is None
+        assert not self.ahk.exists(title='Untitled - Notepad')
         script = 'stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foobar")\nstdout.Read(0)'
         result = self.ahk.run_script(script)
         assert result == 'foobar'
 
     def test_run_script_file(self):
-        assert self.ahk.win_get(title='Untitled - Notepad') is None
+        assert not self.ahk.exists(title='Untitled - Notepad')
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False) as f:
             f.write('stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foobar")\nstdout.Read(0)')
         res = self.ahk.run_script(f.name)
         assert res == 'foobar'
 
     def test_run_script_file_unicode(self):
-        assert self.ahk.win_get(title='Untitled - Notepad') is None
+        assert not self.ahk.exists(title='Untitled - Notepad')
         subprocess.Popen('Notepad')
         self.ahk.win_wait(title='Untitled - Notepad', timeout=3)
         with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False, encoding='utf-8') as f:

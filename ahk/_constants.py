@@ -5238,7 +5238,7 @@ AHKControlSend(command) {
     }
 
     try {
-        ControlSend(ctrl, keys, title, text, extitle, extext)
+        ControlSend(keys, ctrl, title, text, extitle, extext)
     }
     finally {
         DetectHiddenWindows(current_detect_hw)
