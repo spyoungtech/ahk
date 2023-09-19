@@ -65,3 +65,35 @@ class TestScripts(unittest.IsolatedAsyncioTestCase):
 class TestScriptsV2(TestScripts):
     async def asyncSetUp(self) -> None:
         self.ahk = AsyncAHK(version='v2')
+
+    async def test_run_script_text(self):
+        assert await self.ahk.win_get(title='Untitled - Notepad') is None
+        script = 'stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foobar")\nstdout.Read(0)'
+        result = await self.ahk.run_script(script)
+        assert result == 'foobar'
+
+    async def test_run_script_file(self):
+        assert await self.ahk.win_get(title='Untitled - Notepad') is None
+        with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False) as f:
+            f.write('stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foobar")\nstdout.Read(0)')
+        res = await self.ahk.run_script(f.name)
+        assert res == 'foobar'
+
+    async def test_run_script_file_unicode(self):
+        assert await self.ahk.win_get(title='Untitled - Notepad') is None
+        subprocess.Popen('Notepad')
+        await self.ahk.win_wait(title='Untitled - Notepad', timeout=3)
+        with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False, encoding='utf-8') as f:
+            f.write(
+                'WinActivate "Untitled - Notepad"\nSend "א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ"'
+            )
+        await self.ahk.run_script(f.name)
+        notepad = await self.ahk.win_wait(title='*Untitled - Notepad', timeout=3)
+        assert notepad is not None
+        text = await notepad.get_text()
+        assert 'א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ' in text
+
+    async def test_run_script_nonblocking(self):
+        script = 'stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foo")\nstdout.Read(0)'
+        fut = await self.ahk.run_script(script, blocking=False)
+        assert await fut.result() == 'foo'

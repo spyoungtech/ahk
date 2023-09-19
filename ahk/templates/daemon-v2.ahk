@@ -231,22 +231,24 @@ AHKWinWait(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-    if (timeout != "") {
-        WinWait(title, text, timeout, extitle, extext)
-    } else {
-        WinWait(title, text,, extitle, extext)
+    try {
+        if (timeout != "") {
+            output := WinWait(title, text, timeout, extitle, extext)
+            if (output = 0) {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
+            } else {
+                resp := resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+            }
+        } else {
+            output := WinWait(title, text,, extitle, extext)
+            resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
     }
-    if (ErrorLevel = 1) {
-        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
-    } else {
-        output := WinGetId()
-        resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
     }
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
     return resp
     {% endblock AHKWinWait %}
 }
@@ -275,22 +277,24 @@ AHKWinWaitActive(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-    if (timeout != "") {
-        WinWaitActive(title, text, timeout, extitle, extext)
-    } else {
-        WinWaitActive(title, text,, extitle, extext)
+    try {
+        if (timeout != "") {
+            output := WinWaitActive(title, text, timeout, extitle, extext)
+            if (output = 0) {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWaitActive timed out waiting for the window")
+            } else {
+                resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+            }
+        } else {
+            output := WinWaitActive(title, text,, extitle, extext)
+            resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
     }
-    if (ErrorLevel = 1) {
-        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
-    } else {
-        output := WinGetID()
-        resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
     }
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
     return resp
     {% endblock AHKWinWaitActive %}
 }
@@ -319,22 +323,25 @@ AHKWinWaitNotActive(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-    if (timeout != "") {
-        WinWaitNotActive(title, text, timeout, extitle, extext)
-    } else {
-        WinWaitNotActive(title, text,, extitle, extext)
+    try {
+        if (timeout != "") {
+            if (WinWaitNotActive(title, text, timeout, extitle, extext) = 1) {
+                output := WinGetID()
+                resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+            } else {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
+            }
+        } else {
+            WinWaitNotActive(title, text,, extitle, extext)
+            output := WinGetID()
+            resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
     }
-    if (ErrorLevel = 1) {
-        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
-    } else {
-        output := WinGetID()
-        resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
     }
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
     return resp
     {% endblock AHKWinWaitNotActive %}
 }
@@ -363,21 +370,23 @@ AHKWinWaitClose(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-    if (timeout != "") {
-        WinWaitClose(title, text, timeout, extitle, extext)
-    } else {
-        WinWaitClose(title, text,, extitle, extext)
+    try {
+        if (timeout != "") {
+            if (WinWaitClose(title, text, timeout, extitle, extext) = 1) {
+                resp := FormatNoValueResponse()
+            } else {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
+            }
+        } else {
+            WinWaitClose(title, text,, extitle, extext)
+            resp := FormatNoValueResponse()
+        }
     }
-    if (ErrorLevel = 1) {
-        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
-    } else {
-        resp := FormatNoValueResponse()
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
     }
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
     return resp
     {% endblock AHKWinWaitClose %}
 }
@@ -405,13 +414,14 @@ AHKWinMinimize(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinMinimize(title, text, extitle, extext)
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        WinMinimize(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinMinimize %}
 }
@@ -473,13 +483,14 @@ AHKWinRestore(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinRestore(title, text, extitle, extext)
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        WinRestore(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinRestore %}
 }
@@ -494,7 +505,7 @@ AHKWinIsActive(command) {
     detect_hw := command[6]
     match_mode := command[7]
     match_speed := command[8]
-        current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
         SetTitleMatchMode(match_mode)
@@ -508,15 +519,18 @@ AHKWinIsActive(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    if WinActive(title, text, extitle, extext) {
-        response := FormatResponse("ahk.message.BooleanResponseMessage", 1)
-    } else {
-        response := FormatResponse("ahk.message.BooleanResponseMessage", 0)
+    try {
+        if WinActive(title, text, extitle, extext) {
+            response := FormatResponse("ahk.message.BooleanResponseMessage", 1)
+        } else {
+            response := FormatResponse("ahk.message.BooleanResponseMessage", 0)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinIsActive %}
 }
@@ -546,16 +560,19 @@ AHKWinGetID(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    output := WinGetID(title, text, extitle, extext)
-    if (output = 0 || output = "") {
-        response := FormatNoValueResponse()
-    } else {
-        response := FormatResponse("ahk.message.WindowResponseMessage", output)
+    try {
+        output := WinGetID(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetID %}
 }
@@ -585,12 +602,14 @@ AHKWinGetTitle(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    text := WinGetTitle(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        text := WinGetTitle(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatResponse("ahk.message.StringResponseMessage", text)
     {% endblock AHKWinGetTitle %}
 }
@@ -621,15 +640,19 @@ AHKWinGetIDLast(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    output := WinGetIDLast(title, text, extitle, extext)
-    if (output = 0 || output = "") {
-        response := FormatNoValueResponse()
-    } else {
-        response := FormatResponse("ahk.message.WindowResponseMessage", output)
+    try {
+        output := WinGetIDLast(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetIDLast %}
 }
@@ -659,16 +682,19 @@ AHKWinGetPID(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    output := WinGetPID(title, text, extitle, extext)
-    if (output = 0 || output = "") {
-        response := FormatNoValueResponse()
-    } else {
-        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+    try {
+        output := WinGetPID(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetPID %}
 }
@@ -699,15 +725,19 @@ AHKWinGetProcessName(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    output := WinGetProcessName(title, text, extitle, extext)
-    if (output = 0 || output = "") {
-        response := FormatNoValueResponse()
-    } else {
-        response := FormatResponse("ahk.message.StringResponseMessage", output)
+    try {
+        output := WinGetProcessName(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.StringResponseMessage", output)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetProcessName %}
 }
@@ -737,16 +767,19 @@ AHKWinGetProcessPath(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    output := WinGetProcessPath(title, text, extitle, extext)
-    if (output = 0 || output = "") {
-        response := FormatNoValueResponse()
-    } else {
-        response := FormatResponse("ahk.message.StringResponseMessage", output)
+    try {
+        output := WinGetProcessPath(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.StringResponseMessage", output)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetProcessPath %}
 }
@@ -777,15 +810,19 @@ AHKWinGetCount(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    output := WinGetCount(title, text, extitle, extext)
-    if (output = 0) {
-        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
-    } else {
-        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+    try {
+        output := WinGetCount(title, text, extitle, extext)
+        if (output = 0) {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        } else {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetCount %}
 }
@@ -816,15 +853,19 @@ AHKWinGetMinMax(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    output := WinGetMinMax(title, text, extitle, extext)
-    if (output = "") {
-        response := FormatNoValueResponse()
-    } else {
-        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+    try {
+        output := WinGetMinMax(title, text, extitle, extext)
+        if (output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        }
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetMinMax %}
 }
@@ -861,15 +902,21 @@ AHKWinGetControlList(command) {
         return FormatNoValueResponse()
     }
 
-    ctrList := WinGetControls(title, text, extitle, extext)
-    ctrListID := WinGetControlsHwnd(title, text, extitle, extext)
-
+    try {
+        ctrList := WinGetControls(title, text, extitle, extext)
+        ctrListID := WinGetControlsHwnd(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     if (ctrListID = "") {
         return FormatResponse("ahk.message.WindowControlListResponseMessage", Format("('{}', [])", ahkid))
     }
 
-    ctrListArr := StrSplit(ctrList, "`n")
-    ctrListIDArr := StrSplit(ctrListID, "`n")
+    ; ctrListArr := StrSplit(ctrList, "`n")
+    ; ctrListIDArr := StrSplit(ctrListID, "`n")
     if (ctrListArr.Length() != ctrListIDArr.Length()) {
         return FormatResponse("ahk.message.ExceptionResponseMessage", "Control hwnd/class lists have unexpected lengths")
     }
@@ -883,9 +930,6 @@ AHKWinGetControlList(command) {
     }
     output .= "])"
     response := FormatResponse("ahk.message.WindowControlListResponseMessage", output)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
     return response
     {% endblock AHKWinGetControlList %}
 }
@@ -915,12 +959,15 @@ AHKWinGetTransparent(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    output := WinGetTransparent(title, text, extitle, extext)
-    response := FormatResponse("ahk.message.IntegerResponseMessage", output)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        output := WinGetTransparent(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetTransparent %}
 }
@@ -949,12 +996,15 @@ AHKWinGetTransColor(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    output := WinGetTransColor(title, text, extitle, extext)
-    response := FormatResponse("ahk.message.NoValueResponseMessage", output)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        output := WinGetTransColor(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.NoValueResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetTransColor %}
 }
@@ -984,14 +1034,19 @@ AHKWinGetStyle(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    output := WinGetStyle(title, text, extitle, extext)
-    response := FormatResponse("ahk.message.NoValueResponseMessage", output)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        output := WinGetStyle(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.NoValueResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetStyle %}
 }
+
 AHKWinGetExStyle(command) {
     {% block AHKWinGetExStyle %}
 
@@ -1017,12 +1072,15 @@ AHKWinGetExStyle(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    output := WinGetExStyle(title, text, extitle, extext)
-    response := FormatResponse("ahk.message.NoValueResponseMessage", output)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        output := WinGetExStyle(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.NoValueResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
     {% endblock AHKWinGetExStyle %}
 }
@@ -1052,17 +1110,16 @@ AHKWinGetText(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    output := WinGetText(title,text,extitle,extext)
-
-    if (ErrorLevel = 1) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was an error getting window text")
-    } else {
+    try {
+        output := WinGetText(title,text,extitle,extext)
         response := FormatResponse("ahk.message.StringResponseMessage", output)
     }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
 
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
     return response
     {% endblock AHKWinGetText %}
 }
@@ -1091,10 +1148,14 @@ AHKWinSetTitle(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-    WinSetTitle(title, text, new_title, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinSetTitle(title, text, new_title, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetTitle %}
 }
@@ -1123,11 +1184,14 @@ AHKWinSetAlwaysOnTop(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinSetAlwaysOnTop(toggle, title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinSetAlwaysOnTop(toggle, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetAlwaysOnTop %}
 }
@@ -1156,11 +1220,14 @@ AHKWinSetBottom(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinMoveBottom(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinMoveBottom(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetBottom %}
 }
@@ -1189,11 +1256,14 @@ AHKWinShow(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinShow(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinShow(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinShow %}
 }
@@ -1222,11 +1292,14 @@ AHKWinHide(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinHide(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinHide(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinHide %}
 }
@@ -1255,11 +1328,14 @@ AHKWinSetTop(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinMoveTop(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinMoveTop(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetTop %}
 }
@@ -1288,11 +1364,14 @@ AHKWinSetEnable(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinSetEnabled(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinSetEnabled(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetEnable %}
 }
@@ -1321,11 +1400,14 @@ AHKWinSetDisable(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinSetDisabled(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinSetDisabled(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetDisable %}
 }
@@ -1354,11 +1436,14 @@ AHKWinSetRedraw(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinRedraw(title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinRedraw(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetRedraw %}
 }
@@ -1388,17 +1473,15 @@ AHKWinSetStyle(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinSetStyle(style, title, text, extitle, extext)
-;    if (ErrorLevel = 1) {
-;        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
-;    } else {
-;        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
-;    }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-    return resp
+    try {
+        WinSetStyle(style, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatResponse("ahk.message.BooleanResponseMessage", 1)
     {% endblock AHKWinSetStyle %}
 }
 
@@ -1428,16 +1511,15 @@ AHKWinSetExStyle(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    WinSetExStyle(style, title, text, extitle, extext)
-    if (ErrorLevel = 1) {
-        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
-    } else {
-        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    try {
+        WinSetExStyle(style, title, text, extitle, extext)
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-    return resp
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatResponse("ahk.message.BooleanResponseMessage", 1)
     {% endblock AHKWinSetExStyle %}
 }
 
@@ -1466,17 +1548,15 @@ AHKWinSetRegion(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinSetRegion(options, title, text, extitle, extext)
-    if (ErrorLevel = 1) {
-        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
-    } else {
-        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    try {
+        WinSetRegion(options, title, text, extitle, extext)
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-    return resp
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatResponse("ahk.message.BooleanResponseMessage", 1)
     {% endblock AHKWinSetRegion %}
 }
 
@@ -1505,11 +1585,14 @@ AHKWinSetTransparent(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinSetTransparent(transparency, title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    try {
+        WinSetTransparent(transparency, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetTransparent %}
 }
@@ -1539,13 +1622,14 @@ AHKWinSetTransColor(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinSetTransColor(color, title, text, extitle, extext)
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        WinSetTransColor(color, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinSetTransColor %}
 }
@@ -1573,18 +1657,16 @@ AHKImageSearch(command) {
         y2 := A_ScreenHeight
     }
 
-    ImageSearch(xpos, ypos, x1, y1, x2, y2, imagepath)
-
-    if (coord_mode != "") {
-        CoordMode(Pixel, current_mode)
+    try {
+        if ImageSearch(&xpos, &ypos, x1, y1, x2, y2, imagepath)
+            s := FormatResponse("ahk.message.CoordinateResponseMessage", Format("({}, {})", xpos, ypos))
+        else
+            s := FormatNoValueResponse()
     }
-
-    if (ErrorLevel = 2) {
-        s := FormatResponse("ahk.message.ExceptionResponseMessage", "there was a problem that prevented the command from conducting the search (such as failure to open the image file or a badly formatted option)")
-    } else if (ErrorLevel = 1) {
-        s := FormatNoValueResponse()
-    } else {
-        s := FormatResponse("ahk.message.CoordinateResponseMessage", Format("({}, {})", xpos, ypos))
+    finally {
+        if (coord_mode != "") {
+            CoordMode(Pixel, current_mode)
+        }
     }
 
     return s
@@ -1605,11 +1687,13 @@ AHKPixelGetColor(command) {
         CoordMode(Pixel, coord_mode)
     }
 
-    color := PixelGetColor(x, y, options)
-    ; TODO: check errorlevel
-
-    if (coord_mode != "") {
-        CoordMode(Pixel, current_mode)
+    try {
+        color := PixelGetColor(x, y, options)
+    }
+    finally {
+        if (coord_mode != "") {
+            CoordMode(Pixel, current_mode)
+        }
     }
 
     return FormatResponse("ahk.message.StringResponseMessage", color)
@@ -1633,23 +1717,21 @@ AHKPixelSearch(command) {
     if (coord_mode != "") {
         CoordMode(Pixel, coord_mode)
     }
-
-    PixelSearch(resultx, resulty, x1, y1, x2, y2, color, variation)
-
-    if (coord_mode != "") {
-        CoordMode(Pixel, current_mode)
+    try {
+        if (PixelSearch(&resultx, &resulty, x1, y1, x2, y2, color, variation) = 1) {
+            payload := Format("({}, {})", resultx, resulty)
+            ret := FormatResponse("ahk.message.CoordinateResponseMessage", payload)
+        } else {
+            ret := FormatNoValueResponse()
+        }
+    }
+    finally {
+        if (coord_mode != "") {
+            CoordMode(Pixel, current_mode)
+        }
     }
 
-    if (ErrorLevel = 1) {
-        return FormatNoValueResponse()
-    } else if (ErrorLevel = 0) {
-        payload := Format("({}, {})", resultx, resulty)
-        return FormatResponse("ahk.message.CoordinateResponseMessage", payload)
-    } else if (ErrorLevel = 2) {
-        return FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem conducting the pixel search (ErrorLevel 2)")
-    } else {
-        return FormatResponse("ahk.message.ExceptionResponseMessage", "Unexpected error. This is probably a bug. Please report this at https://github.com/spyoungtech/ahk/issues")
-    }
+    return ret
 
     {% endblock AHKPixelSearch %}
 }
@@ -1690,16 +1772,17 @@ AHKKeyState(command) {
         return FormatNoValueResponse()
     }
 
-    if state is integer
+    if IsInteger(state)
         return FormatResponse("ahk.message.IntegerResponseMessage", state)
 
-    if state is float
+    if IsFloat(state)
         return FormatResponse("ahk.message.FloatResponseMessage", state)
 
-    if state is alnum
+    if IsAlnum(state)
         return FormatResponse("ahk.message.StringResponseMessage", state)
 
-    return FormatResponse("ahk.message.ExceptionResponseMessage", state)
+    msg := Format("Unexpected key state {}", state)
+    return FormatResponse("ahk.message.ExceptionResponseMessage", msg)
     {% endblock AHKKeyState %}
 }
 
@@ -1855,12 +1938,12 @@ AHKKeyWait(command) {
 
     keyname := command[2]
     if (command.Length() = 2) {
-        KeyWait(keyname)
+        ret := KeyWait(keyname)
     } else {
         options := command[3]
-        KeyWait(keyname, options)
+        ret := KeyWait(keyname, options)
     }
-    return FormatResponse("ahk.message.IntegerResponseMessage", ErrorLevel)
+    return FormatResponse("ahk.message.IntegerResponseMessage", ret)
     {% endblock AHKKeyWait %}
 }
 
@@ -1881,6 +1964,7 @@ AHKSend(command) {
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay(key_delay, key_press_duration)
     }
+
 
     Send(str)
 
@@ -2022,18 +2106,16 @@ AHKWinGetClass(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    output := WinGetClass(title,text,extitle,extext)
-
-    if (ErrorLevel = 1) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was an error getting window class")
-    } else {
+    try {
+        output := WinGetClass(title,text,extitle,extext)
         response := FormatResponse("ahk.message.StringResponseMessage", output)
     }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
 
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
     return response
     {% endblock AHKWinGetClass %}
 }
@@ -2063,12 +2145,14 @@ AHKWinActivate(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    WinActivate(title, text, extitle, extext)
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        WinActivate(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinActivate %}
 }
@@ -2097,17 +2181,20 @@ AHKWindowList(command) {
     if (detect_hw) {
         DetectHiddenWindows(detect_hw)
     }
-
-    windows := WinGetList(title, text, extitle, extext)
-    r := ""
-    for id in windows
-    {
-        r .= id . "`,"
+    try {
+        windows := WinGetList(title, text, extitle, extext)
+        r := ""
+        for id in windows
+        {
+            r .= id . "`,"
+        }
+        resp := FormatResponse("ahk.message.WindowListResponseMessage", r)
     }
-    resp := FormatResponse("ahk.message.WindowListResponseMessage", r)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return resp
     {% endblock AHKWindowList %}
 }
@@ -2141,18 +2228,15 @@ AHKControlClick(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    ControlClick(ctrl, title, text, button, click_count, options, exclude_title, exclude_text)
-
-    if (ErrorLevel != 0) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", "Failed to click control")
-    } else {
-        response := FormatNoValueResponse()
+    try {
+        ControlClick(ctrl, title, text, button, click_count, options, exclude_title, exclude_text)
     }
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    response := FormatNoValueResponse()
     return response
     {% endblock AHKControlClick %}
 }
@@ -2183,16 +2267,15 @@ AHKControlGetText(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    result := ControlGetText(ctrl, title, text, extitle, extext)
-
-    if (ErrorLevel = 1) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem getting the text")
-    } else {
-        response := FormatResponse("ahk.message.StringResponseMessage", result)
+    try {
+        result := ControlGetText(ctrl, title, text, extitle, extext)
     }
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    response := FormatResponse("ahk.message.StringResponseMessage", result)
 
     return response
     {% endblock AHKControlGetText %}
@@ -2224,20 +2307,17 @@ AHKControlGetPos(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    ControlGetPos(x, y, w, h, ctrl, title, text, extitle, extext)
-    if (ErrorLevel = 1) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem getting the text")
-    } else {
+    try {
+        ControlGetPos(&x, &y, &w, &h, ctrl, title, text, extitle, extext)
         result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
         response := FormatResponse("ahk.message.PositionResponseMessage", result)
     }
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return response
-
     {% endblock AHKControlGetPos %}
 }
 
@@ -2266,10 +2346,15 @@ AHKControlSend(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-    ControlSend(ctrl, keys, title, text, extitle, extext)
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+
+    try {
+        ControlSend(ctrl, keys, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKControlSend %}
 }
@@ -2289,9 +2374,9 @@ AHKWinFromMouse(command) {
 
 AHKWinIsAlwaysOnTop(command) {
     {% block AHKWinIsAlwaysOnTop %}
-
+    ; TODO: detect hidden windows / etc?
     title := command[2]
-    WinGet(ExStyle, ExStyle, title)
+    ExStyle := WinGetExStyle(title)
     if (ExStyle = "")
         return FormatNoValueResponse()
 
@@ -2330,12 +2415,14 @@ AHKWinMove(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    WinMove(title, text, x, y, width, height, extitle, extext)
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        WinMove(title, text, x, y, width, height, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
 
     {% endblock AHKWinMove %}
@@ -2366,18 +2453,16 @@ AHKWinGetPos(command) {
         DetectHiddenWindows(detect_hw)
     }
 
-    WinGetPos(x, y, w, h, title, text, extitle, extext)
-
-    if (ErrorLevel = 1) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem getting the position")
-    } else {
+    try {
+        WinGetPos(&x, &y, &w, &h, title, text, extitle, extext)
         result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
         response := FormatResponse("ahk.message.PositionResponseMessage", result)
     }
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
 
     return response
     {% endblock AHKWinGetPos %}
@@ -2388,17 +2473,8 @@ AHKGetVolume(command) {
 
     device_number := command[2]
 
-    try {
-    SoundGetWaveVolume(retval, device_number)
-    } catch as e {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", Format("There was a problem getting the volume with device of index {} ({})", device_number, e.message))
-        return response
-    }
-    if (ErrorLevel = 1) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", Format("There was a problem getting the volume with device of index {}", device_number))
-    } else {
-        response := FormatResponse("ahk.message.FloatResponseMessage", Format("{}", retval))
-    }
+    retval := SoundGetVolume(,device_number)
+    response := FormatResponse("ahk.message.FloatResponseMessage", Format("{}", retval))
     return response
     {% endblock AHKGetVolume %}
 }
@@ -2414,25 +2490,13 @@ AHKSoundBeep(command) {
 
 AHKSoundGet(command) {
     {% block AHKSoundGet %}
-
-    device_number := command[2]
-    component_type := command[3]
-    control_type := command[4]
-
-    SoundGet(retval, component_type, control_type, device_number)
-    ; TODO interpret return type
-    return FormatResponse("ahk.message.StringResponseMessage", Format("{}", retval))
+    return FormatResponse("ahk.message.ExceptionResponseMessage", "SoundGet is not supported in ahk v2")
     {% endblock AHKSoundGet %}
 }
 
 AHKSoundSet(command) {
     {% block AHKSoundSet %}
-    device_number := command[2]
-    component_type := command[3]
-    control_type := command[4]
-    value := command[5]
-    SoundSet(value, component_type, control_type, device_number)
-    return FormatNoValueResponse()
+    return FormatResponse("ahk.message.ExceptionResponseMessage", "SoundSet is not supported in ahk v2")
     {% endblock AHKSoundSet %}
 }
 
@@ -2448,7 +2512,7 @@ AHKSetVolume(command) {
     {% block AHKSetVolume %}
     device_number := command[2]
     value := command[3]
-    SoundSetWaveVolume(value, device_number)
+    SoundSetVolume(value,,device_number)
     return FormatNoValueResponse()
     {% endblock AHKSetVolume %}
 }
@@ -2521,11 +2585,10 @@ AHKClipWait(command) {
     timeout := command[2]
     wait_for_any_data := command[3]
 
-    ClipWait(timeout, wait_for_any_data)
-
-    if (ErrorLevel = 1) {
+    if ClipWait(timeout, wait_for_any_data)
+        return FormatNoValueResponse()
+    else
         return FormatResponse("ahk.message.TimeoutResponseMessage", "timed out waiting for clipboard data")
-    }
     return FormatNoValueResponse()
 }
 
@@ -2615,11 +2678,26 @@ AHKFileSelectFile(command) {
     root := command[3]
     title := command[4]
     filter := command[5]
-    output := FileSelectFile(options, root, title, filter)
-    if (ErrorLevel = 1) {
+    output := FileSelect(options, root, title, filter)
+    if (output = "") {
         ret := FormatNoValueResponse()
     } else {
-        ret := FormatResponse("ahk.message.StringResponseMessage", output)
+        if IsObject(output) {
+            if (output.Length = 0) {
+                ret := FormatNoValueResponse()
+            }
+            else {
+                files := ""
+                for index, filename in output
+                    if (A_Index != 1) {
+                        files .= "`n"
+                    }
+                    files .= filename
+                ret := FormatResponse("ahk.message.StringResponseMessage", files)
+            }
+        } else {
+            ret := FormatResponse("ahk.message.StringResponseMessage", output)
+        }
     }
     return ret
 }
@@ -2630,9 +2708,9 @@ AHKFileSelectFolder(command) {
     options := command[3]
     prompt := command[4]
 
-    output := FileSelectFolder(starting_folder, options, prompt)
+    output := DirSelect(starting_folder, options, prompt)
 
-    if (ErrorLevel = 1) {
+    if (output = "") {
         ret := FormatNoValueResponse()
     } else {
         ret := FormatResponse("ahk.message.StringResponseMessage", output)
@@ -2777,8 +2855,6 @@ b64encode(data) {
     return ret
 }
 
-; End of included content
-
 CommandArrayFromQuery(text) {
     decoded_commands := []
     encoded_array := StrSplit(text, "|")
@@ -2818,18 +2894,16 @@ Loop {
         {% endblock after_function %}
     } catch Any as e {
         {% block function_error_handle %}
-        message := Format("Error occurred in {}. The error message was: {}", e.line, e.message)
+        message := Format("Error occurred in {} (line {}). The error message was: {}. Specifically: {}", e.what e.line, e.message e.extra)
         pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", message)
         {% endblock function_error_handle %}
     }
     {% block send_response %}
     if (pyresp) {
-;        MsgBox(pyresp)
         stdout.Write(pyresp)
         stdout.Read(0)
     } else {
         msg := FormatResponse("ahk.message.ExceptionResponseMessage", Format("Unknown Error when calling {}", func_name))
-;        MsgBox(msg)
         stdout.Write(msg)
         stdout.Read(0)
     }
