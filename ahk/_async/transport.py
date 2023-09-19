@@ -44,7 +44,10 @@ from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import Position
 from ahk.message import _message_registry
-from ahk._constants import DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE
+from ahk._constants import (
+    DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE,
+    DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE,
+)
 from ahk.directives import Directive
 
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -686,7 +689,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             const_script = _DAEMON_SCRIPT_TEMPLATE
         elif version == 'v2':
             template_name = 'daemon-v2.ahk'
-            const_script = ''  # TODO: set v2 constant
+            const_script = _DAEMON_SCRIPT_V2_TEMPLATE
         else:
             raise ValueError(f'Invalid version {version!r} - must be one of "v1" or "v2"')
 
