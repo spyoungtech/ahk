@@ -2893,7 +2893,7 @@ Loop {
         {% endblock after_function %}
     } catch Any as e {
         {% block function_error_handle %}
-        message := Format("Error occurred in {} (line {}). The error message was: {}. Specifically: {}", e.what, e.line, e.message, e.extra)
+        message := Format("Error occurred in {} (line {}). The error message was: {}. Specifically: {}`nStack:`n{}", e.what, e.line, e.message, e.extra, e.stack)
         pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", message)
         {% endblock function_error_handle %}
     }
