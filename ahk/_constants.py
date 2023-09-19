@@ -2895,8 +2895,8 @@ FileAppend, %KEEPALIVE%`n, *, UTF-8
 DAEMON_SCRIPT_V2_TEMPLATE = r"""{% block daemon_script %}
 {% block directives %}
 ;#NoEnv
-;#Persistent
 #Requires Autohotkey >= 2.0-
+Persistent
 #Warn All, Off
 #SingleInstance Off
 ; BEGIN user-defined directives
@@ -3790,14 +3790,11 @@ AHKWinGetControlList(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    ahkid := WinGetID(title, text, extitle, extext)
-
-    if (ahkid = "") {
-        return FormatNoValueResponse()
-    }
-
     try {
+        ahkid := WinGetID(title, text, extitle, extext)
+        if (ahkid = "") {
+            return FormatNoValueResponse()
+        }
         ctrList := WinGetControls(title, text, extitle, extext)
         ctrListID := WinGetControlsHwnd(title, text, extitle, extext)
     }
@@ -3816,8 +3813,8 @@ AHKWinGetControlList(command) {
 
     output := Format("('{}', [", ahkid)
 
-    for index, hwnd in ctrListIDArr {
-        classname := ctrListArr[index]
+    for index, hwnd in ctrListID {
+        classname := ctrList[index]
         output .= Format("('{}', '{}'), ", hwnd, classname)
 
     }
@@ -4258,7 +4255,7 @@ AHKWinSetEnable(command) {
         DetectHiddenWindows(detect_hw)
     }
     try {
-        WinSetEnabled(title, text, extitle, extext)
+        WinSetEnabled(1, title, text, extitle, extext)
     }
     finally {
         DetectHiddenWindows(current_detect_hw)
@@ -4294,7 +4291,7 @@ AHKWinSetDisable(command) {
         DetectHiddenWindows(detect_hw)
     }
     try {
-        WinSetDisabled(title, text, extitle, extext)
+        WinSetEnabled(0, title, text, extitle, extext)
     }
     finally {
         DetectHiddenWindows(current_detect_hw)
@@ -4540,7 +4537,7 @@ AHKImageSearch(command) {
     current_mode := Format("{}", A_CoordModePixel)
 
     if (coord_mode != "") {
-        CoordMode(Pixel, coord_mode)
+        CoordMode("Pixel", coord_mode)
     }
 
     if (x2 = "A_ScreenWidth") {
@@ -4558,7 +4555,7 @@ AHKImageSearch(command) {
     }
     finally {
         if (coord_mode != "") {
-            CoordMode(Pixel, current_mode)
+            CoordMode("Pixel", current_mode)
         }
     }
 
@@ -4577,7 +4574,7 @@ AHKPixelGetColor(command) {
     current_mode := Format("{}", A_CoordModePixel)
 
     if (coord_mode != "") {
-        CoordMode(Pixel, coord_mode)
+        CoordMode("Pixel", coord_mode)
     }
 
     try {
@@ -4585,7 +4582,7 @@ AHKPixelGetColor(command) {
     }
     finally {
         if (coord_mode != "") {
-            CoordMode(Pixel, current_mode)
+            CoordMode("Pixel", current_mode)
         }
     }
 
@@ -4608,7 +4605,7 @@ AHKPixelSearch(command) {
     current_mode := Format("{}", A_CoordModePixel)
 
     if (coord_mode != "") {
-        CoordMode(Pixel, coord_mode)
+        CoordMode("Pixel", coord_mode)
     }
     try {
         if (PixelSearch(&resultx, &resulty, x1, y1, x2, y2, color, variation) = 1) {
@@ -4620,7 +4617,7 @@ AHKPixelSearch(command) {
     }
     finally {
         if (coord_mode != "") {
-            CoordMode(Pixel, current_mode)
+            CoordMode("Pixel", current_mode)
         }
     }
 
@@ -4635,7 +4632,7 @@ AHKMouseGetPos(command) {
     coord_mode := command[2]
     current_coord_mode := Format("{}", A_CoordModeMouse)
     if (coord_mode != "") {
-        CoordMode(Mouse, coord_mode)
+        CoordMode("Mouse", coord_mode)
     }
     MouseGetPos(&xpos, &ypos)
 
@@ -4643,7 +4640,7 @@ AHKMouseGetPos(command) {
     resp := FormatResponse("ahk.message.CoordinateResponseMessage", payload)
 
     if (coord_mode != "") {
-        CoordMode(Mouse, current_coord_mode)
+        CoordMode("Mouse", current_coord_mode)
     }
 
     return resp
@@ -4707,13 +4704,13 @@ AHKClick(command) {
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
     if (relative_to != "") {
-        CoordMode(Mouse, relative_to)
+        CoordMode("Mouse", relative_to)
     }
 
     Click(x, y, button, direction, r)
 
     if (relative_to != "") {
-        CoordMode(Mouse, current_coord_rel)
+        CoordMode("Mouse", current_coord_rel)
     }
 
     return FormatNoValueResponse()
@@ -4769,13 +4766,13 @@ AHKMouseClickDrag(command) {
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
     if (relative_to != "") {
-        CoordMode(Mouse, relative_to)
+        CoordMode("Mouse", relative_to)
     }
 
     MouseClickDrag(button, x1, y1, x2, y2, speed, relative)
 
     if (relative_to != "") {
-        CoordMode(Mouse, current_coord_rel)
+        CoordMode("Mouse", current_coord_rel)
     }
 
     return FormatNoValueResponse()
@@ -4880,7 +4877,7 @@ AHKSendRaw(command) {
         SetKeyDelay(key_delay, key_press_duration)
     }
 
-    SendRaw(str)
+    Send("{Raw}" str)
 
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay(current_delay, current_key_duration)
@@ -4940,7 +4937,7 @@ AHKSendPlay(command) {
     current_key_duration := Format("{}", A_KeyDurationPlay)
 
     if (key_delay != "" or key_press_duration != "") {
-        SetKeyDelay(key_delay, key_press_duration, Play)
+        SetKeyDelay(key_delay, key_press_duration, "Play")
     }
 
     SendPlay(str)
@@ -4968,9 +4965,9 @@ HideTrayTip(command) {
     {% block HideTrayTip %}
     TrayTip ; Attempt to hide it the normal way.
     if SubStr(A_OSVersion,1,3) = "10." {
-        Menu Tray, NoIcon
+        A_IconHidden := true
         Sleep 200 ; It may be necessary to adjust this sleep.
-        Menu Tray, Icon
+        A_IconHidden := false
     }
     {% endblock HideTrayTip %}
 }
@@ -5255,7 +5252,7 @@ AHKControlSend(command) {
 AHKWinFromMouse(command) {
     {% block AHKWinFromMouse %}
 
-    MouseGetPos(,, MouseWin)
+    MouseGetPos(,, &MouseWin)
 
     if (MouseWin = "") {
         return FormatNoValueResponse()
@@ -5493,12 +5490,12 @@ AHKBlockInput(command) {
 
 AHKMenuTrayTip(command) {
     value := command[2]
-    Menu(Tray, Tip, value)
+    A_IconTip := value
     return FormatNoValueResponse()
 }
 
 AHKMenuTrayShow(command) {
-    Menu(Tray, Icon)
+    A_IconHidden := 0
     return FormatNoValueResponse()
 }
 
@@ -5506,17 +5503,17 @@ AHKMenuTrayIcon(command) {
     filename := command[2]
     icon_number := command[3]
     freeze := command[4]
-    Menu(Tray, Icon, filename, icon_number,freeze)
+    TraySetIcon(filename, icon_number, freeze)
     return FormatNoValueResponse()
 }
 
-AHKGuiNew(command) {
-
-    options := command[2]
-    title := command[3]
-    Gui(New, options, title)
-    return FormatResponse("ahk.message.StringResponseMessage", hwnd)
-}
+;AHKGuiNew(command) {
+;
+;    options := command[2]
+;    title := command[3]
+;    Gui(New, options, title)
+;    return FormatResponse("ahk.message.StringResponseMessage", hwnd)
+;}
 
 AHKMsgBox(command) {
 
@@ -5681,36 +5678,36 @@ b64decode(pszString) {
     ;  [out]     DWORD  *pdwSkip,   A pointer to a DWORD value that receives the number of characters skipped to reach the beginning of the -----BEGIN ...----- header. If no header is present, then the DWORD is set to zero. This parameter is optional and can be NULL if it is not needed.
     ;  [out]     DWORD  *pdwFlags   A pointer to a DWORD value that receives the flags actually used in the conversion. These are the same flags used for the dwFlags parameter. In many cases, these will be the same flags that were passed in the dwFlags parameter. If dwFlags contains one of the following flags, this value will receive a flag that indicates the actual format of the string. This parameter is optional and can be NULL if it is not needed.
     return LC_Base64_Decode_Text(pszString)
-    if (pszString = "") {
-        return ""
-    }
-
-    cchString := StrLen(pszString)
-
-    dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
-    getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
-    buff_size := 0 ; The function will write to this variable on our first call
-    pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
-    pdwFlags := 0 ; We don't need this, so make it null
-
-    ; The first call calculates the required size. The result is written to pbBinary
-    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
-    if (success = 0) {
-        return ""
-    }
-
-    ; We're going to give a pointer to a variable to the next call, but first we want to make the buffer the correct size using VarSetCapacity using the previous return value
-    ret := Buffer(buff_size, 0)
-;    granted := VarSetStrCapacity(&ret, buff_size)
-
-    ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
-
-    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "Ptr", ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
-    if (success=0) {
-        return ""
-    }
-
-    return StrGet(ret, "UTF-8")
+;    if (pszString = "") {
+;        return ""
+;    }
+;
+;    cchString := StrLen(pszString)
+;
+;    dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
+;    getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
+;    buff_size := 0 ; The function will write to this variable on our first call
+;    pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
+;    pdwFlags := 0 ; We don't need this, so make it null
+;
+;    ; The first call calculates the required size. The result is written to pbBinary
+;    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+;    if (success = 0) {
+;        return ""
+;    }
+;
+;    ; We're going to give a pointer to a variable to the next call, but first we want to make the buffer the correct size using VarSetCapacity using the previous return value
+;    ret := Buffer(buff_size, 0)
+;;    granted := VarSetStrCapacity(&ret, buff_size)
+;
+;    ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
+;
+;    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "Ptr", ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+;    if (success=0) {
+;        return ""
+;    }
+;
+;    return StrGet(ret, "UTF-8")
 }
 
 b64encode(data) {
@@ -5722,30 +5719,30 @@ b64encode(data) {
     ;  [in, out]       DWORD      *pcchString: A pointer to a DWORD variable that contains the size, in TCHARs, of the pszString buffer
     LC_Base64_Encode(&Base64_, &data, data.Size)
     return Base64_
-    cbBinary := StrLen(data) * (A_IsUnicode ? 2 : 1)
-    if (cbBinary = 0) {
-        return ""
-    }
-
-    dwFlags := 0x00000001 | 0x40000000  ; CRYPT_STRING_BASE64 + CRYPT_STRING_NOCRLF
-
-    ; First step is to get the size so we can set the capacity of our return buffer correctly
-    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Ptr", 0, "UIntP", buff_size)
-    if (success = 0) {
-        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
-        throw Exception(msg, -1)
-    }
-
-    VarSetCapacity(ret, buff_size * (A_IsUnicode ? 2 : 1))
-
-    ; Now we do the conversion to base64 and rteturn the string
-
-    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", buff_size)
-    if (success = 0) {
-        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
-        throw Exception(msg, -1)
-    }
-    return ret
+;    cbBinary := StrLen(data) * (A_IsUnicode ? 2 : 1)
+;    if (cbBinary = 0) {
+;        return ""
+;    }
+;
+;    dwFlags := 0x00000001 | 0x40000000  ; CRYPT_STRING_BASE64 + CRYPT_STRING_NOCRLF
+;
+;    ; First step is to get the size so we can set the capacity of our return buffer correctly
+;    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Ptr", 0, "UIntP", buff_size)
+;    if (success = 0) {
+;        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
+;        throw Exception(msg, -1)
+;    }
+;
+;    VarSetCapacity(ret, buff_size * (A_IsUnicode ? 2 : 1))
+;
+;    ; Now we do the conversion to base64 and rteturn the string
+;
+;    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", buff_size)
+;    if (success = 0) {
+;        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
+;        throw Exception(msg, -1)
+;    }
+;    return ret
 }
 
 CommandArrayFromQuery(text) {
