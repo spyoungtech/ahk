@@ -81,6 +81,7 @@ class MsgBoxOtherOptions(enum.IntEnum):
 
 
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
+DEFAULT_EXECUTABLE_PATH_V2 = r'C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe'
 
 
 class AhkExecutableNotFoundError(EnvironmentError):
@@ -102,15 +103,19 @@ def _resolve_executable_path(executable_path: str = '', version: Optional[Litera
         )
 
     if not executable_path:
-        if os.path.exists(DEFAULT_EXECUTABLE_PATH):
-            executable_path = DEFAULT_EXECUTABLE_PATH
+        if version == 'v2':
+            if os.path.exists(DEFAULT_EXECUTABLE_PATH_V2):
+                executable_path = DEFAULT_EXECUTABLE_PATH_V2
+        else:
+            if os.path.exists(DEFAULT_EXECUTABLE_PATH):
+                executable_path = DEFAULT_EXECUTABLE_PATH
 
     if not executable_path:
         raise AhkExecutableNotFoundError(
             'Could not find AutoHotkey.exe on PATH. '
             'Provide the absolute path with the `executable_path` keyword argument '
             'or in the AHK_PATH environment variable. '
-            'You may be able to resolve this error by installing the binary extra: pip install "ahk[binary]"'
+            'You can likely resolve this error simply by installing the binary extra with the following command:\n\tpip install "ahk[binary]"'
         )
 
     if not os.path.exists(executable_path):
