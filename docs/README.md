@@ -1,6 +1,6 @@
 # ahk
 
-A fully typed Python wrapper around AHK.
+A fully typed Python wrapper around AutoHotkey.
 
 [![Docs](https://readthedocs.org/projects/ahk/badge/?version=latest)](https://ahk.readthedocs.io/en/latest/?badge=latest)
 [![Build](https://github.com/spyoungtech/ahk/actions/workflows/test.yaml/badge.svg)](https://github.com/spyoungtech/ahk/actions/workflows/test.yaml)
@@ -14,9 +14,10 @@ A fully typed Python wrapper around AHK.
 ```
 pip install ahk
 ```
+
 Requires Python 3.8+
 
-See also [Non-Python dependencies](#deps)
+Supports AutoHotkey v1 and v2. See also: [Non-Python dependencies](#deps)
 
 # Usage
 
@@ -533,30 +534,74 @@ ahk.run_script(script_path)
 
 # Non-Python dependencies
 
-To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/). It's expected to be on PATH by default.
+To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/) (e.g., `AutoHotkey.exe`).
+It's expected to be on PATH by default OR in a default installation location (`C:\Program Files\AutoHotkey\AutoHotkey.exe` for v1 or `C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe` for v2)
 
-Note: this should be AutoHotkey V1. AutoHotkey V2 is not yet supported.
+AutoHotkey v1 is fully supported. AutoHotkey v2 support is available, but is considered to be in beta status.
 
-A convenient way to do this is to install the `binary` extra
+The recommended way to supply the AutoHotkey binary (for both v1 and v2) is to install the `binary` extra for this package. This will
+provide the necessary executables and help ensure they are correctly placed on PATH.
 
 ```
 pip install "ahk[binary]"
 ```
 
 
-You can also use the `AHK_PATH` environment variable to specify the executable location.
-
-```console
-set AHK_PATH=C:\Path\To\AutoHotkey.exe
-```
-
-Alternatively, you may provide the path in code
+Alternatively, you may provide the path in code:
 
 ```python
 from ahk import AHK
 
 ahk = AHK(executable_path='C:\\path\\to\\AutoHotkey.exe')
 ```
+
+You can also use the `AHK_PATH` environment variable to specify the executable location.
+
+```console
+set AHK_PATH=C:\Path\To\AutoHotkey.exe
+python myscript.py
+```
+
+## Using AHK v2
+
+By default, when no `executable_path` parameter (or `AHK_PATH` environment variable) is set, only AutoHotkey v1 binary names
+are searched for on PATH or default install locations. This behavior may change in future versions to allow v2 to be used by default.
+
+To use AutoHotkey version 2, you can do any of the following things:
+
+1. provide the `executable_path` keyword argument with the location of the AutoHotkey v2 binary
+2. set the `AHK_PATH` environment variable with the location of an AutoHotkey v2 binary
+3. Provide the `version` keyword argument with the value `v2` which enables finding the executable using AutoHotkey v2 binary names and default install locations.
+
+For example:
+
+```python
+from ahk import AHK
+
+
+ahk = AHK(executable_path=r'C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe')
+# OR
+ahk = AHK(version='v2')
+```
+
+When you provide the `version` keyword argument (with either `"v1"` or `"v2"`) a check is performed to ensure the provided (or discovered) binary matches the requested version. When
+the `version` keyword is omitted, the version is determined automatically from the provided (or discovered) executable binary.
+
+
+
+### Differences when using AutoHotkey v1 vs AutoHotkey v2
+
+The API of this project is originally designed against AutoHotkey v1 and function signatures are the same, even when using AutoHotkey v2.
+While most of the behavior remains the same, some behavior does change when using AutoHotkey v2 compared to v1. This is mostly due to
+underlying differences between the two versions.
+
+Some of the differences that you will experience when using AutoHotkey v2 include:
+
+
+1. Functions that find and return windows will often raise an exception rather than returning `None` (as in AutoHotkey v2, a TargetError is thrown in most cases where the window or control cannot be found)
+2. The behavior of `ControlSend` (`ahk.control_send` or `Window.send` or `Control.send`) differs in AutoHotkey v2 when the `control` parameter is not specified. In v1, keys are sent to the topmost controls, which is usually the correct behavior. In v2, keys are sent directly to the window. This means in many cases, you need to specify the control explicitly when using V2.
+3. Some functionality is not supported in v2 -- specifically: the `secondstowait` paramater for `TrayTip` (`ahk.show_traytip`) was removed in v2. Specifying this parameter in the Python wrapper will cause a warning to be emitted and the parameter is ignored.
+4. Some functionality that is present in v1 is not yet implemented in v2 -- this is expected to change in future versions. Specifically: some [sound functions](https://www.autohotkey.com/docs/v2/lib/Sound.htm) are not implemented.
 
 
 # Contributing
