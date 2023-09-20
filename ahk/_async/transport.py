@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio.subprocess
 import atexit
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -11,7 +12,6 @@ import warnings
 from abc import ABC
 from abc import abstractmethod
 from io import BytesIO
-from shutil import which
 from typing import Any
 from typing import Callable
 from typing import Generic
@@ -48,11 +48,11 @@ from ahk._constants import (
     DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE,
     DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE,
 )
+from ahk._utils import _version_detection_script, _resolve_executable_path, _get_executable_major_version
 from ahk.directives import Directive
 
 from concurrent.futures import Future, ThreadPoolExecutor
 
-DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 T_AsyncFuture = TypeVar('T_AsyncFuture')  # unasync: remove
 T_SyncFuture = TypeVar('T_SyncFuture')
@@ -216,7 +216,9 @@ class Communicable(Protocol):
     def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
         ...
 
-    async def acommunicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
+    async def acommunicate(  # unasync: remove
+        self, input_bytes: Optional[bytes], timeout: Optional[int] = None
+    ) -> Tuple[bytes, bytes]:
         ...
 
     @property
@@ -274,7 +276,7 @@ class AsyncAHKProcess:
         assert self._proc is not None, 'no process to kill'
         self._proc.kill()
 
-    async def acommunicate(
+    async def acommunicate(  # unasync: remove
         self, input_bytes: Optional[bytes] = None, timeout: Optional[int] = None
     ) -> Tuple[bytes, bytes]:
         assert self._proc is not None
@@ -298,78 +300,49 @@ def sync_create_process(runargs: List[str]) -> subprocess.Popen[bytes]:
     return subprocess.Popen(runargs, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 
 
-class AhkExecutableNotFoundError(EnvironmentError):
-    pass
-
-
-def _resolve_executable_path(executable_path: str = '', version: Optional[Literal['v1', 'v2']] = None) -> str:
-    if not executable_path:
-        executable_path = (
-            os.environ.get('AHK_PATH', '')
-            or (which('AutoHotkeyV2.exe') if version == 'v2' else '')
-            or (which('AutoHotkey32.exe') if version == 'v2' else '')
-            or (which('AutoHotkey64.exe') if version == 'v2' else '')
-            or which('AutoHotkey.exe')
-            or (which('AutoHotkeyU64.exe') if version != 'v2' else '')
-            or (which('AutoHotkeyU32.exe') if version != 'v2' else '')
-            or (which('AutoHotkeyA32.exe') if version != 'v2' else '')
-            or ''
-        )
-
-    if not executable_path:
-        if os.path.exists(DEFAULT_EXECUTABLE_PATH):
-            executable_path = DEFAULT_EXECUTABLE_PATH
-
-    if not executable_path:
-        raise AhkExecutableNotFoundError(
-            'Could not find AutoHotkey.exe on PATH. '
-            'Provide the absolute path with the `executable_path` keyword argument '
-            'or in the AHK_PATH environment variable. '
-            'You may be able to resolve this error by installing the binary extra: pip install "ahk[binary]"'
-        )
-
-    if not os.path.exists(executable_path):
-        raise AhkExecutableNotFoundError(f"executable_path does not seems to exist: '{executable_path}' not found")
-
-    if os.path.isdir(executable_path):
-        raise AhkExecutableNotFoundError(
-            f'The path {executable_path} appears to be a directory, but should be a file.'
-            ' Please specify the *full path* to the autohotkey.exe executable file'
-        )
-    executable_path = str(executable_path)
-    if not executable_path.endswith('.exe'):
-        warnings.warn(
-            'executable_path does not appear to have a .exe extension. This may be the result of a misconfiguration.'
-        )
-
-    return executable_path
-
-
 class AsyncTransport(ABC):
     _started: bool = False
 
     def __init__(
         self,
         /,
-        executable_path: str = '',
         directives: Optional[list[Union[Directive, Type[Directive]]]] = None,
-        version: Optional[Literal['v1', 'v2']] = None,
+        version: Optional[Literal['v1', 'v2']] = 'v1',
+        hotkey_transport: Optional[ThreadedHotkeyTransport] = None,
         **kwargs: Any,
     ):
-        self._executable_path: str = _resolve_executable_path(executable_path=executable_path, version=version)
-        self._hotkey_transport = ThreadedHotkeyTransport(
-            executable_path=self._executable_path, directives=directives, version=version
-        )
+        self._hotkey_transport = hotkey_transport
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
-        self._version: Literal['v1', 'v2'] = version or 'v1'
+        self._version: Optional[Literal['v1', 'v2']] = version
+
+    async def _get_full_version(self) -> str:
+        res = await self.run_script(_version_detection_script)
+        version = res.strip()
+        assert re.match(r'^\d+\.', version)
+        return version
+
+    async def _get_major_version(self) -> Literal['v1', 'v2']:
+        version = await self._get_full_version()
+        match = re.match(r'^(\d+)\.', version)
+        if not match:
+            raise ValueError(f'Unexpected version {version!r}')
+        major_version = match.group(1)
+        if major_version == '1':
+            return 'v1'
+        elif major_version == '2':
+            return 'v2'
+        else:
+            raise ValueError(f'Unexpected version {version!r}')
 
     def on_clipboard_change(
         self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
     ) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.on_clipboard_change(callback, ex_handler)
         return None
 
     def add_hotkey(self, hotkey: Hotkey) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         with warnings.catch_warnings(record=True) as caught_warnings:
             self._hotkey_transport.add_hotkey(hotkey=hotkey)
         if caught_warnings:
@@ -378,6 +351,7 @@ class AsyncTransport(ABC):
         return None
 
     def add_hotstring(self, hotstring: Hotstring) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         with warnings.catch_warnings(record=True) as caught_warnings:
             self._hotkey_transport.add_hotstring(hotstring=hotstring)
         if caught_warnings:
@@ -386,31 +360,47 @@ class AsyncTransport(ABC):
         return None
 
     def remove_hotkey(self, hotkey: Hotkey) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.remove_hotkey(hotkey)
         return None
 
     def clear_hotkeys(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.clear_hotkeys()
         return None
 
     def remove_hotstring(self, hotstring: Hotstring) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.remove_hotstring(hotstring)
         return None
 
     def clear_hotstrings(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.clear_hotstrings()
         return None
 
     def start_hotkeys(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         return self._hotkey_transport.start()
 
     def stop_hotkeys(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         return self._hotkey_transport.stop()
 
     async def init(self) -> None:
         self._started = True
         return None
 
+    # fmt: off
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, timeout: Optional[int] = None) -> str: ...
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, blocking: Literal[False], timeout: Optional[int] = None) -> AsyncFutureResult[str]: ...
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, blocking: Literal[True], timeout: Optional[int] = None) -> str: ...
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
     @abstractmethod
     async def run_script(
         self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
@@ -676,6 +666,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         template: Optional[jinja2.Template] = None,
         extensions: list[Extension] | None = None,
         version: Optional[Literal['v1', 'v2']] = None,
+        skip_version_check: bool = False,
     ):
         self._extensions = extensions or []
         self._proc: Optional[AsyncAHKProcess]
@@ -685,6 +676,14 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         self._jinja_env: jinja2.Environment
         self._execution_lock = threading.Lock()
         self._a_execution_lock = asyncio.Lock()  # unasync: remove
+        self._executable_path = _resolve_executable_path(executable_path=executable_path, version=version)
+        if version is None:
+            try:
+                version = _get_executable_major_version(self._executable_path)
+            except Exception as e:
+                warnings.warn(f'Could not detect AHK version ({e}). Defaulting to v1')
+                version = 'v1'
+            skip_version_check = True
 
         if version is None or version == 'v1':
             template_name = 'daemon.ahk'
@@ -694,6 +693,13 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             const_script = _DAEMON_SCRIPT_V2_TEMPLATE
         else:
             raise ValueError(f'Invalid version {version!r} - must be one of "v1" or "v2"')
+
+        if not skip_version_check:
+            detected_version = _get_executable_major_version(self._executable_path)
+            if version != detected_version:
+                raise RuntimeError(
+                    f'AutoHotkey {version} was requested but AutoHotkey {detected_version} was detected for executable {self._executable_path}'
+                )
 
         if jinja_loader is None:
             try:
@@ -721,7 +727,10 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         if extensions:
             includes = _resolve_includes(extensions)
             directives = includes + directives
-        super().__init__(executable_path=executable_path, directives=directives, version=version)
+        hotkey_transport = ThreadedHotkeyTransport(
+            executable_path=self._executable_path, directives=directives, version=version
+        )
+        super().__init__(directives=directives, version=version, hotkey_transport=hotkey_transport)
 
     @property
     def template(self) -> jinja2.Template:
@@ -911,6 +920,16 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         pool.shutdown(wait=False)
         return FutureResult(fut)
 
+    # fmt: off
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, timeout: Optional[int] = None) -> str: ...
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, blocking: Literal[False], timeout: Optional[int] = None) -> AsyncFutureResult[str]: ...
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, blocking: Literal[True], timeout: Optional[int] = None) -> str: ...
+    @overload
+    async def run_script(self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None) -> Union[str, AsyncFutureResult[str]]: ...
+    # fmt: on
     async def run_script(
         self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
     ) -> Union[str, AsyncFutureResult[str]]:

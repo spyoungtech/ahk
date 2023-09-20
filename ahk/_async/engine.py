@@ -3735,3 +3735,9 @@ class AsyncAHK:
         """
         while True:
             await async_sleep(1)
+
+    async def get_version(self) -> str:
+        return await self._transport._get_full_version()
+
+    async def get_major_version(self) -> Literal['v1', 'v2']:
+        return await self._transport._get_major_version()

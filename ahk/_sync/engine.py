@@ -3723,3 +3723,9 @@ class AHK:
         """
         while True:
             sleep(1)
+
+    def get_version(self) -> str:
+        return self._transport._get_full_version()
+
+    def get_major_version(self) -> Literal['v1', 'v2']:
+        return self._transport._get_major_version()
