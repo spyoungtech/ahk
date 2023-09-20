@@ -81,7 +81,9 @@ class Extension:
         script_text: str | None = None,
         includes: list[str] | None = None,
         dependencies: list[Extension] | None = None,
+        requires_autohotkey: typing.Literal['v1', 'v2'] | None = None,
     ):
+        self._requires = requires_autohotkey
         self._text: str = script_text or ''
         self._includes: list[str] = includes or []
         self.dependencies: list[Extension] = dependencies or []

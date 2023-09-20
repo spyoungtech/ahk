@@ -144,7 +144,7 @@ class AHK:
         self._extension_registry: _ExtensionMethodRegistry
         self._extensions: list[Extension]
         if extensions == 'auto':
-            self._extensions = list(_extension_registry)
+            self._extensions = [ext for ext in _extension_registry if ext._requires in (None, version)]
         else:
             self._extensions = _resolve_extensions(extensions) if extensions else []
         self._method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
@@ -2773,6 +2773,8 @@ class AHK:
 
         if coord_mode is not None:
             args.append(coord_mode)
+        else:
+            args.append('')
 
         resp = self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp

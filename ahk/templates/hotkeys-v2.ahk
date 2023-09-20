@@ -6,9 +6,7 @@
 {% endif %}
 {% endfor %}
 
-{% if on_clipboard %}
-OnClipboardChange("ClipChanged")
-{% endif %}
+
 KEEPALIVE := Chr(57344)
 ;SetTimer, keepalive, 1000
 
@@ -161,6 +159,9 @@ ClipChanged(Type) {
     WriteStdout(ret)
     return
 }
+
+OnClipboardChange(ClipChanged)
+
 {% endif %}
 
 

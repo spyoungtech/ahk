@@ -1,5 +1,6 @@
 import asyncio
 import os
+import pathlib
 import threading
 import time
 from itertools import product
@@ -43,7 +44,7 @@ class TestScreen(IsolatedAsyncioTestCase):
         self._show_in_thread()
         time.sleep(3)
         self.im.save('testimage.png')
-        position = await self.ahk.image_search('testimage.png')
+        position = await self.ahk.image_search(str(pathlib.Path('testimage.png').absolute()))
         assert isinstance(position, tuple)
 
     async def test_pixel_search(self):
@@ -53,7 +54,7 @@ class TestScreen(IsolatedAsyncioTestCase):
         self._show_in_thread()
         time.sleep(3)
         self.im.save('testimage.png')
-        position = await self.ahk.image_search('testimage.png')
+        position = await self.ahk.image_search(str(pathlib.Path('testimage.png').absolute()))
         assert position is not None
         x, y = position
         color = await self.ahk.pixel_get_color(x, y)
@@ -71,7 +72,7 @@ class TestScreen(IsolatedAsyncioTestCase):
         self._show_in_thread()
         time.sleep(3)
         self.im.save('testimage.png')
-        position = await self.ahk.image_search('testimage.png', color_variation=50)
+        position = await self.ahk.image_search(str(pathlib.Path('testimage.png').absolute()), color_variation=50)
         assert isinstance(position, tuple)
 
     # async def test_pixel_get_color(self):
