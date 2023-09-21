@@ -20,6 +20,7 @@ WriteStdout(s) {
     Critical "Off"
 }
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
 b64decode(&pszString) {
     ; TODO load DLL globally for performance

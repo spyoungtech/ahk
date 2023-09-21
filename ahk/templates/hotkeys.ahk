@@ -13,6 +13,7 @@ OnClipboardChange("ClipChanged")
 KEEPALIVE := Chr(57344)
 SetTimer, keepalive, 1000
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance

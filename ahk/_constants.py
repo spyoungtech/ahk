@@ -2658,8 +2658,10 @@ AHKFileSelectFolder(byRef command) {
     return ret
 }
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
+
+
 b64decode(ByRef pszString) {
-    ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
     ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
     ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.
@@ -2682,7 +2684,7 @@ b64decode(ByRef pszString) {
     pdwFlags := 0 ; We don't need this, so make it null
 
     ; The first call calculates the required size. The result is written to pbBinary
-    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    success := DllCall("Crypt32\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags)
     if (success = 0) {
         return ""
     }
@@ -2692,7 +2694,7 @@ b64decode(ByRef pszString) {
 
     ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
 
-    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "Ptr", &ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    success := DllCall("Crypt32\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "Ptr", &ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags)
     if (success=0) {
         return ""
     }
@@ -2725,7 +2727,7 @@ b64encode(ByRef data) {
 
     ; Now we do the conversion to base64 and rteturn the string
 
-    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", buff_size)
+    success := DllCall("Crypt32\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", buff_size)
     if (success = 0) {
         msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
         throw Exception(msg, -1)
@@ -2806,6 +2808,7 @@ OnClipboardChange("ClipChanged")
 KEEPALIVE := Chr(57344)
 SetTimer, keepalive, 1000
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
@@ -3355,13 +3358,14 @@ AHKWinMaximize(command) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
-
-    WinMaximize(title, text, extitle, extext)
-
-    DetectHiddenWindows(current_detect_hw)
-    SetTitleMatchMode(current_match_mode)
-    SetTitleMatchMode(current_match_speed)
-
+    try {
+        WinMaximize(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
     return FormatNoValueResponse()
     {% endblock AHKWinMaximize %}
 }
@@ -5633,8 +5637,9 @@ AHKFileSelectFolder(command) {
     return ret
 }
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
+
 b64decode(&pszString) {
-    ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
     ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
     ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.
@@ -5791,6 +5796,7 @@ WriteStdout(s) {
     Critical "Off"
 }
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
 b64decode(&pszString) {
     ; TODO load DLL globally for performance
