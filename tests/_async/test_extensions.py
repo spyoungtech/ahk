@@ -3,6 +3,7 @@ import random
 import string
 import time
 import unittest
+from typing import Literal
 
 import pytest
 
@@ -22,7 +23,33 @@ ext_text = f'''\
 }}
 '''
 
+math_function_name = 'SimpleMath'
+math_function_name = 'ASimpleMath'  # unasync: remove
+
+math_test = rf'''
+{math_function_name}(lhs, rhs, operator) {{
+    if (operator = "+") {{
+        result := (lhs + rhs)
+    }} else if (operator = "*") {{
+        result := (lhs * rhs)
+    }} else {{ ; invalid operator argument
+        return FormatResponse("ahk.message.ExceptionResponseMessage", Format("Invalid operator: {{}}", operator))
+    }}
+    return FormatResponse("ahk.message.IntegerResponseMessage", result)
+}}
+'''
+
 async_extension = Extension(script_text=ext_text)
+async_math_extension = Extension(script_text=math_test)
+
+
+@async_math_extension.register
+async def simple_math(ahk: AsyncAHK, lhs: int, rhs: int, operator: Literal['+', '*']) -> int:
+    assert isinstance(lhs, int)
+    assert isinstance(rhs, int)
+    args = [str(lhs), str(rhs), operator]  # all args must be strings
+    result = await ahk.function_call(math_function_name, args, blocking=True)
+    return result
 
 
 @async_extension.register
@@ -55,6 +82,14 @@ class TestExtensionsAuto(unittest.IsolatedAsyncioTestCase):
     async def test_ext_auto(self):
         res = await self.ahk.do_something('foo', 'bar')
         assert res == 'foo and bar'
+
+    async def test_math_example(self):
+        res = await self.ahk.simple_math(1, 2, '+')
+        assert res == 3
+
+    async def test_math_example_exception(self):
+        with pytest.raises(Exception):
+            res = await self.ahk.simple_math(1, 2, 'x')
 
 
 class TestNoExtensions(unittest.IsolatedAsyncioTestCase):
