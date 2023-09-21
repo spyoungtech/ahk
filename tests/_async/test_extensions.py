@@ -17,9 +17,8 @@ function_name = 'AHKDoSomething'
 function_name = 'AAHKDoSomething'  # unasync: remove
 
 ext_text = f'''\
-{function_name}(command) {{
-    arg := command[2]
-    return FormatResponse("ahk.message.StringResponseMessage", Format("test{{}}", arg))
+{function_name}(first, second) {{
+    return FormatResponse("ahk.message.StringResponseMessage", Format("{{}} and {{}}", first, second))
 }}
 '''
 
@@ -27,8 +26,8 @@ async_extension = Extension(script_text=ext_text)
 
 
 @async_extension.register
-async def do_something(ahk, arg: str) -> str:
-    res = await ahk.function_call(function_name, [arg])
+async def do_something(ahk, first: str, second: str) -> str:
+    res = await ahk.function_call(function_name, [first, second])
     return res
 
 
@@ -41,8 +40,8 @@ class TestExtensions(unittest.IsolatedAsyncioTestCase):
         time.sleep(0.2)
 
     async def test_ext_explicit(self):
-        res = await self.ahk.do_something('foo')
-        assert res == 'testfoo'
+        res = await self.ahk.do_something('foo', 'bar')
+        assert res == 'foo and bar'
 
 
 class TestExtensionsAuto(unittest.IsolatedAsyncioTestCase):
@@ -54,8 +53,8 @@ class TestExtensionsAuto(unittest.IsolatedAsyncioTestCase):
         time.sleep(0.2)
 
     async def test_ext_auto(self):
-        res = await self.ahk.do_something('foo')
-        assert res == 'testfoo'
+        res = await self.ahk.do_something('foo', 'bar')
+        assert res == 'foo and bar'
 
 
 class TestNoExtensions(unittest.IsolatedAsyncioTestCase):

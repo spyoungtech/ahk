@@ -40,18 +40,18 @@ FormatBinaryResponse(ByRef bin) {
     return FormatResponse("ahk.message.B64BinaryResponseMessage", b64)
 }
 
-AHKSetDetectHiddenWindows(ByRef command) {
+AHKSetDetectHiddenWindows(args*) {
     {% block AHKSetDetectHiddenWindows %}
-    value := command[2]
+    value := args[1]
     DetectHiddenWindows, %value%
     return FormatNoValueResponse()
     {% endblock AHKSetDetectHiddenWindows %}
 }
 
-AHKSetTitleMatchMode(ByRef command) {
+AHKSetTitleMatchMode(args*) {
     {% block AHKSetTitleMatchMode %}
-    val1 := command[2]
-    val2 := command[3]
+    val1 := args[1]
+    val2 := args[2]
     if (val1 != "") {
         SetTitleMatchMode, %val1%
     }
@@ -62,45 +62,45 @@ AHKSetTitleMatchMode(ByRef command) {
     {% endblock AHKSetTitleMatchMode %}
 }
 
-AHKGetTitleMatchMode(ByRef command) {
+AHKGetTitleMatchMode(args*) {
     {% block AHKGetTitleMatchMode %}
 
     return FormatResponse("ahk.message.StringResponseMessage", A_TitleMatchMode)
     {% endblock AHKGetTitleMatchMode %}
 }
 
-AHKGetTitleMatchSpeed(ByRef command) {
+AHKGetTitleMatchSpeed(args*) {
     {% block AHKGetTitleMatchSpeed %}
 
     return FormatResponse("ahk.message.StringResponseMessage", A_TitleMatchModeSpeed)
     {% endblock AHKGetTitleMatchSpeed %}
 }
 
-AHKSetSendLevel(ByRef command) {
+AHKSetSendLevel(args*) {
     {% block AHKSetSendLevel %}
-    level := command[2]
+    level := args[1]
     SendLevel, %level%
     return FormatNoValueResponse()
     {% endblock AHKSetSendLevel %}
 }
 
-AHKGetSendLevel(ByRef command) {
+AHKGetSendLevel(args*) {
     {% block AHKGetSendLevel %}
 
     return FormatResponse("ahk.message.IntegerResponseMessage", A_SendLevel)
     {% endblock AHKGetSendLevel %}
 }
 
-AHKWinExist(ByRef command) {
+AHKWinExist(args*) {
     {% block AHKWinExist %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -131,16 +131,16 @@ AHKWinExist(ByRef command) {
     {% endblock AHKWinExist %}
 }
 
-AHKWinClose(ByRef command) {
+AHKWinClose(args*) {
     {% block AHKWinClose %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    secondstowait := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    secondstowait := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -166,16 +166,16 @@ AHKWinClose(ByRef command) {
     {% endblock AHKWinClose %}
 }
 
-AHKWinKill(ByRef command) {
+AHKWinKill(args*) {
     {% block AHKWinKill %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    secondstowait := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    secondstowait := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -201,17 +201,17 @@ AHKWinKill(ByRef command) {
     {% endblock AHKWinKill %}
 }
 
-AHKWinWait(ByRef command) {
+AHKWinWait(args*) {
     {% block AHKWinWait %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -245,17 +245,17 @@ AHKWinWait(ByRef command) {
     {% endblock AHKWinWait %}
 }
 
-AHKWinWaitActive(ByRef command) {
+AHKWinWaitActive(args*) {
     {% block AHKWinWaitActive %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -289,17 +289,17 @@ AHKWinWaitActive(ByRef command) {
     {% endblock AHKWinWaitActive %}
 }
 
-AHKWinWaitNotActive(ByRef command) {
+AHKWinWaitNotActive(args*) {
     {% block AHKWinWaitNotActive %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -333,17 +333,17 @@ AHKWinWaitNotActive(ByRef command) {
     {% endblock AHKWinWaitNotActive %}
 }
 
-AHKWinWaitClose(ByRef command) {
+AHKWinWaitClose(args*) {
     {% block AHKWinWaitClose %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -376,15 +376,15 @@ AHKWinWaitClose(ByRef command) {
     {% endblock AHKWinWaitClose %}
 }
 
-AHKWinMinimize(ByRef command) {
+AHKWinMinimize(args*) {
     {% block AHKWinMinimize %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -410,15 +410,15 @@ AHKWinMinimize(ByRef command) {
     {% endblock AHKWinMinimize %}
 }
 
-AHKWinMaximize(ByRef command) {
+AHKWinMaximize(args*) {
     {% block AHKWinMaximize %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -444,15 +444,15 @@ AHKWinMaximize(ByRef command) {
     {% endblock AHKWinMaximize %}
 }
 
-AHKWinRestore(ByRef command) {
+AHKWinRestore(args*) {
     {% block AHKWinRestore %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -478,16 +478,16 @@ AHKWinRestore(ByRef command) {
     {% endblock AHKWinRestore %}
 }
 
-AHKWinIsActive(ByRef command) {
+AHKWinIsActive(args*) {
     {% block AHKWinIsActive %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
         current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -515,16 +515,16 @@ AHKWinIsActive(ByRef command) {
     {% endblock AHKWinIsActive %}
 }
 
-AHKWinGetID(ByRef command) {
+AHKWinGetID(args*) {
     {% block AHKWinGetID %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -554,16 +554,16 @@ AHKWinGetID(ByRef command) {
     {% endblock AHKWinGetID %}
 }
 
-AHKWinGetTitle(ByRef command) {
+AHKWinGetTitle(args*) {
     {% block AHKWinGetTitle %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -589,16 +589,16 @@ AHKWinGetTitle(ByRef command) {
     {% endblock AHKWinGetTitle %}
 }
 
-AHKWinGetIDLast(ByRef command) {
+AHKWinGetIDLast(args*) {
     {% block AHKWinGetIDLast %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -628,16 +628,16 @@ AHKWinGetIDLast(ByRef command) {
     {% endblock AHKWinGetIDLast %}
 }
 
-AHKWinGetPID(ByRef command) {
+AHKWinGetPID(args*) {
     {% block AHKWinGetPID %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -667,16 +667,16 @@ AHKWinGetPID(ByRef command) {
     {% endblock AHKWinGetPID %}
 }
 
-AHKWinGetProcessName(ByRef command) {
+AHKWinGetProcessName(args*) {
     {% block AHKWinGetProcessName %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -706,16 +706,16 @@ AHKWinGetProcessName(ByRef command) {
     {% endblock AHKWinGetProcessName %}
 }
 
-AHKWinGetProcessPath(ByRef command) {
+AHKWinGetProcessPath(args*) {
     {% block AHKWinGetProcessPath %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -745,16 +745,16 @@ AHKWinGetProcessPath(ByRef command) {
     {% endblock AHKWinGetProcessPath %}
 }
 
-AHKWinGetCount(ByRef command) {
+AHKWinGetCount(args*) {
     {% block AHKWinGetCount %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -784,16 +784,16 @@ AHKWinGetCount(ByRef command) {
     {% endblock AHKWinGetCount %}
 }
 
-AHKWinGetMinMax(ByRef command) {
+AHKWinGetMinMax(args*) {
     {% block AHKWinGetMinMax %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -823,16 +823,16 @@ AHKWinGetMinMax(ByRef command) {
     {% endblock AHKWinGetMinMax %}
 }
 
-AHKWinGetControlList(ByRef command) {
+AHKWinGetControlList(args*) {
     {% block AHKWinGetControlList %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -887,16 +887,16 @@ AHKWinGetControlList(ByRef command) {
     {% endblock AHKWinGetControlList %}
 }
 
-AHKWinGetTransparent(ByRef command) {
+AHKWinGetTransparent(args*) {
     {% block AHKWinGetTransparent %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -921,16 +921,16 @@ AHKWinGetTransparent(ByRef command) {
     return response
     {% endblock AHKWinGetTransparent %}
 }
-AHKWinGetTransColor(ByRef command) {
+AHKWinGetTransColor(args*) {
     {% block AHKWinGetTransColor %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -955,16 +955,16 @@ AHKWinGetTransColor(ByRef command) {
     return response
     {% endblock AHKWinGetTransColor %}
 }
-AHKWinGetStyle(ByRef command) {
+AHKWinGetStyle(args*) {
     {% block AHKWinGetStyle %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -989,16 +989,16 @@ AHKWinGetStyle(ByRef command) {
     return response
     {% endblock AHKWinGetStyle %}
 }
-AHKWinGetExStyle(ByRef command) {
+AHKWinGetExStyle(args*) {
     {% block AHKWinGetExStyle %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1024,16 +1024,16 @@ AHKWinGetExStyle(ByRef command) {
     {% endblock AHKWinGetExStyle %}
 }
 
-AHKWinGetText(ByRef command) {
+AHKWinGetText(args*) {
     {% block AHKWinGetText %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1064,16 +1064,16 @@ AHKWinGetText(ByRef command) {
     {% endblock AHKWinGetText %}
 }
 
-AHKWinSetTitle(ByRef command) {
+AHKWinSetTitle(args*) {
     {% block AHKWinSetTitle %}
-    new_title := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    new_title := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1096,16 +1096,16 @@ AHKWinSetTitle(ByRef command) {
     {% endblock AHKWinSetTitle %}
 }
 
-AHKWinSetAlwaysOnTop(ByRef command) {
+AHKWinSetAlwaysOnTop(args*) {
     {% block AHKWinSetAlwaysOnTop %}
-    toggle := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    toggle := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1129,15 +1129,15 @@ AHKWinSetAlwaysOnTop(ByRef command) {
     {% endblock AHKWinSetAlwaysOnTop %}
 }
 
-AHKWinSetBottom(ByRef command) {
+AHKWinSetBottom(args*) {
     {% block AHKWinSetBottom %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1162,15 +1162,15 @@ AHKWinSetBottom(ByRef command) {
     {% endblock AHKWinSetBottom %}
 }
 
-AHKWinShow(ByRef command) {
+AHKWinShow(args*) {
     {% block AHKWinShow %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1195,15 +1195,15 @@ AHKWinShow(ByRef command) {
     {% endblock AHKWinShow %}
 }
 
-AHKWinHide(ByRef command) {
+AHKWinHide(args*) {
     {% block AHKWinHide %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1228,15 +1228,15 @@ AHKWinHide(ByRef command) {
     {% endblock AHKWinHide %}
 }
 
-AHKWinSetTop(ByRef command) {
+AHKWinSetTop(args*) {
     {% block AHKWinSetTop %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1261,15 +1261,15 @@ AHKWinSetTop(ByRef command) {
     {% endblock AHKWinSetTop %}
 }
 
-AHKWinSetEnable(ByRef command) {
+AHKWinSetEnable(args*) {
     {% block AHKWinSetEnable %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1294,15 +1294,15 @@ AHKWinSetEnable(ByRef command) {
     {% endblock AHKWinSetEnable %}
 }
 
-AHKWinSetDisable(ByRef command) {
+AHKWinSetDisable(args*) {
     {% block AHKWinSetDisable %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1327,15 +1327,15 @@ AHKWinSetDisable(ByRef command) {
     {% endblock AHKWinSetDisable %}
 }
 
-AHKWinSetRedraw(ByRef command) {
+AHKWinSetRedraw(args*) {
     {% block AHKWinSetRedraw %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1360,17 +1360,17 @@ AHKWinSetRedraw(ByRef command) {
     {% endblock AHKWinSetRedraw %}
 }
 
-AHKWinSetStyle(ByRef command) {
+AHKWinSetStyle(args*) {
     {% block AHKWinSetStyle %}
 
-    style := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    style := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1399,17 +1399,17 @@ AHKWinSetStyle(ByRef command) {
     {% endblock AHKWinSetStyle %}
 }
 
-AHKWinSetExStyle(ByRef command) {
+AHKWinSetExStyle(args*) {
     {% block AHKWinSetExStyle %}
 
-    style := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    style := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1438,17 +1438,17 @@ AHKWinSetExStyle(ByRef command) {
     {% endblock AHKWinSetExStyle %}
 }
 
-AHKWinSetRegion(ByRef command) {
+AHKWinSetRegion(args*) {
     {% block AHKWinSetRegion %}
 
-    options := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    options := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1477,17 +1477,17 @@ AHKWinSetRegion(ByRef command) {
     {% endblock AHKWinSetRegion %}
 }
 
-AHKWinSetTransparent(ByRef command) {
+AHKWinSetTransparent(args*) {
     {% block AHKWinSetTransparent %}
 
-    transparency := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    transparency := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1511,17 +1511,17 @@ AHKWinSetTransparent(ByRef command) {
     {% endblock AHKWinSetTransparent %}
 }
 
-AHKWinSetTransColor(ByRef command) {
+AHKWinSetTransColor(args*) {
     {% block AHKWinSetTransColor %}
 
-    color := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    color := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1547,15 +1547,15 @@ AHKWinSetTransColor(ByRef command) {
     {% endblock AHKWinSetTransColor %}
 }
 
-AHKImageSearch(ByRef command) {
+AHKImageSearch(args*) {
     {% block AHKImageSearch %}
 
-    imagepath := command[6]
-    x1 := command[2]
-    y1 := command[3]
-    x2 := command[4]
-    y2 := command[5]
-    coord_mode := command[7]
+    imagepath := args[5]
+    x1 := args[1]
+    y1 := args[2]
+    x2 := args[3]
+    y2 := args[4]
+    coord_mode := args[6]
 
     current_mode := Format("{}", A_CoordModePixel)
 
@@ -1577,7 +1577,7 @@ AHKImageSearch(ByRef command) {
     }
 
     if (ErrorLevel = 2) {
-        s := FormatResponse("ahk.message.ExceptionResponseMessage", "there was a problem that prevented the command from conducting the search (such as failure to open the image file or a badly formatted option)")
+        s := FormatResponse("ahk.message.ExceptionResponseMessage", "there was a problem that prevented the args from conducting the search (such as failure to open the image file or a badly formatted option)")
     } else if (ErrorLevel = 1) {
         s := FormatNoValueResponse()
     } else {
@@ -1588,13 +1588,13 @@ AHKImageSearch(ByRef command) {
     {% endblock AHKImageSearch %}
 }
 
-AHKPixelGetColor(ByRef command) {
+AHKPixelGetColor(args*) {
     {% block AHKPixelGetColor %}
 
-    x := command[2]
-    y := command[3]
-    coord_mode := command[4]
-    options := command[5]
+    x := args[1]
+    y := args[2]
+    coord_mode := args[3]
+    options := args[4]
 
     current_mode := Format("{}", A_CoordModePixel)
 
@@ -1613,17 +1613,17 @@ AHKPixelGetColor(ByRef command) {
     {% endblock AHKPixelGetColor %}
 }
 
-AHKPixelSearch(ByRef command) {
+AHKPixelSearch(args*) {
     {% block AHKPixelSearch %}
 
-    x1 := command[2]
-    y1 := command[3]
-    x2 := command[4]
-    y2 := command[5]
-    color := command[6]
-    variation := command[7]
-    options := command[8]
-    coord_mode := command[9]
+    x1 := args[1]
+    y1 := args[2]
+    x2 := args[3]
+    y2 := args[4]
+    color := args[5]
+    variation := args[6]
+    options := args[7]
+    coord_mode := args[8]
 
     current_mode := Format("{}", A_CoordModePixel)
 
@@ -1651,10 +1651,10 @@ AHKPixelSearch(ByRef command) {
     {% endblock AHKPixelSearch %}
 }
 
-AHKMouseGetPos(ByRef command) {
+AHKMouseGetPos(args*) {
     {% block AHKMouseGetPos %}
 
-    coord_mode := command[2]
+    coord_mode := args[1]
     current_coord_mode := Format("{}", A_CoordModeMouse)
     if (coord_mode != "") {
         CoordMode, Mouse, %coord_mode%
@@ -1672,11 +1672,11 @@ AHKMouseGetPos(ByRef command) {
     {% endblock AHKMouseGetPos %}
 }
 
-AHKKeyState(ByRef command) {
+AHKKeyState(args*) {
     {% block AHKKeyState %}
 
-    keyname := command[2]
-    mode := command[3]
+    keyname := args[1]
+    mode := args[2]
     if (mode != "") {
         state := GetKeyState(keyname, mode)
     } else{
@@ -1700,12 +1700,12 @@ AHKKeyState(ByRef command) {
     {% endblock AHKKeyState %}
 }
 
-AHKMouseMove(ByRef command) {
+AHKMouseMove(args*) {
     {% block AHKMouseMove %}
-    x := command[2]
-    y := command[3]
-    speed := command[4]
-    relative := command[5]
+    x := args[1]
+    y := args[2]
+    speed := args[3]
+    relative := args[4]
     if (relative != "") {
     MouseMove, %x%, %y%, %speed%, R
     } else {
@@ -1716,15 +1716,15 @@ AHKMouseMove(ByRef command) {
     {% endblock AHKMouseMove %}
 }
 
-AHKClick(ByRef command) {
+AHKClick(args*) {
     {% block AHKClick %}
-    x := command[2]
-    y := command[3]
-    button := command[4]
-    click_count := command[5]
-    direction := command[6]
-    r := command[7]
-    relative_to := command[8]
+    x := args[1]
+    y := args[2]
+    button := args[3]
+    click_count := args[4]
+    direction := args[5]
+    r := args[6]
+    relative_to := args[7]
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
     if (relative_to != "") {
@@ -1742,10 +1742,10 @@ AHKClick(ByRef command) {
     {% endblock AHKClick %}
 }
 
-AHKGetCoordMode(ByRef command) {
+AHKGetCoordMode(args*) {
     {% block AHKGetCoordMode %}
 
-    target := command[2]
+    target := args[1]
 
     if (target = "ToolTip") {
         return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeToolTip)
@@ -1766,26 +1766,26 @@ AHKGetCoordMode(ByRef command) {
     {% endblock AHKGetCoordMode %}
 }
 
-AHKSetCoordMode(ByRef command) {
+AHKSetCoordMode(args*) {
     {% block AHKSetCoordMode %}
-    target := command[2]
-    relative_to := command[3]
+    target := args[1]
+    relative_to := args[2]
     CoordMode, %target%, %relative_to%
 
     return FormatNoValueResponse()
     {% endblock AHKSetCoordMode %}
 }
 
-AHKMouseClickDrag(ByRef command) {
+AHKMouseClickDrag(args*) {
     {% block AHKMouseClickDrag %}
-    button := command[2]
-    x1 := command[3]
-    y1 := command[4]
-    x2 := command[5]
-    y2 := command[6]
-    speed := command[7]
-    relative := command[8]
-    relative_to := command[9]
+    button := args[1]
+    x1 := args[2]
+    y1 := args[3]
+    x2 := args[4]
+    y2 := args[5]
+    speed := args[6]
+    relative := args[7]
+    relative_to := args[8]
 
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
@@ -1804,11 +1804,11 @@ AHKMouseClickDrag(ByRef command) {
     {% endblock AHKMouseClickDrag %}
 }
 
-AHKRegRead(ByRef command) {
+AHKRegRead(args*) {
     {% block RegRead %}
 
-    key_name := command[2]
-    value_name := command[3]
+    key_name := args[1]
+    value_name := args[2]
 
     RegRead, output, %key_name%, %value_name%
 
@@ -1822,13 +1822,13 @@ AHKRegRead(ByRef command) {
     {% endblock RegRead %}
 }
 
-AHKRegWrite(ByRef command) {
+AHKRegWrite(args*) {
     {% block RegWrite %}
 
-    value_type := command[2]
-    key_name := command[3]
-    value_name := command[4]
-    value := command[5]
+    value_type := args[1]
+    key_name := args[2]
+    value_name := args[3]
+    value := args[4]
     RegWrite, %value_type%, %key_name%, %value_name%, %value%
     if (ErrorLevel = 1) {
         return FormatResponse("ahk.message.ExceptionResponseMessage", Format("registry error: {}", A_LastError))
@@ -1838,11 +1838,11 @@ AHKRegWrite(ByRef command) {
     {% endblock RegWrite %}
 }
 
-AHKRegDelete(ByRef command) {
+AHKRegDelete(args*) {
     {% block RegDelete %}
 
-    key_name := command[2]
-    value_name := command[3]
+    key_name := args[1]
+    value_name := args[2]
     RegDelete, %key_name%, %value_name%
     if (ErrorLevel = 1) {
         return FormatResponse("ahk.message.ExceptionResponseMessage", Format("registry error: {}", A_LastError))
@@ -1852,31 +1852,31 @@ AHKRegDelete(ByRef command) {
     {% endblock RegDelete %}
 }
 
-AHKKeyWait(ByRef command) {
+AHKKeyWait(args*) {
     {% block AHKKeyWait %}
 
-    keyname := command[2]
-    if (command.Length() = 2) {
+    keyname := args[1]
+    if (args.Length() = 2) {
         KeyWait,% keyname
     } else {
-        options := command[3]
+        options := args[2]
         KeyWait,% keyname,% options
     }
     return FormatResponse("ahk.message.IntegerResponseMessage", ErrorLevel)
     {% endblock AHKKeyWait %}
 }
 
-SetKeyDelay(ByRef command) {
+SetKeyDelay(args*) {
     {% block SetKeyDelay %}
-    SetKeyDelay, command[2], command[3]
+    SetKeyDelay, args[1], args[2]
     {% endblock SetKeyDelay %}
 }
 
-AHKSend(ByRef command) {
+AHKSend(args*) {
     {% block AHKSend %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -1893,11 +1893,11 @@ AHKSend(ByRef command) {
     {% endblock AHKSend %}
 }
 
-AHKSendRaw(ByRef command) {
+AHKSendRaw(args*) {
     {% block AHKSendRaw %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -1914,11 +1914,11 @@ AHKSendRaw(ByRef command) {
     {% endblock AHKSendRaw %}
 }
 
-AHKSendInput(ByRef command) {
+AHKSendInput(args*) {
     {% block AHKSendInput %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -1935,11 +1935,11 @@ AHKSendInput(ByRef command) {
     {% endblock AHKSendInput %}
 }
 
-AHKSendEvent(ByRef command) {
+AHKSendEvent(args*) {
     {% block AHKSendEvent %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -1956,11 +1956,11 @@ AHKSendEvent(ByRef command) {
     {% endblock AHKSendEvent %}
 }
 
-AHKSendPlay(ByRef command) {
+AHKSendPlay(args*) {
     {% block AHKSendPlay %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelayPlay)
     current_key_duration := Format("{}", A_KeyDurationPlay)
 
@@ -1977,9 +1977,9 @@ AHKSendPlay(ByRef command) {
     {% endblock AHKSendPlay %}
 }
 
-AHKSetCapsLockState(ByRef command) {
+AHKSetCapsLockState(args*) {
     {% block AHKSetCapsLockState %}
-    state := command[2]
+    state := args[1]
     if (state = "") {
         SetCapsLockState % !GetKeyState("CapsLock", "T")
     } else {
@@ -1989,7 +1989,7 @@ AHKSetCapsLockState(ByRef command) {
     {% endblock AHKSetCapsLockState %}
 }
 
-HideTrayTip(ByRef command) {
+HideTrayTip(args*) {
     {% block HideTrayTip %}
     TrayTip ; Attempt to hide it the normal way.
     if SubStr(A_OSVersion,1,3) = "10." {
@@ -2000,16 +2000,16 @@ HideTrayTip(ByRef command) {
     {% endblock HideTrayTip %}
 }
 
-AHKWinGetClass(ByRef command) {
+AHKWinGetClass(args*) {
     {% block AHKWinGetClass %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2040,15 +2040,15 @@ AHKWinGetClass(ByRef command) {
     {% endblock AHKWinGetClass %}
 }
 
-AHKWinActivate(ByRef command) {
+AHKWinActivate(args*) {
     {% block AHKWinActivate %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2075,18 +2075,18 @@ AHKWinActivate(ByRef command) {
     {% endblock AHKWinActivate %}
 }
 
-AHKWindowList(ByRef command) {
+AHKWindowList(args*) {
     {% block AHKWindowList %}
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2115,20 +2115,20 @@ AHKWindowList(ByRef command) {
     {% endblock AHKWindowList %}
 }
 
-AHKControlClick(ByRef command) {
+AHKControlClick(args*) {
     {% block AHKControlClick %}
 
-    ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    button := command[5]
-    click_count := command[6]
-    options := command[7]
-    exclude_title := command[8]
-    exclude_text := command[9]
-    detect_hw := command[10]
-    match_mode := command[11]
-    match_speed := command[12]
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    button := args[4]
+    click_count := args[5]
+    options := args[6]
+    exclude_title := args[7]
+    exclude_text := args[8]
+    detect_hw := args[9]
+    match_mode := args[10]
+    match_speed := args[11]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2160,17 +2160,17 @@ AHKControlClick(ByRef command) {
     {% endblock AHKControlClick %}
 }
 
-AHKControlGetText(ByRef command) {
+AHKControlGetText(args*) {
     {% block AHKControlGetText %}
 
-    ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2201,17 +2201,17 @@ AHKControlGetText(ByRef command) {
     {% endblock AHKControlGetText %}
 }
 
-AHKControlGetPos(ByRef command) {
+AHKControlGetPos(args*) {
     {% block AHKControlGetPos %}
 
-    ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2244,17 +2244,17 @@ AHKControlGetPos(ByRef command) {
     {% endblock AHKControlGetPos %}
 }
 
-AHKControlSend(ByRef command) {
+AHKControlSend(args*) {
     {% block AHKControlSend %}
-    ctrl := command[2]
-    keys := command[3]
-    title := command[4]
-    text := command[5]
-    extitle := command[6]
-    extext := command[7]
-    detect_hw := command[8]
-    match_mode := command[9]
-    match_speed := command[10]
+    ctrl := args[1]
+    keys := args[2]
+    title := args[3]
+    text := args[4]
+    extitle := args[5]
+    extext := args[6]
+    detect_hw := args[7]
+    match_mode := args[8]
+    match_speed := args[9]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2277,7 +2277,7 @@ AHKControlSend(ByRef command) {
     {% endblock AHKControlSend %}
 }
 
-AHKWinFromMouse(ByRef command) {
+AHKWinFromMouse(args*) {
     {% block AHKWinFromMouse %}
 
     MouseGetPos,,, MouseWin
@@ -2290,10 +2290,10 @@ AHKWinFromMouse(ByRef command) {
     {% endblock AHKWinFromMouse %}
 }
 
-AHKWinIsAlwaysOnTop(ByRef command) {
+AHKWinIsAlwaysOnTop(args*) {
     {% block AHKWinIsAlwaysOnTop %}
 
-    title := command[2]
+    title := args[1]
     WinGet, ExStyle, ExStyle, %title%
     if (ExStyle = "")
         return FormatNoValueResponse()
@@ -2305,19 +2305,19 @@ AHKWinIsAlwaysOnTop(ByRef command) {
     {% endblock AHKWinIsAlwaysOnTop %}
 }
 
-AHKWinMove(ByRef command) {
+AHKWinMove(args*) {
     {% block AHKWinMove %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    x := command[9]
-    y := command[10]
-    width := command[11]
-    height := command[12]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    x := args[8]
+    y := args[9]
+    width := args[10]
+    height := args[11]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2344,16 +2344,16 @@ AHKWinMove(ByRef command) {
     {% endblock AHKWinMove %}
 }
 
-AHKWinGetPos(ByRef command) {
+AHKWinGetPos(args*) {
     {% block AHKWinGetPos %}
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2386,10 +2386,10 @@ AHKWinGetPos(ByRef command) {
     {% endblock AHKWinGetPos %}
 }
 
-AHKGetVolume(ByRef command) {
+AHKGetVolume(args*) {
     {% block AHKGetVolume %}
 
-    device_number := command[2]
+    device_number := args[1]
 
     try {
     SoundGetWaveVolume, retval, %device_number%
@@ -2406,21 +2406,21 @@ AHKGetVolume(ByRef command) {
     {% endblock AHKGetVolume %}
 }
 
-AHKSoundBeep(ByRef command) {
+AHKSoundBeep(args*) {
     {% block AHKSoundBeep %}
-    freq := command[2]
-    duration := command[3]
+    freq := args[1]
+    duration := args[2]
     SoundBeep , %freq%, %duration%
     return FormatNoValueResponse()
     {% endblock AHKSoundBeep %}
 }
 
-AHKSoundGet(ByRef command) {
+AHKSoundGet(args*) {
     {% block AHKSoundGet %}
 
-    device_number := command[2]
-    component_type := command[3]
-    control_type := command[4]
+    device_number := args[1]
+    component_type := args[2]
+    control_type := args[3]
 
     SoundGet, retval, %component_type%, %control_type%, %device_number%
     ; TODO interpret return type
@@ -2428,29 +2428,29 @@ AHKSoundGet(ByRef command) {
     {% endblock AHKSoundGet %}
 }
 
-AHKSoundSet(ByRef command) {
+AHKSoundSet(args*) {
     {% block AHKSoundSet %}
-    device_number := command[2]
-    component_type := command[3]
-    control_type := command[4]
-    value := command[5]
+    device_number := args[1]
+    component_type := args[2]
+    control_type := args[3]
+    value := args[4]
     SoundSet, %value%, %component_type%, %control_type%, %device_number%
     return FormatNoValueResponse()
     {% endblock AHKSoundSet %}
 }
 
-AHKSoundPlay(ByRef command) {
+AHKSoundPlay(args*) {
     {% block AHKSoundPlay %}
-    filename := command[2]
+    filename := args[1]
     SoundPlay, %filename%
     return FormatNoValueResponse()
     {% endblock AHKSoundPlay %}
 }
 
-AHKSetVolume(ByRef command) {
+AHKSetVolume(args*) {
     {% block AHKSetVolume %}
-    device_number := command[2]
-    value := command[3]
+    device_number := args[1]
+    value := args[2]
     SoundSetWaveVolume, %value%, %device_number%
     return FormatNoValueResponse()
     {% endblock AHKSetVolume %}
@@ -2463,71 +2463,71 @@ CountNewlines(ByRef s) {
     return count
 }
 
-AHKEcho(ByRef command) {
+AHKEcho(args*) {
     {% block AHKEcho %}
-    arg := command[2]
+    arg := args[1]
     return FormatResponse("ahk.message.StringResponseMessage", arg)
     {% endblock AHKEcho %}
 }
 
-AHKTraytip(ByRef command) {
+AHKTraytip(args*) {
     {% block AHKTraytip %}
-    title := command[2]
-    text := command[3]
-    second := command[4]
-    option := command[5]
+    title := args[1]
+    text := args[2]
+    second := args[3]
+    option := args[4]
 
     TrayTip, %title%, %text%, %second%, %option%
     return FormatNoValueResponse()
     {% endblock AHKTraytip %}
 }
 
-AHKShowToolTip(ByRef command) {
+AHKShowToolTip(args*) {
     {% block AHKShowToolTip %}
-    text := command[2]
-    x := command[3]
-    y := command[4]
-    which := command[5]
+    text := args[1]
+    x := args[2]
+    y := args[3]
+    which := args[4]
     ToolTip, %text%, %x%, %y%, %which%
     return FormatNoValueResponse()
     {% endblock AHKShowToolTip %}
 }
 
-AHKGetClipboard(ByRef command) {
+AHKGetClipboard(args*) {
     {% block AHKGetClipboard %}
 
     return FormatResponse("ahk.message.StringResponseMessage", Clipboard)
     {% endblock AHKGetClipboard %}
 }
 
-AHKGetClipboardAll(ByRef command) {
+AHKGetClipboardAll(args*) {
     {% block AHKGetClipboardAll %}
     data := ClipboardAll
     return FormatBinaryResponse(data)
     {% endblock AHKGetClipboardAll %}
 }
 
-AHKSetClipboard(ByRef command) {
+AHKSetClipboard(args*) {
     {% block AHKSetClipboard %}
-    text := command[2]
+    text := args[1]
     Clipboard := text
     return FormatNoValueResponse()
     {% endblock AHKSetClipboard %}
 }
 
-AHKSetClipboardAll(ByRef command) {
+AHKSetClipboardAll(args*) {
     {% block AHKSetClipboardAll %}
     ; TODO there should be a way for us to accept a base64 string instead
-    filename := command[2]
+    filename := args[1]
     FileRead, Clipboard, %filename%
     return FormatNoValueResponse()
     {% endblock AHKSetClipboardAll %}
 }
 
-AHKClipWait(ByRef command) {
+AHKClipWait(args*) {
 
-    timeout := command[2]
-    wait_for_any_data := command[3]
+    timeout := args[1]
+    wait_for_any_data := args[2]
 
     ClipWait, %timeout%, %wait_for_any_data%
 
@@ -2537,45 +2537,45 @@ AHKClipWait(ByRef command) {
     return FormatNoValueResponse()
 }
 
-AHKBlockInput(ByRef command) {
-    value := command[2]
+AHKBlockInput(args*) {
+    value := args[1]
     BlockInput, %value%
     return FormatNoValueResponse()
 }
 
-AHKMenuTrayTip(ByRef command) {
-    value := command[2]
+AHKMenuTrayTip(args*) {
+    value := args[1]
     Menu, Tray, Tip, %value%
     return FormatNoValueResponse()
 }
 
-AHKMenuTrayShow(ByRef command) {
+AHKMenuTrayShow(args*) {
     Menu, Tray, Icon
     return FormatNoValueResponse()
 }
 
-AHKMenuTrayIcon(ByRef command) {
-    filename := command[2]
-    icon_number := command[3]
-    freeze := command[4]
+AHKMenuTrayIcon(args*) {
+    filename := args[1]
+    icon_number := args[2]
+    freeze := args[3]
     Menu, Tray, Icon, %filename%, %icon_number%,%freeze%
     return FormatNoValueResponse()
 }
 
-AHKGuiNew(ByRef command) {
+AHKGuiNew(args*) {
 
-    options := command[2]
-    title := command[3]
+    options := args[1]
+    title := args[2]
     Gui, New, %options%, %title%
     return FormatResponse("ahk.message.StringResponseMessage", hwnd)
 }
 
-AHKMsgBox(ByRef command) {
+AHKMsgBox(args*) {
 
-    options := command[2]
-    title := command[3]
-    text := command[4]
-    timeout := command[5]
+    options := args[1]
+    title := args[2]
+    text := args[3]
+    timeout := args[4]
     MsgBox,% options, %title%, %text%, %timeout%
     IfMsgBox, Yes
         ret := FormatResponse("ahk.message.StringResponseMessage", "Yes")
@@ -2600,18 +2600,18 @@ AHKMsgBox(ByRef command) {
     return ret
 }
 
-AHKInputBox(ByRef command) {
+AHKInputBox(args*) {
 
-    title := command[2]
-    prompt := command[3]
-    hide := command[4]
-    width := command[5]
-    height := command[6]
-    x := command[7]
-    y := command[8]
-    locale := command[9]
-    timeout := command[10]
-    default := command[11]
+    title := args[1]
+    prompt := args[2]
+    hide := args[3]
+    width := args[4]
+    height := args[5]
+    x := args[6]
+    y := args[7]
+    locale := args[8]
+    timeout := args[9]
+    default := args[10]
 
     InputBox, output, %title%, %prompt%, %hide%, %width%, %height%, %x%, %y%, %locale%, %timeout%, %default%
     if (ErrorLevel = 2) {
@@ -2624,12 +2624,12 @@ AHKInputBox(ByRef command) {
     return ret
 }
 
-AHKFileSelectFile(byRef command) {
+AHKFileSelectFile(byRef args) {
 
-    options := command[2]
-    root := command[3]
-    title := command[4]
-    filter := command[5]
+    options := args[1]
+    root := args[2]
+    title := args[3]
+    filter := args[4]
     FileSelectFile, output, %options%, %root%, %title%, %filter%
     if (ErrorLevel = 1) {
         ret := FormatNoValueResponse()
@@ -2639,11 +2639,11 @@ AHKFileSelectFile(byRef command) {
     return ret
 }
 
-AHKFileSelectFolder(byRef command) {
+AHKFileSelectFolder(byRef args) {
 
-    starting_folder := command[2]
-    options := command[3]
-    prompt := command[4]
+    starting_folder := args[1]
+    options := args[2]
+    prompt := args[3]
 
     FileSelectFolder, output, %starting_folder%, %options%, %prompt%
 
@@ -2762,12 +2762,13 @@ pyresp := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
-    commandArray := CommandArrayFromQuery(query)
+    argsArray := CommandArrayFromQuery(query)
     try {
-        func := commandArray[1]
+        func := argsArray[1]
+        argsArray.RemoveAt(1)
         {% block before_function %}
         {% endblock before_function %}
-        pyresp := %func%(commandArray)
+        pyresp := %func%(argsArray*)
         {% block after_function %}
         {% endblock after_function %}
     } catch e {
