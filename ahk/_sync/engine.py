@@ -22,6 +22,8 @@ from typing import Union
 
 from .._hotkey import Hotkey
 from .._hotkey import Hotstring
+from .._utils import _get_executable_major_version
+from .._utils import _resolve_executable_path
 from .._utils import MsgBoxButtons
 from .._utils import MsgBoxDefaultButton
 from .._utils import MsgBoxIcon
@@ -141,6 +143,27 @@ class AHK:
         extensions: list[Extension] | None | Literal['auto'] = None,
         version: Optional[Literal['v1', 'v2']] = None,
     ):
+        if version not in (None, 'v1', 'v2'):
+            raise ValueError(f'Invalid version ({version!r}). Must be one of None, "v1", or "v2"')
+        executable_path = _resolve_executable_path(executable_path=executable_path, version=version)
+        skip_version_check = False
+        if version is None:
+            try:
+                version = _get_executable_major_version(executable_path)
+            except Exception as e:
+                warnings.warn(
+                    f'Could not detect AHK version ({e}). This is likely caused by a misconfigured AutoHotkey executable and will likely cause a fatal error later on.\nAssuming v1 for now.'
+                )
+                version = 'v1'
+            skip_version_check = True
+
+        if not skip_version_check:
+            detected_version = _get_executable_major_version(executable_path)
+            if version != detected_version:
+                raise RuntimeError(
+                    f'AutoHotkey {version} was requested but AutoHotkey {detected_version} was detected for executable {executable_path}'
+                )
+        self._version: Literal['v1', 'v2'] = version
         self._extension_registry: _ExtensionMethodRegistry
         self._extensions: list[Extension]
         if extensions == 'auto':
@@ -157,6 +180,9 @@ class AHK:
             executable_path=executable_path, directives=directives, extensions=self._extensions, version=version
         )
         self._transport: Transport = transport
+
+    def __repr__(self) -> str:
+        return f'<{self.__module__}.{self.__class__.__qualname__} object version={self._version!r}>'
 
     def __getattr__(self, name: str) -> Callable[..., Any]:
         is_async = False
@@ -1320,7 +1346,7 @@ class AHK:
         if second is None:
             second = 1.0
         else:
-            if self._transport._version == 'v2':
+            if self._version == 'v2':
                 warnings.warn(
                     'supplying seconds is not supported when using AutoHotkey v2. This parameter will be ignored'
                 )

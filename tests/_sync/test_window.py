@@ -133,6 +133,13 @@ class TestWindowAsync(TestCase):
         text = self.win.get_text()
         assert '!' in text
 
+    def test_send_input_manual_escapes(self):
+        self.win.activate()
+        self.ahk.send_input('Hello{Enter}World{!}')
+        time.sleep(0.4)
+        text = self.win.get_text()
+        assert 'Hello\r\nWorld!' in text
+
     def test_send_literal_tilde_n(self):
         expected_text = '```nim\nimport std/strformat\n```'
         self.win.send(expected_text, control='Edit1')

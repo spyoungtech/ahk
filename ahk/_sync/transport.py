@@ -48,7 +48,7 @@ from ahk._constants import (
     DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE,
     DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE,
 )
-from ahk._utils import _version_detection_script, _resolve_executable_path, _get_executable_major_version
+from ahk._utils import _version_detection_script
 from ahk.directives import Directive
 
 from concurrent.futures import Future, ThreadPoolExecutor
@@ -640,14 +640,7 @@ class DaemonProcessTransport(Transport):
         self.__template: jinja2.Template
         self._jinja_env: jinja2.Environment
         self._execution_lock = threading.Lock()
-        self._executable_path = _resolve_executable_path(executable_path=executable_path, version=version)
-        if version is None:
-            try:
-                version = _get_executable_major_version(self._executable_path)
-            except Exception as e:
-                warnings.warn(f'Could not detect AHK version ({e}). Defaulting to v1')
-                version = 'v1'
-            skip_version_check = True
+        self._executable_path = executable_path
 
 
         if version is None or version == 'v1':
@@ -659,10 +652,7 @@ class DaemonProcessTransport(Transport):
         else:
             raise ValueError(f'Invalid version {version!r} - must be one of "v1" or "v2"')
 
-        if not skip_version_check:
-            detected_version = _get_executable_major_version(self._executable_path)
-            if version != detected_version:
-                raise RuntimeError(f'AutoHotkey {version} was requested but AutoHotkey {detected_version} was detected for executable {self._executable_path}')
+
 
         if jinja_loader is None:
             try:
