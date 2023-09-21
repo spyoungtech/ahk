@@ -2366,9 +2366,9 @@ AHKControlSend(command) {
 
     try {
         if (ctrl != "") {
-            ControlSendText(keys, ctrl, title, text, extitle, extext)
+            ControlSend(keys, ctrl, title, text, extitle, extext)
         } else {
-            ControlSendText(keys,, title, text, extitle, extext)
+            ControlSend(keys,, title, text, extitle, extext)
         }
     }
     finally {
