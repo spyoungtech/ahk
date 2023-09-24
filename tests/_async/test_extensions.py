@@ -39,6 +39,28 @@ math_test = rf'''
 }}
 '''
 
+from ahk_json import JXON
+
+dependency_func_name = 'MyFunc'
+dependency_func_name = 'AMyFunc'  # unasync: remove
+
+dependency_test_script = f'''\
+{dependency_func_name}(one, two) {{
+   val := Array(one, two)
+   ret := Jxon_Dump(val) ; `Jxon_Dump` is provided by the dependent extension!
+   return FormatResponse("ahk_json.message.JsonResponseMessage", ret) ; this message type is also part of the extension
+}}
+'''
+
+dependency_extension = Extension(script_text=dependency_test_script, dependencies=[JXON])
+
+
+@dependency_extension.register
+def my_function(ahk, one: str, two: str) -> list[str]:
+    args = [one, two]
+    return ahk.function_call(dependency_func_name, args)
+
+
 async_extension = Extension(script_text=ext_text)
 async_math_extension = Extension(script_text=math_test)
 
@@ -60,7 +82,7 @@ async def do_something(ahk, first: str, second: str) -> str:
 
 class TestExtensions(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self) -> None:
-        self.ahk = AsyncAHK(extensions=[async_extension])
+        self.ahk = AsyncAHK(extensions=[async_extension, dependency_extension])
 
     async def asyncTearDown(self) -> None:
         self.ahk._transport._proc.kill()
@@ -69,6 +91,10 @@ class TestExtensions(unittest.IsolatedAsyncioTestCase):
     async def test_ext_explicit(self):
         res = await self.ahk.do_something('foo', 'bar')
         assert res == 'foo and bar'
+
+    async def test_dep_extension(self):
+        res = await self.ahk.my_function('foo', 'bar')
+        assert res == ['foo', 'bar']
 
 
 class TestExtensionsAuto(unittest.IsolatedAsyncioTestCase):

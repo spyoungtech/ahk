@@ -160,7 +160,18 @@ When registering an extension function, if the decorated function is a coroutine
 then it will be made available only when the Async API (via ``AsyncAHK()``) is used. Conversely, normal non-async functions will only be available
 when the sync API (via ``AHK()``).
 
-To provide your extension functionality to both the Sync and Async APIs, you will need to provide your function
+To provide your extension functionality to both the Sync and Async APIs, you will need to provide both a synchronous and async version of your function.
+
+.. code-block::
+
+
+   @my_extension.register
+   def my_function(ahk: AHK, foo, bar):
+       ...
+
+   @my_extension.register
+   async def my_function(ahk: AsyncAHK, foo, bar):
+       ...
 
 
 AutoHotkey V1 vs V2 compatibility

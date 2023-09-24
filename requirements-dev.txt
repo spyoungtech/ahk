@@ -8,3 +8,4 @@ mypy
 typing_extensions
 jinja2
 pytest-rerunfailures
+ahk-json
