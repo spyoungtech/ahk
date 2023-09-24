@@ -174,6 +174,11 @@ class AsyncAHK:
             self._extensions = [ext for ext in _extension_registry if ext._requires in (None, version)]
         else:
             self._extensions = _resolve_extensions(extensions) if extensions else []
+            for ext in self._extensions:
+                if ext._requires not in (None, version):
+                    raise ValueError(
+                        f'Incompatible extension detected. Extension requires AutoHotkey {ext._requires} but current version is {version}'
+                    )
         self._method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
         for ext in self._extensions:
             self._method_registry.merge(ext._extension_method_registry)

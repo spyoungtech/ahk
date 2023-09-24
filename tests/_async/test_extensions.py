@@ -52,13 +52,13 @@ dependency_test_script = f'''\
 }}
 '''
 
-dependency_extension = Extension(script_text=dependency_test_script, dependencies=[JXON])
+dependency_extension = Extension(script_text=dependency_test_script, dependencies=[JXON], requires_autohotkey='v1')
 
 
 @dependency_extension.register
-def my_function(ahk, one: str, two: str) -> list[str]:
+async def my_function(ahk, one: str, two: str) -> list[str]:
     args = [one, two]
-    return ahk.function_call(dependency_func_name, args)
+    return await ahk.function_call(dependency_func_name, args)
 
 
 async_extension = Extension(script_text=ext_text)
@@ -85,7 +85,10 @@ class TestExtensions(unittest.IsolatedAsyncioTestCase):
         self.ahk = AsyncAHK(extensions=[async_extension, dependency_extension])
 
     async def asyncTearDown(self) -> None:
-        self.ahk._transport._proc.kill()
+        try:
+            self.ahk._transport._proc.kill()
+        except:
+            pass
         time.sleep(0.2)
 
     async def test_ext_explicit(self):
@@ -102,7 +105,10 @@ class TestExtensionsAuto(unittest.IsolatedAsyncioTestCase):
         self.ahk = AsyncAHK(extensions='auto')
 
     async def asyncTearDown(self) -> None:
-        self.ahk._transport._proc.kill()
+        try:
+            self.ahk._transport._proc.kill()
+        except:
+            pass
         time.sleep(0.2)
 
     async def test_ext_auto(self):
@@ -135,6 +141,9 @@ class TestExtensionsV2(TestExtensions):
     async def asyncSetUp(self) -> None:
         self.ahk = AsyncAHK(extensions=[async_extension], version='v2')
 
+    async def test_dep_extension(self):
+        pytest.skip('this test does not run on v2')
+
 
 class TestExtensionsAutoV2(TestExtensionsAuto):
     async def asyncSetUp(self) -> None:
@@ -145,3 +154,12 @@ class TestNoExtensionsV2(TestNoExtensions):
     async def asyncSetUp(self) -> None:
         self.ahk = AsyncAHK(version='v2')
         await self.ahk.get_mouse_position()  # cause daemon to start
+
+    async def test_dep_extension(self):
+        pytest.skip('this test does not run on v2')
+
+
+class TestExtensionCompatibility(unittest.IsolatedAsyncioTestCase):
+    def test_ext_incompatible(self):
+        with pytest.raises(ValueError):
+            AsyncAHK(version='v2', extensions=[dependency_extension])

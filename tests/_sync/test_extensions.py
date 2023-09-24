@@ -48,7 +48,7 @@ dependency_test_script = f'''\
 }}
 '''
 
-dependency_extension = Extension(script_text=dependency_test_script, dependencies=[JXON])
+dependency_extension = Extension(script_text=dependency_test_script, dependencies=[JXON], requires_autohotkey='v1')
 
 
 @dependency_extension.register
@@ -81,7 +81,10 @@ class TestExtensions(unittest.TestCase):
         self.ahk = AHK(extensions=[async_extension, dependency_extension])
 
     def tearDown(self) -> None:
-        self.ahk._transport._proc.kill()
+        try:
+            self.ahk._transport._proc.kill()
+        except:
+            pass
         time.sleep(0.2)
 
     def test_ext_explicit(self):
@@ -98,7 +101,10 @@ class TestExtensionsAuto(unittest.TestCase):
         self.ahk = AHK(extensions='auto')
 
     def tearDown(self) -> None:
-        self.ahk._transport._proc.kill()
+        try:
+            self.ahk._transport._proc.kill()
+        except:
+            pass
         time.sleep(0.2)
 
     def test_ext_auto(self):
@@ -131,6 +137,9 @@ class TestExtensionsV2(TestExtensions):
     def setUp(self) -> None:
         self.ahk = AHK(extensions=[async_extension], version='v2')
 
+    def test_dep_extension(self):
+        pytest.skip('this test does not run on v2')
+
 
 class TestExtensionsAutoV2(TestExtensionsAuto):
     def setUp(self) -> None:
@@ -141,3 +150,12 @@ class TestNoExtensionsV2(TestNoExtensions):
     def setUp(self) -> None:
         self.ahk = AHK(version='v2')
         self.ahk.get_mouse_position()  # cause daemon to start
+
+    def test_dep_extension(self):
+        pytest.skip('this test does not run on v2')
+
+
+class TestExtensionCompatibility(unittest.TestCase):
+    def test_ext_incompatible(self):
+        with pytest.raises(ValueError):
+            AHK(version='v2', extensions=[dependency_extension])
