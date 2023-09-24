@@ -216,7 +216,7 @@ To specify dependencies, provide a list of ``Extension`` instance objects in the
       return FormatResponse("ahk_json.message.JsonResponseMessage", ret) ; this message type is also part of the extension
    }
    '''
-   MY_EXTENSION = Extension(script_text=my_extension_script, dependencies=[JXON])
+   MY_EXTENSION = Extension(script_text=my_extension_script, dependencies=[JXON], requires_autohotkey='v1')
 
    @MY_EXTENSION.register
    def my_function(ahk: AHK, one: str, two: str) -> list[str]:
@@ -230,7 +230,7 @@ Then users may use such an extension simply as follows, and both ``JXON`` and ``
    from ahk import AHK
    from my_extension import MY_EXTENSION
 
-   ahk = AHK(extensions=[MY_EXTENSION])  # same effect as extensions=[JXON, MY_EXTENSION]
+   ahk = AHK(extensions=[MY_EXTENSION], version='v1')  # same effect as extensions=[JXON, MY_EXTENSION]
 
 Best practices for extension authors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
