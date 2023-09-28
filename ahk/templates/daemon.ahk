@@ -2371,8 +2371,8 @@ AHKWinGetPos(args*) {
 
     WinGetPos, x, y, w, h, %title%, %text%, %extitle%, %extext%
 
-    if (ErrorLevel = 1) {
-        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem getting the position")
+    if (x = "") {
+        response := FormatNoValueResponse()
     } else {
         result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
         response := FormatResponse("ahk.message.PositionResponseMessage", result)
