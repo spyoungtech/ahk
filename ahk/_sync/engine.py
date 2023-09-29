@@ -11,6 +11,7 @@ from typing import Any
 from typing import Awaitable
 from typing import Callable
 from typing import Coroutine
+from typing import Generic
 from typing import List
 from typing import Literal
 from typing import NoReturn
@@ -18,6 +19,7 @@ from typing import Optional
 from typing import overload
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 from .._hotkey import Hotkey
@@ -133,9 +135,22 @@ def _resolve_button(button: Union[str, int]) -> str:
     return resolved_button
 
 
-class AHK:
+T_AHKVersion = TypeVar('T_AHKVersion', bound=Optional[Literal['v1', 'v2']])
+
+
+class AHK(Generic[T_AHKVersion]):
+    # fmt: off
+    @overload
+    def __init__(self: AHK[None], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None): ...
+    @overload
+    def __init__(self: AHK[None], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: None): ...
+    @overload
+    def __init__(self: AHK[Literal['v2']], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: Literal['v2']): ...
+    @overload
+    def __init__(self: AHK[Literal['v1']], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: Literal['v1']): ...
+    # fmt: on
     def __init__(
-        self,
+        self: AHK[Optional[Literal['v1', 'v2']]],
         *,
         TransportClass: Optional[Type[Transport]] = None,
         directives: Optional[list[Directive | Type[Directive]]] = None,
@@ -801,8 +816,8 @@ class AHK:
     def get_active_window(self, blocking: bool = True) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
     # fmt: on
     def get_active_window(
-        self, blocking: bool = True
-    ) -> Union[Optional[Window], FutureResult[Optional[Window]]]:
+        self: AHK[Any], blocking: bool = True
+    ) -> Union[Optional[Window], FutureResult[Optional[Window]], FutureResult[Window]]:
         """
         Gets the currently active window.
         """
@@ -1325,14 +1340,25 @@ class AHK:
         return self._transport.function_call('AHKSetVolume', args, blocking=blocking)
 
     # fmt: off
+
+    # in v2 the "second" parameter is not supported
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def show_traytip(
         self,
@@ -1362,19 +1388,29 @@ class AHK:
 
     # fmt: off
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
     # fmt: on
     def show_error_traytip(
-        self,
+        self: AHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1389,19 +1425,28 @@ class AHK:
 
     # fmt: off
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def show_info_traytip(
-        self,
+        self: AHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1416,19 +1461,28 @@ class AHK:
 
     # fmt: off
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def show_warning_traytip(
-        self,
+        self: AHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1581,13 +1635,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Window, None]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Window: ...
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Window, None]]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Window, None]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Window: ...
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Window, None, FutureResult[Union[None, Window]]]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Window, None]: ...
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Window, None]]: ...
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Window, None]: ...
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Window, None, FutureResult[Union[None, Window]], FutureResult[Window]]: ...
     # fmt: on
     def win_get(
         self,
@@ -1599,7 +1662,7 @@ class AHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Window, None, FutureResult[Union[None, Window]]]:
+    ) -> Union[Window, None, FutureResult[Union[None, Window]], FutureResult[Window]]:
         """
         Analog for `WinGet <https://www.autohotkey.com/docs/commands/WinGet.htm>`_
         """
@@ -1715,13 +1778,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Position: ...
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Position, None]]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Position]: ...
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Position, None]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Position: ...
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, None, FutureResult[Union[Position, None]]]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, FutureResult[Position]]: ...
+
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Position, None]]: ...
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Position, None]: ...
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, None, FutureResult[Union[Position, None]]]: ...
     # fmt: on
     def win_get_position(
         self,
@@ -1733,7 +1805,7 @@ class AHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Position, None, FutureResult[Union[Position, None]]]:
+    ) -> Union[Position, None, FutureResult[Union[Position, None]], FutureResult[Position]]:
         """
         Analog for `WinGetPos <https://www.autohotkey.com/docs/commands/WinGetPos.htm>`_
         """

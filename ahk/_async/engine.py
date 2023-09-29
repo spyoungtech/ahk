@@ -11,6 +11,7 @@ from typing import Any
 from typing import Awaitable
 from typing import Callable
 from typing import Coroutine
+from typing import Generic
 from typing import List
 from typing import Literal
 from typing import NoReturn
@@ -18,6 +19,7 @@ from typing import Optional
 from typing import overload
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 from .._hotkey import Hotkey
@@ -137,9 +139,22 @@ def _resolve_button(button: Union[str, int]) -> str:
     return resolved_button
 
 
-class AsyncAHK:
+T_AHKVersion = TypeVar('T_AHKVersion', bound=Optional[Literal['v1', 'v2']])
+
+
+class AsyncAHK(Generic[T_AHKVersion]):
+    # fmt: off
+    @overload
+    def __init__(self: AsyncAHK[None], *, TransportClass: Optional[Type[AsyncTransport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None): ...
+    @overload
+    def __init__(self: AsyncAHK[None], *, TransportClass: Optional[Type[AsyncTransport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: None): ...
+    @overload
+    def __init__(self: AsyncAHK[Literal['v2']], *, TransportClass: Optional[Type[AsyncTransport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: Literal['v2']): ...
+    @overload
+    def __init__(self: AsyncAHK[Literal['v1']], *, TransportClass: Optional[Type[AsyncTransport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: Literal['v1']): ...
+    # fmt: on
     def __init__(
-        self,
+        self: AsyncAHK[Optional[Literal['v1', 'v2']]],
         *,
         TransportClass: Optional[Type[AsyncTransport]] = None,
         directives: Optional[list[Directive | Type[Directive]]] = None,
@@ -810,8 +825,8 @@ class AsyncAHK:
     async def get_active_window(self, blocking: bool = True) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]: ...
     # fmt: on
     async def get_active_window(
-        self, blocking: bool = True
-    ) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]]]:
+        self: AsyncAHK[Any], blocking: bool = True
+    ) -> Union[Optional[AsyncWindow], AsyncFutureResult[Optional[AsyncWindow]], AsyncFutureResult[AsyncWindow]]:
         """
         Gets the currently active window.
         """
@@ -1337,14 +1352,25 @@ class AsyncAHK:
         return await self._transport.function_call('AHKSetVolume', args, blocking=blocking)
 
     # fmt: off
+
+    # in v2 the "second" parameter is not supported
     @overload
-    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    async def show_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def show_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    async def show_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    async def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def show_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+
+    @overload
+    async def show_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def show_traytip(
         self,
@@ -1374,19 +1400,29 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    async def show_error_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def show_error_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    async def show_error_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    async def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def show_error_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+
+    @overload
+    async def show_error_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_error_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_error_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_error_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+
     # fmt: on
     async def show_error_traytip(
-        self,
+        self: AsyncAHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1401,19 +1437,28 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    async def show_info_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def show_info_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    async def show_info_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    async def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def show_info_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+
+    @overload
+    async def show_info_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_info_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_info_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_info_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def show_info_traytip(
-        self,
+        self: AsyncAHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1428,19 +1473,28 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    async def show_warning_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def show_warning_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    async def show_warning_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    async def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def show_warning_traytip(self: AsyncAHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+
+    @overload
+    async def show_warning_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    async def show_warning_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def show_warning_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    async def show_warning_traytip(self: AsyncAHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def show_warning_traytip(
-        self,
+        self: AsyncAHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1593,13 +1647,22 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[AsyncWindow, None]: ...
+    async def win_get(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> AsyncWindow: ...
     @overload
-    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
+    async def win_get(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[AsyncWindow]: ...
     @overload
-    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
+    async def win_get(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> AsyncWindow: ...
     @overload
-    async def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[AsyncWindow, None, AsyncFutureResult[Union[None, AsyncWindow]]]: ...
+    async def win_get(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[AsyncWindow, AsyncFutureResult[AsyncWindow]]: ...
+
+    @overload
+    async def win_get(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[AsyncWindow, None]: ...
+    @overload
+    async def win_get(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[AsyncWindow, None]]: ...
+    @overload
+    async def win_get(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[AsyncWindow, None]: ...
+    @overload
+    async def win_get(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[AsyncWindow, None, AsyncFutureResult[Union[None, AsyncWindow]], AsyncFutureResult[AsyncWindow]]: ...
     # fmt: on
     async def win_get(
         self,
@@ -1611,7 +1674,7 @@ class AsyncAHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[None, AsyncWindow]]]:
+    ) -> Union[AsyncWindow, None, AsyncFutureResult[Union[None, AsyncWindow]], AsyncFutureResult[AsyncWindow]]:
         """
         Analog for `WinGet <https://www.autohotkey.com/docs/commands/WinGet.htm>`_
         """
@@ -1727,13 +1790,22 @@ class AsyncAHK:
 
     # fmt: off
     @overload
-    async def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
+    async def win_get_position(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Position: ...
     @overload
-    async def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[Position, None]]: ...
+    async def win_get_position(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Position]: ...
     @overload
-    async def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Position, None]: ...
+    async def win_get_position(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Position: ...
     @overload
-    async def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, None, AsyncFutureResult[Union[Position, None]]]: ...
+    async def win_get_position(self: AsyncAHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, AsyncFutureResult[Position]]: ...
+
+    @overload
+    async def win_get_position(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
+    @overload
+    async def win_get_position(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Union[Position, None]]: ...
+    @overload
+    async def win_get_position(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Position, None]: ...
+    @overload
+    async def win_get_position(self: AsyncAHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, None, AsyncFutureResult[Union[Position, None]]]: ...
     # fmt: on
     async def win_get_position(
         self,
@@ -1745,7 +1817,7 @@ class AsyncAHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Position, None, AsyncFutureResult[Union[Position, None]]]:
+    ) -> Union[Position, None, AsyncFutureResult[Union[Position, None]], AsyncFutureResult[Position]]:
         """
         Analog for `WinGetPos <https://www.autohotkey.com/docs/commands/WinGetPos.htm>`_
         """

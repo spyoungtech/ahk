@@ -34,7 +34,7 @@ P = ParamSpec('P')
 if typing.TYPE_CHECKING:
     from ahk import AHK, AsyncAHK
 
-    TAHK = TypeVar('TAHK', bound=typing.Union[AHK, AsyncAHK])
+    TAHK = TypeVar('TAHK', bound=typing.Union[AHK[Any], AsyncAHK[Any]])
 
 
 @dataclass

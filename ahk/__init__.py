@@ -25,7 +25,7 @@ __all__ = [
     'MsgBoxModality',
 ]
 
-_global_instance: Optional[AHK] = None
+_global_instance: Optional[AHK[None]] = None
 
 
 def __getattr__(name: str) -> Any:
