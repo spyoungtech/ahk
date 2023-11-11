@@ -16,6 +16,7 @@ from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Literal
 from typing import Optional
 from typing import Protocol
 from typing import runtime_checkable
@@ -38,7 +39,7 @@ import tempfile
 from queue import Queue
 
 from ahk._utils import hotkey_escape
-from ._constants import HOTKEYS_SCRIPT_TEMPLATE as _HOTKEY_SCRIPT
+from ._constants import HOTKEYS_SCRIPT_TEMPLATE as _HOTKEY_SCRIPT, HOTKEYS_SCRIPT_V2_TEMPLATE as _HOTKEY_V2_SCRIPT
 
 P_HotkeyCallbackParam = ParamSpec('P_HotkeyCallbackParam')
 T_HotkeyCallbackReturn = TypeVar('T_HotkeyCallbackReturn')
@@ -64,7 +65,9 @@ class HotkeyTransportBase(ABC):
         executable_path: str,
         default_ex_handler: Optional[Callable[[str, Exception], Any]] = None,
         directives: Optional[list[Directive | Type[Directive]]] = None,
+        version: Optional[Literal['v1', 'v2']] = None,
     ):
+        self._version = version
         self._executable_path = executable_path
         self._hotkeys: Dict[str, Hotkey] = {}
         self._default_ex_handler: Callable[[str, Exception], Any] = default_ex_handler or _default_ex_handler
@@ -165,14 +168,30 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         executable_path: str,
         default_ex_handler: Optional[Callable[[str, Exception], Any]] = None,
         directives: Optional[list[Directive | Type[Directive]]] = None,
+        version: Optional[Literal['v1', 'v2']] = None,
     ):
-        super().__init__(executable_path=executable_path, default_ex_handler=default_ex_handler, directives=directives)
+        super().__init__(
+            executable_path=executable_path,
+            default_ex_handler=default_ex_handler,
+            directives=directives,
+            version=version,
+        )
         self._callback_threads: List[threading.Thread] = []
         self._proc: Optional[subprocess.Popen[bytes]] = None
         self._callback_queue: Queue[Union[str, Type[STOP]]] = Queue()
         self._listener_thread: Optional[threading.Thread] = None
         self._dispatcher_thread: Optional[threading.Thread] = None
         loader: jinja2.BaseLoader
+
+        if version is None or version == 'v1':
+            template_name = 'hotkeys.ahk'
+            const_script = _HOTKEY_SCRIPT
+        elif version == 'v2':
+            template_name = 'hotkeys-v2.ahk'
+            const_script = _HOTKEY_V2_SCRIPT
+        else:
+            raise ValueError(f'Invalid version {version!r}')
+
         try:
             loader = jinja2.PackageLoader('ahk', 'templates')
         except ValueError:
@@ -185,10 +204,10 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         self._jinja_env: jinja2.Environment = jinja2.Environment(loader=loader, autoescape=False)
         self._template: jinja2.Template
         try:
-            self._template = self._jinja_env.get_template('hotkeys.ahk')
+            self._template = self._jinja_env.get_template(template_name)
         except jinja2.TemplateNotFound:
             warnings.warn('hotkey template not found, falling back to constant', category=UserWarning)
-            self._template = self._jinja_env.from_string(_HOTKEY_SCRIPT)
+            self._template = self._jinja_env.from_string(const_script)
 
     def _do_callback(
         self,
@@ -314,7 +333,7 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 [self._executable_path, '/CP65001', '/ErrorStdOut', exc_file],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
             )
             atexit.register(kill, self._proc)
             while self._running:

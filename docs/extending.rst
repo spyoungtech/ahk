@@ -31,7 +31,7 @@ First, a little background is necessary into the inner mechanisms of how ``ahk``
 extension authors to understand these key points:
 
 - Python calls AHK functions by name and can pass any number of strings as parameters.
-- Functions written in AHK (v1) accept exactly one argument (an array of zero or more strings) and must return responses in a specific message format (we'll discuss these specifics later)
+- Functions written in AHK accept zero or more string arguments and must return a string in a specific message format (we'll discuss these specifics later)
 - The message returned from AHK to Python indicates the type of the return value so Python can parse the response message into an appropriate Python type. There are several predefined message types available in the :py:mod:`ahk.message` module. Extension authors may also create their own message types (discussed later).
 
 
@@ -42,8 +42,8 @@ Writing an extension
 The basics of writing an extension requires two key components:
 
 
-- A function written in AHK (v1) that conforms to the required spec (accepts one argument of an array of strings and returns a formatted message).
-- A python function that accepts an instance of `AHK` (or `AsyncAHK for `async` functions) as its first parameter (think of it like a method of the `AHK` class). It may also accept any additional parameters.
+- A function written in AHK that conforms to the required spec (accepts zero or more arguments and returns a formatted message).
+- A python function that accepts an instance of ``AHK`` (or ``AsyncAHK`` for ``async`` functions) as its first parameter (think of it like a method of the ``AHK`` class). It may also accept any additional parameters.
 
 
 Example
@@ -62,23 +62,18 @@ When complete, the interface will look something like this:
 
 Let's begin writing the extension.
 
-First, we'll start with the AutoHotkey code. This will be an AHK (v1) function that accepts a single argument, which
-is an array containing the arguments of the function passed by Python. These start at index 2.
+First, we'll start with the AutoHotkey code. This will be an AHK function that, in this case, accepts 3 arguments.
 
-Ultimately, the function will perform some operation utilizing these inputs and will return a formatted response
-(using the ``FormatResponse`` function which is already defined for you. It accepts two arguments: the messaage type name
-and the raw payload.
+Ultimately, the function will perform some operation utilizing these inputs and will return a formatted response. We use
+the ``FormatResponse`` function (which is available by default) to do this. ``FormatResponse`` accepts two arguments: the message type name
+and the raw payload as a string. By default, message type names are the fully qualified name of the Python class that
+implements the message type (more on message types later).
+
 
 .. code-block::
 
 
-    SimpleMath(ByRef command) {
-
-        ; `command` is an array with passed arguments, starting at index 2
-        lhs := command[2]
-        rhs := command[3]
-        operator := command[4]
-
+    SimpleMath(lhs, rhs, operator) {
         if (operator = "+") {
             result := (lhs + rhs)
         } else if (operator = "*") {
@@ -86,12 +81,9 @@ and the raw payload.
         } else { ; invalid operator argument
             return FormatResponse("ahk.message.ExceptionResponseMessage", Format("Invalid operator: {}", operator))
         }
-
         return FormatResponse("ahk.message.IntegerResponseMessage", result)
     }
 
-
-Note that the ``FormatResponse`` function is already implemented for you!
 
 
 Next, we'll create the Python components of our extension: a Python function and the extension itself. The extension
@@ -160,6 +152,94 @@ In addition to supplying AutoHotkey extension code via ``script_text``, you may 
 
     from ahk.extensions import Extension
     my_extension = Extension(includes=['myscript.ahk']) # equivalent to "#Include myscript.ahk"
+
+AsyncIO considerations
+^^^^^^^^^^^^^^^^^^^^^^
+
+When registering an extension function, if the decorated function is a coroutine function (``async def function_name(...):``)
+then it will be made available only when the Async API (via ``AsyncAHK()``) is used. Conversely, normal non-async functions will only be available
+when the sync API (via ``AHK()``).
+
+To provide your extension functionality to both the Sync and Async APIs, you will need to provide both a synchronous and async version of your function.
+
+.. code-block::
+
+
+   @my_extension.register
+   def my_function(ahk: AHK, foo, bar):
+       ...
+
+   @my_extension.register
+   async def my_function(ahk: AsyncAHK, foo, bar):
+       ...
+
+
+AutoHotkey V1 vs V2 compatibility
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Because extensions involve the inclusion of AutoHotkey source code, it is often the case that extensions are sensitive
+to the version of AutoHotkey being used. Extensions can specify their compatibility with different AutoHotkey versions
+by providing the ``requires_autohotkey`` keyword argument with a value of ``v1`` or ``v2``. If an extension omits this
+keyword argument, it is assumed that the extension is compatible with both V1 and V2.
+
+When an AutoHotkey class is instantiated with ``extensions='auto'`` extensions are automatically filtered by version compatibility.
+
+That is to say, you may need multiple ``Extension`` objects to fully support users of both versions of AutoHotkey. However, this
+doesn't necessarily mean you need multiple Python functions -- you can register multiple extensions to the same Python function.
+
+.. code-block::
+
+   my_extension_v1 = Extension(..., requires_autohotkey='v1')
+   my_extension_v2 = Extension(..., requires_autohotkey='v1')
+
+   @my_extension_v1.register
+   @my_extension_v2.register
+   def my_extension_function(ahk: AHK, foo, bar, baz) -> Any:
+      ...
+
+
+Extension dependencies
+^^^^^^^^^^^^^^^^^^^^^^
+
+Extensions can declare explicit dependencies on other extensions. This allows extension authors to re-use other extensions
+and end-users do not need to specify your extension's dependencies when explicitly providing the ``extensions`` keyword argument.
+
+To specify dependencies, provide a list of ``Extension`` instance objects in the ``dependencies`` keyword argument.
+
+.. code-block::
+
+   from ahk_json import JXON  # pip install ahk-json
+   my_extension_script = '''\
+   MyAHKFunction(one, two) {
+      val := Array(one, two)
+      ret := Jxon_Dump(val) ; `Jxon_Dump` is provided by the dependent extension!
+      return FormatResponse("ahk_json.message.JsonResponseMessage", ret) ; this message type is also part of the extension
+   }
+   '''
+   MY_EXTENSION = Extension(script_text=my_extension_script, dependencies=[JXON], requires_autohotkey='v1')
+
+   @MY_EXTENSION.register
+   def my_function(ahk: AHK, one: str, two: str) -> list[str]:
+       args = [one, two]
+       return ahk.function_call('MyAHKFunction', args)
+
+Then users may use such an extension simply as follows, and both ``JXON`` and ``MY_EXTENSION`` will be used.
+
+.. code-block::
+
+   from ahk import AHK
+   from my_extension import MY_EXTENSION
+
+   ahk = AHK(extensions=[MY_EXTENSION], version='v1')  # same effect as extensions=[JXON, MY_EXTENSION]
+
+Best practices for extension authors
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Some conventions that authors are recommended to follow:
+
+- Extension functions should use namespaced naming conventions to avoid collisions (both in AutoHotkey code and Python function names); avoid generic function names like "load" or similar that may collide with other extensions
+- Do not start AutoHotkey function names with ``AHK`` -- as it may conflict with functions implemented by this package.
+- Extension packages published on PyPI should be named with a convention like so: ``ahk-<ext name>``
 
 
 Available Message Types
@@ -234,24 +314,12 @@ For example, suppose you want your method to return a datetime object, you might
             return datetime.datetime.fromtimestamp(val)
 
 In AHK code, you can reference custom response messages by the their fully qualified name, including the namespace.
-(if you're not sure what this means, you can see this value by calling ``DateTimeResponseMessage.fqn()``)
+(if you're not sure what this means, you can see this value by calling the ``fqn()`` method, e.g. ``DateTimeResponseMessage.fqn()``)
 
 Notes
 ^^^^^
 
 - AHK functions MUST always return a message. Failing to return a message will result in an exception being raised. If the function should return nothing, use ``return FormatNoValueResponse()`` which will translate to ``None`` in Python.
-- You cannot define hotkeys, hotstrings, or write any AutoHotkey code that would cause the end of autoexecution
-- Extensions must be imported *before* instantiating the ``AHK`` instance
-- Although extensions can be declared explicitly, using ``extensions='auto'`` is the recommended method for enabling extensions
-
-
-Packaging
-^^^^^^^^^
-
-Coming soon.
-
-
-Extending with jinja
-^^^^^^^^^^^^^^^^^^^^
-
-Coming soon.
+- You cannot define hotkeys, hotstrings, or write any AutoHotkey code that would cause the end of the `auto-execute section <https://www.autohotkey.com/docs/v1/Scripts.htm#auto>`_
+- Extensions must be imported (anywhere, at least once) *before* instantiating the ``AHK`` instance
+- Although extensions can be declared explicitly, using ``extensions='auto'`` is generally the easiest method for enabling all available extensions

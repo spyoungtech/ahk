@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio.subprocess
 import atexit
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -11,7 +12,6 @@ import warnings
 from abc import ABC
 from abc import abstractmethod
 from io import BytesIO
-from shutil import which
 from typing import Any
 from typing import Callable
 from typing import Generic
@@ -44,12 +44,15 @@ from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 from ahk.message import Position
 from ahk.message import _message_registry
-from ahk._constants import DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE
+from ahk._constants import (
+    DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE,
+    DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE,
+)
+from ahk._utils import _version_detection_script
 from ahk.directives import Directive
 
 from concurrent.futures import Future, ThreadPoolExecutor
 
-DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 
 T_SyncFuture = TypeVar('T_SyncFuture')
 
@@ -205,8 +208,6 @@ class Communicable(Protocol):
     def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
         ...
 
-    def acommunicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
-        ...
 
     @property
     def returncode(self) -> Optional[int]:
@@ -258,11 +259,6 @@ class SyncAHKProcess:
         assert self._proc is not None, 'no process to kill'
         self._proc.kill()
 
-    def acommunicate(
-        self, input_bytes: Optional[bytes] = None, timeout: Optional[int] = None
-    ) -> Tuple[bytes, bytes]:
-        assert self._proc is not None
-        return self._proc.communicate(input=input_bytes)
 
     def communicate(self, input_bytes: Optional[bytes] = None, timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
         assert self._proc is not None
@@ -276,71 +272,49 @@ def sync_create_process(runargs: List[str]) -> subprocess.Popen[bytes]:
     return subprocess.Popen(runargs, stdin=subprocess.PIPE, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 
 
-class AhkExecutableNotFoundError(EnvironmentError):
-    pass
-
-
-def _resolve_executable_path(executable_path: str = '') -> str:
-    if not executable_path:
-        executable_path = (
-            os.environ.get('AHK_PATH', '')
-            or which('AutoHotkey.exe')
-            or which('AutoHotkeyU64.exe')
-            or which('AutoHotkeyU32.exe')
-            or which('AutoHotkeyA32.exe')
-            or ''
-        )
-
-    if not executable_path:
-        if os.path.exists(DEFAULT_EXECUTABLE_PATH):
-            executable_path = DEFAULT_EXECUTABLE_PATH
-
-    if not executable_path:
-        raise AhkExecutableNotFoundError(
-            'Could not find AutoHotkey.exe on PATH. '
-            'Provide the absolute path with the `executable_path` keyword argument '
-            'or in the AHK_PATH environment variable. '
-            'You may be able to resolve this error by installing the binary extra: pip install "ahk[binary]"'
-        )
-
-    if not os.path.exists(executable_path):
-        raise AhkExecutableNotFoundError(f"executable_path does not seems to exist: '{executable_path}' not found")
-
-    if os.path.isdir(executable_path):
-        raise AhkExecutableNotFoundError(
-            f'The path {executable_path} appears to be a directory, but should be a file.'
-            ' Please specify the *full path* to the autohotkey.exe executable file'
-        )
-    executable_path = str(executable_path)
-    if not executable_path.endswith('.exe'):
-        warnings.warn(
-            'executable_path does not appear to have a .exe extension. This may be the result of a misconfiguration.'
-        )
-
-    return executable_path
-
-
 class Transport(ABC):
     _started: bool = False
 
     def __init__(
         self,
         /,
-        executable_path: str = '',
         directives: Optional[list[Union[Directive, Type[Directive]]]] = None,
+        version: Optional[Literal['v1', 'v2']] = 'v1',
+        hotkey_transport: Optional[ThreadedHotkeyTransport] = None,
         **kwargs: Any,
     ):
-        self._executable_path: str = _resolve_executable_path(executable_path=executable_path)
-        self._hotkey_transport = ThreadedHotkeyTransport(executable_path=self._executable_path, directives=directives)
+        self._hotkey_transport = hotkey_transport
         self._directives: list[Union[Directive, Type[Directive]]] = directives or []
+        self._version: Optional[Literal['v1', 'v2']] = version
+
+    def _get_full_version(self) -> str:
+        res = self.run_script(_version_detection_script)
+        version = res.strip()
+        assert re.match(r'^\d+\.', version)
+        return version
+
+    def _get_major_version(self) -> Literal['v1', 'v2']:
+        version = self._get_full_version()
+        match = re.match(r'^(\d+)\.', version)
+        if not match:
+            raise ValueError(f'Unexpected version {version!r}')
+        major_version = match.group(1)
+        if major_version == '1':
+            return 'v1'
+        elif major_version == '2':
+            return 'v2'
+        else:
+            raise ValueError(f'Unexpected version {version!r}')
 
     def on_clipboard_change(
         self, callback: Callable[[int], Any], ex_handler: Optional[Callable[[int, Exception], Any]] = None
     ) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.on_clipboard_change(callback, ex_handler)
         return None
 
     def add_hotkey(self, hotkey: Hotkey) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         with warnings.catch_warnings(record=True) as caught_warnings:
             self._hotkey_transport.add_hotkey(hotkey=hotkey)
         if caught_warnings:
@@ -349,6 +323,7 @@ class Transport(ABC):
         return None
 
     def add_hotstring(self, hotstring: Hotstring) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         with warnings.catch_warnings(record=True) as caught_warnings:
             self._hotkey_transport.add_hotstring(hotstring=hotstring)
         if caught_warnings:
@@ -357,31 +332,47 @@ class Transport(ABC):
         return None
 
     def remove_hotkey(self, hotkey: Hotkey) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.remove_hotkey(hotkey)
         return None
 
     def clear_hotkeys(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.clear_hotkeys()
         return None
 
     def remove_hotstring(self, hotstring: Hotstring) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.remove_hotstring(hotstring)
         return None
 
     def clear_hotstrings(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         self._hotkey_transport.clear_hotstrings()
         return None
 
     def start_hotkeys(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         return self._hotkey_transport.start()
 
     def stop_hotkeys(self) -> None:
+        assert self._hotkey_transport is not None, 'current transport does not support hotkey functionality'
         return self._hotkey_transport.stop()
 
     def init(self) -> None:
         self._started = True
         return None
 
+    # fmt: off
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, timeout: Optional[int] = None) -> str: ...
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, blocking: Literal[False], timeout: Optional[int] = None) -> FutureResult[str]: ...
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, blocking: Literal[True], timeout: Optional[int] = None) -> str: ...
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
     @abstractmethod
     def run_script(
         self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
@@ -390,119 +381,119 @@ class Transport(ABC):
 
     # fmt: off
     @overload
-    def function_call(self, function_name: Literal['AHKWinExist'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, FutureResult[bool]]: ...
+    def function_call(self, function_name: Literal['AHKWinExist'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[bool, FutureResult[bool]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKImageSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Tuple[int, int], None, FutureResult[Union[Tuple[int, int], None]]]: ...
+    def function_call(self, function_name: Literal['AHKImageSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Tuple[int, int], None, FutureResult[Union[Tuple[int, int], None]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKPixelGetColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKPixelGetColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[str, FutureResult[str]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKPixelSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Optional[Tuple[int, int]], FutureResult[Optional[Tuple[int, int]]]]: ...
+    def function_call(self, function_name: Literal['AHKPixelSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Optional[Tuple[int, int]], FutureResult[Optional[Tuple[int, int]]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKMouseGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
+    def function_call(self, function_name: Literal['AHKMouseGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Tuple[int, int], FutureResult[Tuple[int, int]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKKeyState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[int, float, str, None, FutureResult[None], FutureResult[str], FutureResult[int], FutureResult[float]]: ...
+    def function_call(self, function_name: Literal['AHKKeyState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[int, float, str, None, FutureResult[None], FutureResult[str], FutureResult[int], FutureResult[float]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKMouseMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKMouseMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKClick'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKMouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKMouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKKeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[int, FutureResult[int]]: ...
+    def function_call(self, function_name: Literal['AHKKeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[int, FutureResult[int]]: ...
     @overload
-    def function_call(self, function_name: Literal['SetKeyDelay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['SetKeyDelay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKSendRaw'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKSendRaw'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKSendInput'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKSendInput'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKSendEvent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKSendEvent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKSendPlay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKSendPlay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKSetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKSetCapsLockState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetTitle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[str, FutureResult[str]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetClass'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetClass'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[str, FutureResult[str]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetText'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[str, FutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetText'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[str, FutureResult[str]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinActivate'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinActivate'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['WinActivateBottom'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['WinActivateBottom'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinClose'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinClose'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinKill'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinKill'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinMaximize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinMaximize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinMinimize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinMinimize'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinRestore'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinRestore'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWindowList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[List[Window], FutureResult[List[Window]]]: ...
+    def function_call(self, function_name: Literal['AHKWindowList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[List[Window], FutureResult[List[Window]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKControlSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKControlSend'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinFromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
+    def function_call(self, function_name: Literal['AHKWinFromMouse'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinIsAlwaysOnTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Optional[bool], FutureResult[Optional[bool]]]: ...
+    def function_call(self, function_name: Literal['AHKWinIsAlwaysOnTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Optional[bool], FutureResult[Optional[bool]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinMove'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[Position, None], FutureResult[Union[None, Position]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[Position, None], FutureResult[Union[None, Position]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetID'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, Window], FutureResult[Union[None, Window]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetID'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, Window], FutureResult[Union[None, Window]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetIDLast'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, Window], FutureResult[Union[None, Window]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetIDLast'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, Window], FutureResult[Union[None, Window]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetPID'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[int, None], FutureResult[Union[int, None]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetPID'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[int, None], FutureResult[Union[int, None]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetProcessName'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetProcessName'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetProcessPath'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetProcessPath'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetCount'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[int, FutureResult[int]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetCount'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[int, FutureResult[int]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[List[Window], FutureResult[List[Window]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[List[Window], FutureResult[List[Window]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetMinMax'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, int], FutureResult[Union[None, int]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetMinMax'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, int], FutureResult[Union[None, int]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetControlList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[List[Control], None, FutureResult[Union[List[Control], None]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetControlList'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[List[Control], None, FutureResult[Union[List[Control], None]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetTransparent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, int], FutureResult[Union[None, int]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetTransparent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, int], FutureResult[Union[None, int]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetTransColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetTransColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinGetExStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
+    def function_call(self, function_name: Literal['AHKWinGetExStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Union[None, str], FutureResult[Union[None, str]]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetAlwaysOnTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetAlwaysOnTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetBottom'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetBottom'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetTop'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetDisable'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetDisable'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetEnable'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetEnable'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetRedraw'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetRedraw'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, FutureResult[bool]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[bool, FutureResult[bool]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetExStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, FutureResult[bool]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetExStyle'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[bool, FutureResult[bool]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetRegion'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, FutureResult[bool]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetRegion'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[bool, FutureResult[bool]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetTransparent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetTransparent'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinSetTransColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinSetTransColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKSetDetectHiddenWindows'], args: Optional[List[str]] = None) -> None: ...
     @overload
@@ -514,7 +505,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKGetTitleMatchSpeed']) -> str: ...
     @overload
-    def function_call(self, function_name: Literal['AHKControlGetText'], args: Optional[List[str]] = None, *, engine: Optional[AHK] = None, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
+    def function_call(self, function_name: Literal['AHKControlGetText'], args: Optional[List[str]] = None, *, engine: Optional[AHK[Any]] = None, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKControlClick'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     @overload
@@ -528,18 +519,18 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKSetSendLevel'], args: List[str]) -> None: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Window, FutureResult[Window]]: ...
+    def function_call(self, function_name: Literal['AHKWinWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Window, FutureResult[Window]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinWaitActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Window, FutureResult[Window]]: ...
+    def function_call(self, function_name: Literal['AHKWinWaitActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Window, FutureResult[Window]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinWaitNotActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[Window, FutureResult[Window]]: ...
+    def function_call(self, function_name: Literal['AHKWinWaitNotActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[Window, FutureResult[Window]]: ...
 
     @overload
-    def function_call(self, function_name: Literal['AHKWinShow'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinShow'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinHide'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinHide'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinIsActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[bool, FutureResult[bool]]: ...
+    def function_call(self, function_name: Literal['AHKWinIsActive'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[bool, FutureResult[bool]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKGetVolume'], args: Optional[List[str]] = None) -> float: ...
     @overload
@@ -572,7 +563,7 @@ class Transport(ABC):
     # @overload
     # async def function_call(self, function_name: Literal['HideTrayTip'], args: Optional[List[str]] = None) -> None: ...
     @overload
-    def function_call(self, function_name: Literal['AHKWinWaitClose'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK] = None) -> Union[None, FutureResult[None]]: ...
+    def function_call(self, function_name: Literal['AHKWinWaitClose'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKRegRead'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
     @overload
@@ -586,7 +577,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKMenuTrayShow'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKGuiNew'], args: List[str], *, engine: AHK) -> str: ...
+    def function_call(self, function_name: Literal['AHKGuiNew'], args: List[str], *, engine: AHK[Any]) -> str: ...
     @overload
     def function_call(self, function_name: Literal['AHKMsgBox'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[str, FutureResult[str]]: ...
     @overload
@@ -602,7 +593,7 @@ class Transport(ABC):
         function_name: FunctionName,
         args: Optional[List[str]] = None,
         blocking: bool = True,
-        engine: Optional[AHK] = None,
+        engine: Optional[AHK[Any]] = None,
     ) -> Any:
         if not self._started:
             with warnings.catch_warnings(record=True) as caught_warnings:
@@ -618,14 +609,14 @@ class Transport(ABC):
 
     @abstractmethod
     def send(
-        self, request: RequestMessage, engine: Optional[AHK] = None
+        self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         return NotImplemented
 
 
     @abstractmethod
     def send_nonblocking(
-        self, request: RequestMessage, engine: Optional[AHK] = None
+        self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]]:
         return NotImplemented
 
@@ -639,6 +630,8 @@ class DaemonProcessTransport(Transport):
         jinja_loader: Optional[jinja2.BaseLoader] = None,
         template: Optional[jinja2.Template] = None,
         extensions: list[Extension] | None = None,
+        version: Optional[Literal['v1', 'v2']] = None,
+        skip_version_check: bool = False,
     ):
         self._extensions = extensions or []
         self._proc: Optional[SyncAHKProcess]
@@ -647,6 +640,17 @@ class DaemonProcessTransport(Transport):
         self.__template: jinja2.Template
         self._jinja_env: jinja2.Environment
         self._execution_lock = threading.Lock()
+        self._executable_path = executable_path
+
+        if version is None or version == 'v1':
+            template_name = 'daemon.ahk'
+            const_script = _DAEMON_SCRIPT_TEMPLATE
+        elif version == 'v2':
+            template_name = 'daemon-v2.ahk'
+            const_script = _DAEMON_SCRIPT_V2_TEMPLATE
+        else:
+            raise ValueError(f'Invalid version {version!r} - must be one of "v1" or "v2"')
+
         if jinja_loader is None:
             try:
                 loader: jinja2.BaseLoader
@@ -662,10 +666,10 @@ class DaemonProcessTransport(Transport):
         else:
             self._jinja_env = jinja2.Environment(loader=jinja_loader, trim_blocks=True, autoescape=False)
         try:
-            self.__template = self._jinja_env.get_template('daemon.ahk')
+            self.__template = self._jinja_env.get_template(template_name)
         except jinja2.TemplateNotFound:
             warnings.warn('daemon template missing. Falling back to constant', category=UserWarning)
-            self.__template = self._jinja_env.from_string(_DAEMON_SCRIPT_TEMPLATE)
+            self.__template = self._jinja_env.from_string(const_script)
         if template is None:
             template = self.__template
         self._template: jinja2.Template = template
@@ -673,7 +677,10 @@ class DaemonProcessTransport(Transport):
         if extensions:
             includes = _resolve_includes(extensions)
             directives = includes + directives
-        super().__init__(executable_path=executable_path, directives=directives)
+        hotkey_transport = ThreadedHotkeyTransport(
+            executable_path=self._executable_path, directives=directives, version=version
+        )
+        super().__init__(directives=directives, version=version, hotkey_transport=hotkey_transport)
 
     @property
     def template(self) -> jinja2.Template:
@@ -703,6 +710,7 @@ class DaemonProcessTransport(Transport):
             message_types=message_types,
             message_registry=_message_registry,
             extensions=self._extensions,
+            ahk_version=self._version,
             **kwargs,
         )
 
@@ -739,7 +747,7 @@ class DaemonProcessTransport(Transport):
         return proc
 
     def _send_nonblocking(
-        self, request: RequestMessage, engine: Optional[AHK] = None
+        self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         msg = request.format()
         proc = self._create_process()
@@ -776,7 +784,7 @@ class DaemonProcessTransport(Transport):
 
 
     def send_nonblocking(
-        self, request: RequestMessage, engine: Optional[AHK] = None
+        self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]]:
         # this is only used by the sync implementation
         pool = ThreadPoolExecutor(max_workers=1)
@@ -788,7 +796,7 @@ class DaemonProcessTransport(Transport):
         return FutureResult(fut)
 
     def send(
-        self, request: RequestMessage, engine: Optional[AHK] = None
+        self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         msg = request.format()
         assert self._proc is not None
@@ -838,6 +846,16 @@ class DaemonProcessTransport(Transport):
         pool.shutdown(wait=False)
         return FutureResult(fut)
 
+    # fmt: off
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, timeout: Optional[int] = None) -> str: ...
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, blocking: Literal[False], timeout: Optional[int] = None) -> FutureResult[str]: ...
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, blocking: Literal[True], timeout: Optional[int] = None) -> str: ...
+    @overload
+    def run_script(self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None) -> Union[str, FutureResult[str]]: ...
+    # fmt: on
     def run_script(
         self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
     ) -> Union[str, FutureResult[str]]:
@@ -850,7 +868,7 @@ class DaemonProcessTransport(Transport):
         proc = SyncAHKProcess(runargs)
         proc.start()
         if blocking:
-            stdout, stderr = proc.acommunicate(script_bytes, timeout=timeout)
+            stdout, stderr = proc.communicate(script_bytes, timeout=timeout)
             if proc.returncode != 0:
                 assert proc.returncode is not None
                 raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)

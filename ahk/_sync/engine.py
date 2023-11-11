@@ -11,6 +11,7 @@ from typing import Any
 from typing import Awaitable
 from typing import Callable
 from typing import Coroutine
+from typing import Generic
 from typing import List
 from typing import Literal
 from typing import NoReturn
@@ -18,10 +19,13 @@ from typing import Optional
 from typing import overload
 from typing import Tuple
 from typing import Type
+from typing import TypeVar
 from typing import Union
 
 from .._hotkey import Hotkey
 from .._hotkey import Hotstring
+from .._utils import _get_executable_major_version
+from .._utils import _resolve_executable_path
 from .._utils import MsgBoxButtons
 from .._utils import MsgBoxDefaultButton
 from .._utils import MsgBoxIcon
@@ -131,29 +135,74 @@ def _resolve_button(button: Union[str, int]) -> str:
     return resolved_button
 
 
-class AHK:
+T_AHKVersion = TypeVar('T_AHKVersion', bound=Optional[Literal['v1', 'v2']])
+
+
+class AHK(Generic[T_AHKVersion]):
+    # fmt: off
+    @overload
+    def __init__(self: AHK[None], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None): ...
+    @overload
+    def __init__(self: AHK[None], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: None): ...
+    @overload
+    def __init__(self: AHK[Literal['v2']], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: Literal['v2']): ...
+    @overload
+    def __init__(self: AHK[Literal['v1']], *, TransportClass: Optional[Type[Transport]] = None, directives: Optional[list[Directive | Type[Directive]]] = None, executable_path: str = '', extensions: list[Extension] | None | Literal['auto'] = None, version: Literal['v1']): ...
+    # fmt: on
     def __init__(
-        self,
+        self: AHK[Optional[Literal['v1', 'v2']]],
         *,
         TransportClass: Optional[Type[Transport]] = None,
         directives: Optional[list[Directive | Type[Directive]]] = None,
         executable_path: str = '',
         extensions: list[Extension] | None | Literal['auto'] = None,
+        version: Optional[Literal['v1', 'v2']] = None,
     ):
+        if version not in (None, 'v1', 'v2'):
+            raise ValueError(f'Invalid version ({version!r}). Must be one of None, "v1", or "v2"')
+        executable_path = _resolve_executable_path(executable_path=executable_path, version=version)
+        skip_version_check = False
+        if version is None:
+            try:
+                version = _get_executable_major_version(executable_path)
+            except Exception as e:
+                warnings.warn(
+                    f'Could not detect AHK version ({e}). This is likely caused by a misconfigured AutoHotkey executable and will likely cause a fatal error later on.\nAssuming v1 for now.'
+                )
+                version = 'v1'
+            skip_version_check = True
+
+        if not skip_version_check:
+            detected_version = _get_executable_major_version(executable_path)
+            if version != detected_version:
+                raise RuntimeError(
+                    f'AutoHotkey {version} was requested but AutoHotkey {detected_version} was detected for executable {executable_path}'
+                )
+        self._version: Literal['v1', 'v2'] = version
         self._extension_registry: _ExtensionMethodRegistry
         self._extensions: list[Extension]
         if extensions == 'auto':
-            self._extensions = list(_extension_registry)
+            self._extensions = [ext for ext in _extension_registry if ext._requires in (None, version)]
         else:
             self._extensions = _resolve_extensions(extensions) if extensions else []
+            for ext in self._extensions:
+                if ext._requires not in (None, version):
+                    raise ValueError(
+                        f'Incompatible extension detected. Extension requires AutoHotkey {ext._requires} but current version is {version}'
+                    )
         self._method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
         for ext in self._extensions:
             self._method_registry.merge(ext._extension_method_registry)
         if TransportClass is None:
             TransportClass = DaemonProcessTransport
         assert TransportClass is not None
-        transport = TransportClass(executable_path=executable_path, directives=directives, extensions=self._extensions)
+        transport = TransportClass(
+            executable_path=executable_path, directives=directives, extensions=self._extensions, version=version
+        )
         self._transport: Transport = transport
+
+    def __repr__(self) -> str:
+        return f'<{self.__module__}.{self.__class__.__qualname__} object version={self._version!r}>'
 
     def __getattr__(self, name: str) -> Callable[..., Any]:
         is_async = False
@@ -744,6 +793,8 @@ class AHK:
         args = [str(x), str(y), str(speed)]
         if relative:
             args.append('R')
+        else:
+            args.append('')
         resp = self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
@@ -765,8 +816,8 @@ class AHK:
     def get_active_window(self, blocking: bool = True) -> Union[Optional[Window], FutureResult[Optional[Window]]]: ...
     # fmt: on
     def get_active_window(
-        self, blocking: bool = True
-    ) -> Union[Optional[Window], FutureResult[Optional[Window]]]:
+        self: AHK[Any], blocking: bool = True
+    ) -> Union[Optional[Window], FutureResult[Optional[Window]], FutureResult[Window]]:
         """
         Gets the currently active window.
         """
@@ -1187,7 +1238,7 @@ class AHK:
         """
         Analog for `SendInput <https://www.autohotkey.com/docs/v1/lib/Send.htm>`_
         """
-        args = [s]
+        args = [s, '', '']
         resp = self._transport.function_call('AHKSendInput', args, blocking=blocking)
         return resp
 
@@ -1289,20 +1340,31 @@ class AHK:
         return self._transport.function_call('AHKSetVolume', args, blocking=blocking)
 
     # fmt: off
+
+    # in v2 the "second" parameter is not supported
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_traytip(self, title: str, text: str, second: float = 1.0, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_traytip(self: AHK[Literal['v2']], title: str, text: str, second: None = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, type_id: int = 1, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def show_traytip(
         self,
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         type_id: int = 1,
         *,
         silent: bool = False,
@@ -1312,25 +1374,43 @@ class AHK:
         """
         Analog for `TrayTip <https://www.autohotkey.com/docs/commands/TrayTip.htm>`_
         """
+        if second is None:
+            second = 1.0
+        else:
+            if self._version == 'v2':
+                warnings.warn(
+                    'supplying seconds is not supported when using AutoHotkey v2. This parameter will be ignored'
+                )
+
         option = type_id + (16 if silent else 0) + (32 if large_icon else 0)
         args = [title, text, str(second), str(option)]
         return self._transport.function_call('AHKTrayTip', args, blocking=blocking)
 
     # fmt: off
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_error_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_error_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_error_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
     # fmt: on
     def show_error_traytip(
-        self,
+        self: AHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1345,19 +1425,28 @@ class AHK:
 
     # fmt: off
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_info_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_info_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_info_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def show_info_traytip(
-        self,
+        self: AHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1372,19 +1461,28 @@ class AHK:
 
     # fmt: off
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False) -> None: ...
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
     @overload
-    def show_warning_traytip(self, title: str, text: str, second: float = 1.0, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def show_warning_traytip(self: AHK[Literal['v2']], title: str, text: str, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False) -> None: ...
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: Literal[True]) -> None: ...
+    @overload
+    def show_warning_traytip(self: AHK[Optional[Literal['v1']]], title: str, text: str, second: Optional[float] = None, *, silent: bool = False, large_icon: bool = False, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def show_warning_traytip(
-        self,
+        self: AHK[Any],
         title: str,
         text: str,
-        second: float = 1.0,
+        second: Optional[float] = None,
         *,
         silent: bool = False,
         large_icon: bool = False,
@@ -1537,13 +1635,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Window, None]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Window: ...
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Window, None]]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Window]: ...
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Window, None]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Window: ...
     @overload
-    def win_get(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Window, None, FutureResult[Union[None, Window]]]: ...
+    def win_get(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Window, FutureResult[Window]]: ...
+
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Window, None]: ...
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Window, None]]: ...
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Window, None]: ...
+    @overload
+    def win_get(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Window, None, FutureResult[Union[None, Window]], FutureResult[Window]]: ...
     # fmt: on
     def win_get(
         self,
@@ -1555,7 +1662,7 @@ class AHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Window, None, FutureResult[Union[None, Window]]]:
+    ) -> Union[Window, None, FutureResult[Union[None, Window]], FutureResult[Window]]:
         """
         Analog for `WinGet <https://www.autohotkey.com/docs/commands/WinGet.htm>`_
         """
@@ -1671,13 +1778,22 @@ class AHK:
 
     # fmt: off
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Position: ...
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Position, None]]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Position]: ...
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Position, None]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Position: ...
     @overload
-    def win_get_position(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, None, FutureResult[Union[Position, None]]]: ...
+    def win_get_position(self: AHK[Literal['v2']], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, FutureResult[Position]]: ...
+
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> Union[Position, None]: ...
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[Union[Position, None]]: ...
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> Union[Position, None]: ...
+    @overload
+    def win_get_position(self: AHK[Optional[Literal['v1']]], title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: bool = True) -> Union[Position, None, FutureResult[Union[Position, None]]]: ...
     # fmt: on
     def win_get_position(
         self,
@@ -1689,7 +1805,7 @@ class AHK:
         title_match_mode: Optional[TitleMatchMode] = None,
         detect_hidden_windows: Optional[bool] = None,
         blocking: bool = True,
-    ) -> Union[Position, None, FutureResult[Union[Position, None]]]:
+    ) -> Union[Position, None, FutureResult[Union[Position, None]], FutureResult[Position]]:
         """
         Analog for `WinGetPos <https://www.autohotkey.com/docs/commands/WinGetPos.htm>`_
         """
@@ -2760,6 +2876,8 @@ class AHK:
 
         if coord_mode is not None:
             args.append(coord_mode)
+        else:
+            args.append('')
 
         resp = self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
@@ -3398,7 +3516,7 @@ class AHK:
         with tempfile.NamedTemporaryFile(prefix='ahk-python', suffix='.clip', mode='wb', delete=False) as f:
             f.write(contents)
 
-        args = [f'*c {f.name}']
+        args = [f'*c {f.name}' if self._transport._version != 'v2' else f.name]
         try:
             resp = self._transport.function_call('AHKSetClipboardAll', args, blocking=blocking)
             return resp
@@ -3498,6 +3616,8 @@ class AHK:
             args.append('')
         if value is not None:
             args.append(value)
+        else:
+            args.append('')
         return self._transport.function_call('AHKRegWrite', args, blocking=blocking)
 
     # fmt: off
@@ -3519,6 +3639,8 @@ class AHK:
         args = [key_name]
         if value_name is not None:
             args.append(value_name)
+        else:
+            args.append('')
         return self._transport.function_call('AHKRegRead', args, blocking=blocking)
 
     # fmt: off
@@ -3704,3 +3826,9 @@ class AHK:
         """
         while True:
             sleep(1)
+
+    def get_version(self) -> str:
+        return self._transport._get_full_version()
+
+    def get_major_version(self) -> Literal['v1', 'v2']:
+        return self._transport._get_major_version()

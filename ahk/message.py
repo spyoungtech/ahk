@@ -114,9 +114,9 @@ class ResponseMessage:
         _message_registry[tom] = cls
         super().__init_subclass__(**kwargs)
 
-    def __init__(self, raw_content: bytes, engine: Optional[Union[AsyncAHK, AHK]] = None):
+    def __init__(self, raw_content: bytes, engine: Optional[Union[AsyncAHK[Any], AHK[Any]]] = None):
         self._raw_content: bytes = raw_content
-        self._engine: Optional[Union[AsyncAHK, AHK]] = engine
+        self._engine: Optional[Union[AsyncAHK[Any], AHK[Any]]] = engine
 
     def __repr__(self) -> str:
         return f'ResponseMessage<fqn={self.fqn()!r}>'
@@ -130,7 +130,7 @@ class ResponseMessage:
 
     @classmethod
     def from_bytes(
-        cls: Type[T_ResponseMessageType], b: bytes, engine: Optional[Union[AsyncAHK, AHK]] = None
+        cls: Type[T_ResponseMessageType], b: bytes, engine: Optional[Union[AsyncAHK[Any], AHK[Any]]] = None
     ) -> 'ResponseMessageTypes':
         tom, _, message_bytes = b.split(b'\n', 2)
         klass = cls._tom_lookup(tom)

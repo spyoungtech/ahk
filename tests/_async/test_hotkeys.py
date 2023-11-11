@@ -23,7 +23,7 @@ class TestHotkeysAsync(IsolatedAsyncioTestCase):
     async def asyncTearDown(self) -> None:
         self.ahk.stop_hotkeys()
         self.ahk._transport._proc.kill()
-        subprocess.run(['TASKKILL', '/F', '/IM', 'AutoHotkey.exe'], capture_output=True)
+        subprocess.run(['TASKKILL', '/F', '/IM', 'AutoHotkey*.exe'], capture_output=True)
         time.sleep(0.2)
 
     async def test_hotkey(self):
@@ -67,3 +67,8 @@ class TestHotkeysAsync(IsolatedAsyncioTestCase):
             await self.ahk.key_press('a')
             await async_sleep(1)
             m.assert_not_called()
+
+
+class TestHotkeysAsyncV2(TestHotkeysAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')
