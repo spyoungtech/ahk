@@ -3,10 +3,10 @@
 
 DAEMON_SCRIPT_TEMPLATE = r"""{% block daemon_script %}
 {% block directives %}
+#Requires AutoHotkey v1.1.17+
 #NoEnv
 #Persistent
 #SingleInstance Off
-
 ; BEGIN user-defined directives
 {% block user_directives %}
 {% for directive in directives %}
@@ -18,45 +18,43 @@ DAEMON_SCRIPT_TEMPLATE = r"""{% block daemon_script %}
 {% endblock user_directives %}
 {% endblock directives %}
 
-{% block message_types %}
-{% for tom, name in message_types.items() %}
-{{ name }} := "{{ tom }}"
-{% endfor %}
-{% endblock message_types %}
+Critical, 100
 
+{% block message_types %}
+MESSAGE_TYPES := Object({% for tom, msg_class in message_registry.items() %}"{{ msg_class.fqn() }}", "{{ tom.decode('utf-8') }}"{% if not loop.last %}, {% endif %}{% endfor %})
+{% endblock message_types %}
 
 NOVALUE_SENTINEL := Chr(57344)
 
 FormatResponse(ByRef MessageType, ByRef payload) {
+    global MESSAGE_TYPES
     newline_count := CountNewlines(payload)
-    response := Format("{}`n{}`n{}`n", MessageType, newline_count, payload)
+    response := Format("{}`n{}`n{}`n", MESSAGE_TYPES[MessageType], newline_count, payload)
     return response
 }
 
 FormatNoValueResponse() {
     global NOVALUE_SENTINEL
-    global NOVALUERESPONSEMESSAGE
-    return FormatResponse(NOVALUERESPONSEMESSAGE, NOVALUE_SENTINEL)
+    return FormatResponse("ahk.message.NoValueResponseMessage", NOVALUE_SENTINEL)
 }
 
 FormatBinaryResponse(ByRef bin) {
-    global B64BINARYRESPONSEMESSAGE
     b64 := b64encode(bin)
-    return FormatResponse(B64BINARYRESPONSEMESSAGE, b64)
+    return FormatResponse("ahk.message.B64BinaryResponseMessage", b64)
 }
 
-AHKSetDetectHiddenWindows(ByRef command) {
+AHKSetDetectHiddenWindows(args*) {
     {% block AHKSetDetectHiddenWindows %}
-    value := command[2]
+    value := args[1]
     DetectHiddenWindows, %value%
     return FormatNoValueResponse()
     {% endblock AHKSetDetectHiddenWindows %}
 }
 
-AHKSetTitleMatchMode(ByRef command) {
+AHKSetTitleMatchMode(args*) {
     {% block AHKSetTitleMatchMode %}
-    val1 := command[2]
-    val2 := command[3]
+    val1 := args[1]
+    val2 := args[2]
     if (val1 != "") {
         SetTitleMatchMode, %val1%
     }
@@ -67,45 +65,45 @@ AHKSetTitleMatchMode(ByRef command) {
     {% endblock AHKSetTitleMatchMode %}
 }
 
-AHKGetTitleMatchMode(ByRef command) {
+AHKGetTitleMatchMode(args*) {
     {% block AHKGetTitleMatchMode %}
-    global STRINGRESPONSEMESSAGE
-    return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchMode)
+
+    return FormatResponse("ahk.message.StringResponseMessage", A_TitleMatchMode)
     {% endblock AHKGetTitleMatchMode %}
 }
 
-AHKGetTitleMatchSpeed(ByRef command) {
+AHKGetTitleMatchSpeed(args*) {
     {% block AHKGetTitleMatchSpeed %}
-    global STRINGRESPONSEMESSAGE
-    return FormatResponse(STRINGRESPONSEMESSAGE, A_TitleMatchModeSpeed)
+
+    return FormatResponse("ahk.message.StringResponseMessage", A_TitleMatchModeSpeed)
     {% endblock AHKGetTitleMatchSpeed %}
 }
 
-AHKSetSendLevel(ByRef command) {
+AHKSetSendLevel(args*) {
     {% block AHKSetSendLevel %}
-    level := command[2]
+    level := args[1]
     SendLevel, %level%
     return FormatNoValueResponse()
     {% endblock AHKSetSendLevel %}
 }
 
-AHKGetSendLevel(ByRef command) {
+AHKGetSendLevel(args*) {
     {% block AHKGetSendLevel %}
-    global INTEGERRESPONSEMESSAGE
-    return FormatResponse(INTEGERRESPONSEMESSAGE, A_SendLevel)
+
+    return FormatResponse("ahk.message.IntegerResponseMessage", A_SendLevel)
     {% endblock AHKGetSendLevel %}
 }
 
-AHKWinExist(ByRef command) {
+AHKWinExist(args*) {
     {% block AHKWinExist %}
-    global BOOLEANRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -123,9 +121,9 @@ AHKWinExist(ByRef command) {
     }
 
     if WinExist(title, text, extitle, extext) {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
     } else {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -136,16 +134,16 @@ AHKWinExist(ByRef command) {
     {% endblock AHKWinExist %}
 }
 
-AHKWinClose(ByRef command) {
+AHKWinClose(args*) {
     {% block AHKWinClose %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    secondstowait := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    secondstowait := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -160,7 +158,6 @@ AHKWinClose(ByRef command) {
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
 
     WinClose, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
@@ -168,21 +165,20 @@ AHKWinClose(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
 
-
     return FormatNoValueResponse()
     {% endblock AHKWinClose %}
 }
 
-AHKWinKill(ByRef command) {
+AHKWinKill(args*) {
     {% block AHKWinKill %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    secondstowait := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    secondstowait := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -197,7 +193,6 @@ AHKWinKill(ByRef command) {
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
 
     WinKill, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
@@ -209,19 +204,17 @@ AHKWinKill(ByRef command) {
     {% endblock AHKWinKill %}
 }
 
-AHKWinWait(ByRef command) {
+AHKWinWait(args*) {
     {% block AHKWinWait %}
-    global WINDOWRESPONSEMESSAGE
-    global TIMEOUTRESPONSEMESSAGE
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -241,10 +234,10 @@ AHKWinWait(ByRef command) {
         WinWait, %title%, %text%,, %extitle%, %extext%
     }
     if (ErrorLevel = 1) {
-        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
     } else {
         WinGet, output, ID
-        resp := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+        resp := FormatResponse("ahk.message.WindowResponseMessage", output)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -255,20 +248,17 @@ AHKWinWait(ByRef command) {
     {% endblock AHKWinWait %}
 }
 
-
-AHKWinWaitActive(ByRef command) {
+AHKWinWaitActive(args*) {
     {% block AHKWinWaitActive %}
-    global WINDOWRESPONSEMESSAGE
-    global TIMEOUTRESPONSEMESSAGE
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -288,10 +278,10 @@ AHKWinWaitActive(ByRef command) {
         WinWaitActive, %title%, %text%,, %extitle%, %extext%
     }
     if (ErrorLevel = 1) {
-        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
     } else {
         WinGet, output, ID
-        resp := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+        resp := FormatResponse("ahk.message.WindowResponseMessage", output)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -302,20 +292,17 @@ AHKWinWaitActive(ByRef command) {
     {% endblock AHKWinWaitActive %}
 }
 
-
-AHKWinWaitNotActive(ByRef command) {
+AHKWinWaitNotActive(args*) {
     {% block AHKWinWaitNotActive %}
-    global WINDOWRESPONSEMESSAGE
-    global TIMEOUTRESPONSEMESSAGE
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -335,10 +322,10 @@ AHKWinWaitNotActive(ByRef command) {
         WinWaitNotActive, %title%, %text%,, %extitle%, %extext%
     }
     if (ErrorLevel = 1) {
-        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
     } else {
         WinGet, output, ID
-        resp := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+        resp := FormatResponse("ahk.message.WindowResponseMessage", output)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -349,18 +336,17 @@ AHKWinWaitNotActive(ByRef command) {
     {% endblock AHKWinWaitNotActive %}
 }
 
-AHKWinWaitClose(ByRef command) {
+AHKWinWaitClose(args*) {
     {% block AHKWinWaitClose %}
-    global TIMEOUTRESPONSEMESSAGE
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    timeout := command[9]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -380,7 +366,7 @@ AHKWinWaitClose(ByRef command) {
         WinWaitClose, %title%, %text%,, %extitle%, %extext%
     }
     if (ErrorLevel = 1) {
-        resp := FormatResponse(TIMEOUTRESPONSEMESSAGE, "WinWait timed out waiting for window")
+        resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
     } else {
         resp := FormatNoValueResponse()
     }
@@ -393,16 +379,15 @@ AHKWinWaitClose(ByRef command) {
     {% endblock AHKWinWaitClose %}
 }
 
-AHKWinMinimize(ByRef command) {
+AHKWinMinimize(args*) {
     {% block AHKWinMinimize %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -417,7 +402,6 @@ AHKWinMinimize(ByRef command) {
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
 
     WinMinimize, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
@@ -429,15 +413,15 @@ AHKWinMinimize(ByRef command) {
     {% endblock AHKWinMinimize %}
 }
 
-AHKWinMaximize(ByRef command) {
+AHKWinMaximize(args*) {
     {% block AHKWinMaximize %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -452,7 +436,6 @@ AHKWinMaximize(ByRef command) {
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
 
     WinMaximize, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
@@ -464,16 +447,15 @@ AHKWinMaximize(ByRef command) {
     {% endblock AHKWinMaximize %}
 }
 
-AHKWinRestore(ByRef command) {
+AHKWinRestore(args*) {
     {% block AHKWinRestore %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -489,7 +471,6 @@ AHKWinRestore(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
-
     WinRestore, %title%, %text%, %secondstowait%, %extitle%, %extext%
 
     DetectHiddenWindows, %current_detect_hw%
@@ -500,16 +481,16 @@ AHKWinRestore(ByRef command) {
     {% endblock AHKWinRestore %}
 }
 
-AHKWinIsActive(ByRef command) {
+AHKWinIsActive(args*) {
     {% block AHKWinIsActive %}
-    global BOOLEANRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
         current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
     if (match_mode != "") {
@@ -526,9 +507,9 @@ AHKWinIsActive(ByRef command) {
     }
 
     if WinActive(title, text, extitle, extext) {
-        response := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+        response := FormatResponse("ahk.message.BooleanResponseMessage", 1)
     } else {
-        response := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+        response := FormatResponse("ahk.message.BooleanResponseMessage", 0)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -537,16 +518,16 @@ AHKWinIsActive(ByRef command) {
     {% endblock AHKWinIsActive %}
 }
 
-AHKWinGetID(ByRef command) {
+AHKWinGetID(args*) {
     {% block AHKWinGetID %}
-    global WINDOWRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -567,7 +548,7 @@ AHKWinGetID(ByRef command) {
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.WindowResponseMessage", output)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -576,16 +557,16 @@ AHKWinGetID(ByRef command) {
     {% endblock AHKWinGetID %}
 }
 
-AHKWinGetTitle(ByRef command) {
+AHKWinGetTitle(args*) {
     {% block AHKWinGetTitle %}
-    global STRINGRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -607,20 +588,20 @@ AHKWinGetTitle(ByRef command) {
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
 
-    return FormatResponse(STRINGRESPONSEMESSAGE, text)
+    return FormatResponse("ahk.message.StringResponseMessage", text)
     {% endblock AHKWinGetTitle %}
 }
 
-AHKWinGetIDLast(ByRef command) {
+AHKWinGetIDLast(args*) {
     {% block AHKWinGetIDLast %}
-    global WINDOWRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -641,7 +622,7 @@ AHKWinGetIDLast(ByRef command) {
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(WINDOWRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.WindowResponseMessage", output)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -650,17 +631,16 @@ AHKWinGetIDLast(ByRef command) {
     {% endblock AHKWinGetIDLast %}
 }
 
-
-AHKWinGetPID(ByRef command) {
+AHKWinGetPID(args*) {
     {% block AHKWinGetPID %}
-    global INTEGERRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -681,7 +661,7 @@ AHKWinGetPID(ByRef command) {
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -690,17 +670,16 @@ AHKWinGetPID(ByRef command) {
     {% endblock AHKWinGetPID %}
 }
 
-
-AHKWinGetProcessName(ByRef command) {
+AHKWinGetProcessName(args*) {
     {% block AHKWinGetProcessName %}
-    global STRINGRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -721,7 +700,7 @@ AHKWinGetProcessName(ByRef command) {
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.StringResponseMessage", output)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -730,16 +709,16 @@ AHKWinGetProcessName(ByRef command) {
     {% endblock AHKWinGetProcessName %}
 }
 
-AHKWinGetProcessPath(ByRef command) {
+AHKWinGetProcessPath(args*) {
     {% block AHKWinGetProcessPath %}
-    global STRINGRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -760,7 +739,7 @@ AHKWinGetProcessPath(ByRef command) {
     if (output = 0 || output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.StringResponseMessage", output)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -769,17 +748,16 @@ AHKWinGetProcessPath(ByRef command) {
     {% endblock AHKWinGetProcessPath %}
 }
 
-
-AHKWinGetCount(ByRef command) {
+AHKWinGetCount(args*) {
     {% block AHKWinGetCount %}
-    global INTEGERRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -798,9 +776,9 @@ AHKWinGetCount(ByRef command) {
 
     WinGet, output, Count, %title%, %text%, %extitle%, %extext%
     if (output = 0) {
-        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
     } else {
-        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -809,18 +787,16 @@ AHKWinGetCount(ByRef command) {
     {% endblock AHKWinGetCount %}
 }
 
-
-
-AHKWinGetMinMax(ByRef command) {
+AHKWinGetMinMax(args*) {
     {% block AHKWinGetMinMax %}
-    global INTEGERRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -841,7 +817,7 @@ AHKWinGetMinMax(ByRef command) {
     if (output = "") {
         response := FormatNoValueResponse()
     } else {
-        response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -850,17 +826,16 @@ AHKWinGetMinMax(ByRef command) {
     {% endblock AHKWinGetMinMax %}
 }
 
-AHKWinGetControlList(ByRef command) {
+AHKWinGetControlList(args*) {
     {% block AHKWinGetControlList %}
-    global EXCEPTIONRESPONSEMESSAGE
-    global WINDOWCONTROLLISTRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -877,7 +852,6 @@ AHKWinGetControlList(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
-
     WinGet, ahkid, ID, %title%, %text%, %extitle%, %extext%
 
     if (ahkid = "") {
@@ -888,13 +862,16 @@ AHKWinGetControlList(ByRef command) {
     WinGet, ctrListID, ControlListHWND, %title%, %text%, %extitle%, %extext%
 
     if (ctrListID = "") {
-        return FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, Format("('{}', [])", ahkid))
+        return FormatResponse("ahk.message.WindowControlListResponseMessage", Format("('{}', [])", ahkid))
     }
 
     ctrListArr := StrSplit(ctrList, "`n")
     ctrListIDArr := StrSplit(ctrListID, "`n")
     if (ctrListArr.Length() != ctrListIDArr.Length()) {
-        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Control hwnd/class lists have unexpected lengths")
+        DetectHiddenWindows, %current_detect_hw%
+        SetTitleMatchMode, %current_match_mode%
+        SetTitleMatchMode, %current_match_speed%
+        return FormatResponse("ahk.message.ExceptionResponseMessage", "Control hwnd/class lists have unexpected lengths")
     }
 
     output := Format("('{}', [", ahkid)
@@ -905,7 +882,7 @@ AHKWinGetControlList(ByRef command) {
 
     }
     output .= "])"
-    response := FormatResponse(WINDOWCONTROLLISTRESPONSEMESSAGE, output)
+    response := FormatResponse("ahk.message.WindowControlListResponseMessage", output)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
@@ -913,16 +890,16 @@ AHKWinGetControlList(ByRef command) {
     {% endblock AHKWinGetControlList %}
 }
 
-AHKWinGetTransparent(ByRef command) {
+AHKWinGetTransparent(args*) {
     {% block AHKWinGetTransparent %}
-    global INTEGERRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -940,25 +917,23 @@ AHKWinGetTransparent(ByRef command) {
     }
 
     WinGet, output, Transparent, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(INTEGERRESPONSEMESSAGE, output)
+    response := FormatResponse("ahk.message.IntegerResponseMessage", output)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
     {% endblock AHKWinGetTransparent %}
 }
-AHKWinGetTransColor(ByRef command) {
+AHKWinGetTransColor(args*) {
     {% block AHKWinGetTransColor %}
-    global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -976,25 +951,23 @@ AHKWinGetTransColor(ByRef command) {
     }
 
     WinGet, output, TransColor, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    response := FormatResponse("ahk.message.NoValueResponseMessage", output)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
     {% endblock AHKWinGetTransColor %}
 }
-AHKWinGetStyle(ByRef command) {
+AHKWinGetStyle(args*) {
     {% block AHKWinGetStyle %}
-    global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1012,25 +985,23 @@ AHKWinGetStyle(ByRef command) {
     }
 
     WinGet, output, Style, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    response := FormatResponse("ahk.message.NoValueResponseMessage", output)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
     return response
     {% endblock AHKWinGetStyle %}
 }
-AHKWinGetExStyle(ByRef command) {
+AHKWinGetExStyle(args*) {
     {% block AHKWinGetExStyle %}
-    global STRINGRESPONSEMESSAGE
-    global INTEGERRESPONSEMESSAGE
-    global NOVALUERESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1048,7 +1019,7 @@ AHKWinGetExStyle(ByRef command) {
     }
 
     WinGet, output, ExStyle, %title%, %text%, %extitle%, %extext%
-    response := FormatResponse(NOVALUERESPONSEMESSAGE, output)
+    response := FormatResponse("ahk.message.NoValueResponseMessage", output)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
@@ -1056,17 +1027,16 @@ AHKWinGetExStyle(ByRef command) {
     {% endblock AHKWinGetExStyle %}
 }
 
-AHKWinGetText(ByRef command) {
+AHKWinGetText(args*) {
     {% block AHKWinGetText %}
-    global STRINGRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1085,9 +1055,9 @@ AHKWinGetText(ByRef command) {
     WinGetText, output,%title%,%text%,%extitle%,%extext%
 
     if (ErrorLevel = 1) {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window text")
+        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was an error getting window text")
     } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.StringResponseMessage", output)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -1097,18 +1067,16 @@ AHKWinGetText(ByRef command) {
     {% endblock AHKWinGetText %}
 }
 
-
-
-AHKWinSetTitle(ByRef command) {
+AHKWinSetTitle(args*) {
     {% block AHKWinSetTitle %}
-    new_title := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    new_title := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1131,16 +1099,16 @@ AHKWinSetTitle(ByRef command) {
     {% endblock AHKWinSetTitle %}
 }
 
-AHKWinSetAlwaysOnTop(ByRef command) {
+AHKWinSetAlwaysOnTop(args*) {
     {% block AHKWinSetAlwaysOnTop %}
-    toggle := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+    toggle := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1164,15 +1132,15 @@ AHKWinSetAlwaysOnTop(ByRef command) {
     {% endblock AHKWinSetAlwaysOnTop %}
 }
 
-AHKWinSetBottom(ByRef command) {
+AHKWinSetBottom(args*) {
     {% block AHKWinSetBottom %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1197,15 +1165,15 @@ AHKWinSetBottom(ByRef command) {
     {% endblock AHKWinSetBottom %}
 }
 
-AHKWinShow(ByRef command) {
+AHKWinShow(args*) {
     {% block AHKWinShow %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1230,15 +1198,15 @@ AHKWinShow(ByRef command) {
     {% endblock AHKWinShow %}
 }
 
-AHKWinHide(ByRef command) {
+AHKWinHide(args*) {
     {% block AHKWinHide %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1263,16 +1231,15 @@ AHKWinHide(ByRef command) {
     {% endblock AHKWinHide %}
 }
 
-
-AHKWinSetTop(ByRef command) {
+AHKWinSetTop(args*) {
     {% block AHKWinSetTop %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1297,15 +1264,15 @@ AHKWinSetTop(ByRef command) {
     {% endblock AHKWinSetTop %}
 }
 
-AHKWinSetEnable(ByRef command) {
+AHKWinSetEnable(args*) {
     {% block AHKWinSetEnable %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1330,15 +1297,15 @@ AHKWinSetEnable(ByRef command) {
     {% endblock AHKWinSetEnable %}
 }
 
-AHKWinSetDisable(ByRef command) {
+AHKWinSetDisable(args*) {
     {% block AHKWinSetDisable %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1363,15 +1330,15 @@ AHKWinSetDisable(ByRef command) {
     {% endblock AHKWinSetDisable %}
 }
 
-AHKWinSetRedraw(ByRef command) {
+AHKWinSetRedraw(args*) {
     {% block AHKWinSetRedraw %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1396,17 +1363,17 @@ AHKWinSetRedraw(ByRef command) {
     {% endblock AHKWinSetRedraw %}
 }
 
-AHKWinSetStyle(ByRef command) {
+AHKWinSetStyle(args*) {
     {% block AHKWinSetStyle %}
-    global BOOLEANRESPONSEMESSAGE
-    style := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+
+    style := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1422,12 +1389,11 @@ AHKWinSetStyle(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
-
     WinSet, Style, %style%, %title%, %text%, %extitle%, %extext%
     if (ErrorLevel = 1) {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
     } else {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -1436,17 +1402,17 @@ AHKWinSetStyle(ByRef command) {
     {% endblock AHKWinSetStyle %}
 }
 
-AHKWinSetExStyle(ByRef command) {
+AHKWinSetExStyle(args*) {
     {% block AHKWinSetExStyle %}
-    global BOOLEANRESPONSEMESSAGE
-    style := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+
+    style := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1462,12 +1428,11 @@ AHKWinSetExStyle(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
-
     WinSet, ExStyle, %style%, %title%, %text%, %extitle%, %extext%
     if (ErrorLevel = 1) {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
     } else {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -1476,17 +1441,17 @@ AHKWinSetExStyle(ByRef command) {
     {% endblock AHKWinSetExStyle %}
 }
 
-AHKWinSetRegion(ByRef command) {
+AHKWinSetRegion(args*) {
     {% block AHKWinSetRegion %}
-    global BOOLEANRESPONSEMESSAGE
-    options := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+
+    options := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1502,12 +1467,11 @@ AHKWinSetRegion(ByRef command) {
         DetectHiddenWindows, %detect_hw%
     }
 
-
     WinSet, Region, %options%, %title%, %text%, %extitle%, %extext%
     if (ErrorLevel = 1) {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
     } else {
-        resp := FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -1516,17 +1480,17 @@ AHKWinSetRegion(ByRef command) {
     {% endblock AHKWinSetRegion %}
 }
 
-AHKWinSetTransparent(ByRef command) {
+AHKWinSetTransparent(args*) {
     {% block AHKWinSetTransparent %}
-    global BOOLEANRESPONSEMESSAGE
-    transparency := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+
+    transparency := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1541,7 +1505,6 @@ AHKWinSetTransparent(ByRef command) {
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
 
     WinSet, Transparent, %transparency%, %title%, %text%, %extitle%, %extext%
     DetectHiddenWindows, %current_detect_hw%
@@ -1551,17 +1514,17 @@ AHKWinSetTransparent(ByRef command) {
     {% endblock AHKWinSetTransparent %}
 }
 
-AHKWinSetTransColor(ByRef command) {
+AHKWinSetTransColor(args*) {
     {% block AHKWinSetTransColor %}
-    global BOOLEANRESPONSEMESSAGE
-    color := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+
+    color := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -1576,7 +1539,6 @@ AHKWinSetTransColor(ByRef command) {
     if (detect_hw != "") {
         DetectHiddenWindows, %detect_hw%
     }
-
 
     WinSet, TransColor, %color%, %title%, %text%, %extitle%, %extext%
 
@@ -1588,16 +1550,15 @@ AHKWinSetTransColor(ByRef command) {
     {% endblock AHKWinSetTransColor %}
 }
 
-AHKImageSearch(ByRef command) {
+AHKImageSearch(args*) {
     {% block AHKImageSearch %}
-    global COORDINATERESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    imagepath := command[6]
-    x1 := command[2]
-    y1 := command[3]
-    x2 := command[4]
-    y2 := command[5]
-    coord_mode := command[7]
+
+    imagepath := args[5]
+    x1 := args[1]
+    y1 := args[2]
+    x2 := args[3]
+    y2 := args[4]
+    coord_mode := args[6]
 
     current_mode := Format("{}", A_CoordModePixel)
 
@@ -1614,31 +1575,29 @@ AHKImageSearch(ByRef command) {
 
     ImageSearch, xpos, ypos,% x1,% y1,% x2,% y2, %imagepath%
 
-
     if (coord_mode != "") {
         CoordMode, Pixel, %current_mode%
     }
 
-
     if (ErrorLevel = 2) {
-        s := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "there was a problem that prevented the command from conducting the search (such as failure to open the image file or a badly formatted option)")
+        s := FormatResponse("ahk.message.ExceptionResponseMessage", "there was a problem that prevented the args from conducting the search (such as failure to open the image file or a badly formatted option)")
     } else if (ErrorLevel = 1) {
         s := FormatNoValueResponse()
     } else {
-        s := FormatResponse(COORDINATERESPONSEMESSAGE, Format("({}, {})", xpos, ypos))
+        s := FormatResponse("ahk.message.CoordinateResponseMessage", Format("({}, {})", xpos, ypos))
     }
 
     return s
     {% endblock AHKImageSearch %}
 }
 
-AHKPixelGetColor(ByRef command) {
+AHKPixelGetColor(args*) {
     {% block AHKPixelGetColor %}
-    global STRINGRESPONSEMESSAGE
-    x := command[2]
-    y := command[3]
-    coord_mode := command[4]
-    options := command[5]
+
+    x := args[1]
+    y := args[2]
+    coord_mode := args[3]
+    options := args[4]
 
     current_mode := Format("{}", A_CoordModePixel)
 
@@ -1653,22 +1612,21 @@ AHKPixelGetColor(ByRef command) {
         CoordMode, Pixel, %current_mode%
     }
 
-    return FormatResponse(STRINGRESPONSEMESSAGE, color)
+    return FormatResponse("ahk.message.StringResponseMessage", color)
     {% endblock AHKPixelGetColor %}
 }
 
-AHKPixelSearch(ByRef command) {
+AHKPixelSearch(args*) {
     {% block AHKPixelSearch %}
-    global COORDINATERESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    x1 := command[2]
-    y1 := command[3]
-    x2 := command[4]
-    y2 := command[5]
-    color := command[6]
-    variation := command[7]
-    options := command[8]
-    coord_mode := command[9]
+
+    x1 := args[1]
+    y1 := args[2]
+    x2 := args[3]
+    y2 := args[4]
+    color := args[5]
+    variation := args[6]
+    options := args[7]
+    coord_mode := args[8]
 
     current_mode := Format("{}", A_CoordModePixel)
 
@@ -1686,21 +1644,20 @@ AHKPixelSearch(ByRef command) {
         return FormatNoValueResponse()
     } else if (ErrorLevel = 0) {
         payload := Format("({}, {})", resultx, resulty)
-        return FormatResponse(COORDINATERESPONSEMESSAGE, payload)
+        return FormatResponse("ahk.message.CoordinateResponseMessage", payload)
     } else if (ErrorLevel = 2) {
-        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem conducting the pixel search (ErrorLevel 2)")
+        return FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem conducting the pixel search (ErrorLevel 2)")
     } else {
-        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Unexpected error. This is probably a bug. Please report this at https://github.com/spyoungtech/ahk/issues")
+        return FormatResponse("ahk.message.ExceptionResponseMessage", "Unexpected error. This is probably a bug. Please report this at https://github.com/spyoungtech/ahk/issues")
     }
 
     {% endblock AHKPixelSearch %}
 }
 
-
-AHKMouseGetPos(ByRef command) {
+AHKMouseGetPos(args*) {
     {% block AHKMouseGetPos %}
-    global COORDINATERESPONSEMESSAGE
-    coord_mode := command[2]
+
+    coord_mode := args[1]
     current_coord_mode := Format("{}", A_CoordModeMouse)
     if (coord_mode != "") {
         CoordMode, Mouse, %coord_mode%
@@ -1708,7 +1665,7 @@ AHKMouseGetPos(ByRef command) {
     MouseGetPos, xpos, ypos
 
     payload := Format("({}, {})", xpos, ypos)
-    resp := FormatResponse(COORDINATERESPONSEMESSAGE, payload)
+    resp := FormatResponse("ahk.message.CoordinateResponseMessage", payload)
 
     if (coord_mode != "") {
         CoordMode, Mouse, %current_coord_mode%
@@ -1718,15 +1675,11 @@ AHKMouseGetPos(ByRef command) {
     {% endblock AHKMouseGetPos %}
 }
 
-AHKKeyState(ByRef command) {
+AHKKeyState(args*) {
     {% block AHKKeyState %}
-    global INTEGERRESPONSEMESSAGE
-    global FLOATRESPONSEMESSAGE
-    global STRINGRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
 
-    keyname := command[2]
-    mode := command[3]
+    keyname := args[1]
+    mode := args[2]
     if (mode != "") {
         state := GetKeyState(keyname, mode)
     } else{
@@ -1738,24 +1691,24 @@ AHKKeyState(ByRef command) {
     }
 
     if state is integer
-        return FormatResponse(INTEGERRESPONSEMESSAGE, state)
+        return FormatResponse("ahk.message.IntegerResponseMessage", state)
 
     if state is float
-        return FormatResponse(FLOATRESPONSEMESSAGE, state)
+        return FormatResponse("ahk.message.FloatResponseMessage", state)
 
     if state is alnum
-        return FormatResponse(STRINGRESPONSEMESSAGE, state)
+        return FormatResponse("ahk.message.StringResponseMessage", state)
 
-    return FormatResponse(EXCEPTIONRESPONSEMESSAGE, state)
+    return FormatResponse("ahk.message.ExceptionResponseMessage", state)
     {% endblock AHKKeyState %}
 }
 
-AHKMouseMove(ByRef command) {
+AHKMouseMove(args*) {
     {% block AHKMouseMove %}
-    x := command[2]
-    y := command[3]
-    speed := command[4]
-    relative := command[5]
+    x := args[1]
+    y := args[2]
+    speed := args[3]
+    relative := args[4]
     if (relative != "") {
     MouseMove, %x%, %y%, %speed%, R
     } else {
@@ -1766,16 +1719,15 @@ AHKMouseMove(ByRef command) {
     {% endblock AHKMouseMove %}
 }
 
-
-AHKClick(ByRef command) {
+AHKClick(args*) {
     {% block AHKClick %}
-    x := command[2]
-    y := command[3]
-    button := command[4]
-    click_count := command[5]
-    direction := command[6]
-    r := command[7]
-    relative_to := command[8]
+    x := args[1]
+    y := args[2]
+    button := args[3]
+    click_count := args[4]
+    direction := args[5]
+    r := args[6]
+    relative_to := args[7]
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
     if (relative_to != "") {
@@ -1793,51 +1745,50 @@ AHKClick(ByRef command) {
     {% endblock AHKClick %}
 }
 
-AHKGetCoordMode(ByRef command) {
+AHKGetCoordMode(args*) {
     {% block AHKGetCoordMode %}
-    global STRINGRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    target := command[2]
+
+    target := args[1]
 
     if (target = "ToolTip") {
-        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeToolTip)
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeToolTip)
     }
     if (target = "Pixel") {
-        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModePixel)
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModePixel)
     }
     if (target = "Mouse") {
-        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeMouse)
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeMouse)
     }
     if (target = "Caret") {
-        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeCaret)
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeCaret)
     }
     if (target = "Menu") {
-        return FormatResponse(STRINGRESPONSEMESSAGE, A_CoordModeMenu)
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeMenu)
     }
-    return FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Invalid coord mode")
+    return FormatResponse("ahk.message.ExceptionResponseMessage", "Invalid coord mode")
     {% endblock AHKGetCoordMode %}
 }
 
-AHKSetCoordMode(ByRef command) {
+AHKSetCoordMode(args*) {
     {% block AHKSetCoordMode %}
-    target := command[2]
-    relative_to := command[3]
+    target := args[1]
+    relative_to := args[2]
     CoordMode, %target%, %relative_to%
 
     return FormatNoValueResponse()
     {% endblock AHKSetCoordMode %}
 }
 
-AHKMouseClickDrag(ByRef command) {
+AHKMouseClickDrag(args*) {
     {% block AHKMouseClickDrag %}
-    button := command[2]
-    x1 := command[3]
-    y1 := command[4]
-    x2 := command[5]
-    y2 := command[6]
-    speed := command[7]
-    relative := command[8]
-    relative_to := command[9]
+    button := args[1]
+    x1 := args[2]
+    y1 := args[3]
+    x2 := args[4]
+    y2 := args[5]
+    speed := args[6]
+    relative := args[7]
+    relative_to := args[8]
 
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
@@ -1856,84 +1807,79 @@ AHKMouseClickDrag(ByRef command) {
     {% endblock AHKMouseClickDrag %}
 }
 
-AHKRegRead(ByRef command) {
+AHKRegRead(args*) {
     {% block RegRead %}
-    global STRINGRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    key_name := command[2]
-    value_name := command[3]
+
+    key_name := args[1]
+    value_name := args[2]
 
     RegRead, output, %key_name%, %value_name%
 
     if (ErrorLevel = 1) {
-        resp := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("registry error: {}", A_LastError))
+        resp := FormatResponse("ahk.message.ExceptionResponseMessage", Format("registry error: {}", A_LastError))
     }
     else {
-        resp := FormatResponse(STRINGRESPONSEMESSAGE, Format("{}", output))
+        resp := FormatResponse("ahk.message.StringResponseMessage", Format("{}", output))
     }
     return resp
     {% endblock RegRead %}
 }
 
-
-
-AHKRegWrite(ByRef command) {
+AHKRegWrite(args*) {
     {% block RegWrite %}
-    global EXCEPTIONRESPONSEMESSAGE
-    value_type := command[2]
-    key_name := command[3]
-    value_name := command[4]
-    value := command[5]
+
+    value_type := args[1]
+    key_name := args[2]
+    value_name := args[3]
+    value := args[4]
     RegWrite, %value_type%, %key_name%, %value_name%, %value%
     if (ErrorLevel = 1) {
-        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("registry error: {}", A_LastError))
+        return FormatResponse("ahk.message.ExceptionResponseMessage", Format("registry error: {}", A_LastError))
     }
 
     return FormatNoValueResponse()
     {% endblock RegWrite %}
 }
 
-AHKRegDelete(ByRef command) {
+AHKRegDelete(args*) {
     {% block RegDelete %}
-    global EXCEPTIONRESPONSEMESSAGE
-    key_name := command[2]
-    value_name := command[3]
+
+    key_name := args[1]
+    value_name := args[2]
     RegDelete, %key_name%, %value_name%
     if (ErrorLevel = 1) {
-        return FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("registry error: {}", A_LastError))
+        return FormatResponse("ahk.message.ExceptionResponseMessage", Format("registry error: {}", A_LastError))
     }
     return FormatNoValueResponse()
 
     {% endblock RegDelete %}
 }
 
-AHKKeyWait(ByRef command) {
+AHKKeyWait(args*) {
     {% block AHKKeyWait %}
-    global INTEGERRESPONSEMESSAGE
-    keyname := command[2]
-    if (command.Length() = 2) {
+
+    keyname := args[1]
+    if (args.Length() = 2) {
         KeyWait,% keyname
     } else {
-        options := command[3]
+        options := args[2]
         KeyWait,% keyname,% options
     }
-    return FormatResponse(INTEGERRESPONSEMESSAGE, ErrorLevel)
+    return FormatResponse("ahk.message.IntegerResponseMessage", ErrorLevel)
     {% endblock AHKKeyWait %}
 }
 
-SetKeyDelay(ByRef command) {
+SetKeyDelay(args*) {
     {% block SetKeyDelay %}
-    SetKeyDelay, command[2], command[3]
+    SetKeyDelay, args[1], args[2]
     {% endblock SetKeyDelay %}
 }
 
-
-
-AHKSend(ByRef command) {
+AHKSend(args*) {
     {% block AHKSend %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -1950,11 +1896,11 @@ AHKSend(ByRef command) {
     {% endblock AHKSend %}
 }
 
-AHKSendRaw(ByRef command) {
+AHKSendRaw(args*) {
     {% block AHKSendRaw %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -1971,11 +1917,11 @@ AHKSendRaw(ByRef command) {
     {% endblock AHKSendRaw %}
 }
 
-AHKSendInput(ByRef command) {
+AHKSendInput(args*) {
     {% block AHKSendInput %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -1992,12 +1938,11 @@ AHKSendInput(ByRef command) {
     {% endblock AHKSendInput %}
 }
 
-
-AHKSendEvent(ByRef command) {
+AHKSendEvent(args*) {
     {% block AHKSendEvent %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
 
@@ -2014,11 +1959,11 @@ AHKSendEvent(ByRef command) {
     {% endblock AHKSendEvent %}
 }
 
-AHKSendPlay(ByRef command) {
+AHKSendPlay(args*) {
     {% block AHKSendPlay %}
-    str := command[2]
-    key_delay := command[3]
-    key_press_duration := command[4]
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
     current_delay := Format("{}", A_KeyDelayPlay)
     current_key_duration := Format("{}", A_KeyDurationPlay)
 
@@ -2035,9 +1980,9 @@ AHKSendPlay(ByRef command) {
     {% endblock AHKSendPlay %}
 }
 
-AHKSetCapsLockState(ByRef command) {
+AHKSetCapsLockState(args*) {
     {% block AHKSetCapsLockState %}
-    state := command[2]
+    state := args[1]
     if (state = "") {
         SetCapsLockState % !GetKeyState("CapsLock", "T")
     } else {
@@ -2047,7 +1992,7 @@ AHKSetCapsLockState(ByRef command) {
     {% endblock AHKSetCapsLockState %}
 }
 
-HideTrayTip(ByRef command) {
+HideTrayTip(args*) {
     {% block HideTrayTip %}
     TrayTip ; Attempt to hide it the normal way.
     if SubStr(A_OSVersion,1,3) = "10." {
@@ -2058,20 +2003,16 @@ HideTrayTip(ByRef command) {
     {% endblock HideTrayTip %}
 }
 
-
-
-
-AHKWinGetClass(ByRef command) {
+AHKWinGetClass(args*) {
     {% block AHKWinGetClass %}
-    global STRINGRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2090,9 +2031,9 @@ AHKWinGetClass(ByRef command) {
     WinGetClass, output,%title%,%text%,%extitle%,%extext%
 
     if (ErrorLevel = 1) {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was an error getting window class")
+        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was an error getting window class")
     } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        response := FormatResponse("ahk.message.StringResponseMessage", output)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -2102,15 +2043,15 @@ AHKWinGetClass(ByRef command) {
     {% endblock AHKWinGetClass %}
 }
 
-AHKWinActivate(ByRef command) {
+AHKWinActivate(args*) {
     {% block AHKWinActivate %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2137,22 +2078,18 @@ AHKWinActivate(ByRef command) {
     {% endblock AHKWinActivate %}
 }
 
-
-
-
-AHKWindowList(ByRef command) {
+AHKWindowList(args*) {
     {% block AHKWindowList %}
-    global WINDOWLISTRESPONSEMESSAGE
 
     current_detect_hw := Format("{}", A_DetectHiddenWindows)
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2173,7 +2110,7 @@ AHKWindowList(ByRef command) {
         id := windows%A_Index%
         r .= id . "`,"
     }
-    resp := FormatResponse(WINDOWLISTRESPONSEMESSAGE, r)
+    resp := FormatResponse("ahk.message.WindowListResponseMessage", r)
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
     SetTitleMatchMode, %current_match_speed%
@@ -2181,22 +2118,20 @@ AHKWindowList(ByRef command) {
     {% endblock AHKWindowList %}
 }
 
-
-
-AHKControlClick(ByRef command) {
+AHKControlClick(args*) {
     {% block AHKControlClick %}
-    global EXCEPTIONRESPONSEMESSAGE
-    ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    button := command[5]
-    click_count := command[6]
-    options := command[7]
-    exclude_title := command[8]
-    exclude_text := command[9]
-    detect_hw := command[10]
-    match_mode := command[11]
-    match_speed := command[12]
+
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    button := args[4]
+    click_count := args[5]
+    options := args[6]
+    exclude_title := args[7]
+    exclude_text := args[8]
+    detect_hw := args[9]
+    match_mode := args[10]
+    match_speed := args[11]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2215,7 +2150,7 @@ AHKControlClick(ByRef command) {
     ControlClick, %ctrl%, %title%, %text%, %button%, %click_count%, %options%, %exclude_title%, %exclude_text%
 
     if (ErrorLevel != 0) {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "Failed to click control")
+        response := FormatResponse("ahk.message.ExceptionResponseMessage", "Failed to click control")
     } else {
         response := FormatNoValueResponse()
     }
@@ -2228,18 +2163,17 @@ AHKControlClick(ByRef command) {
     {% endblock AHKControlClick %}
 }
 
-AHKControlGetText(ByRef command) {
+AHKControlGetText(args*) {
     {% block AHKControlGetText %}
-    global STRINGRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2258,9 +2192,9 @@ AHKControlGetText(ByRef command) {
     ControlGetText, result, %ctrl%, %title%, %text%, %extitle%, %extext%
 
     if (ErrorLevel = 1) {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem getting the text")
+        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem getting the text")
     } else {
-        response := FormatResponse(STRINGRESPONSEMESSAGE, result)
+        response := FormatResponse("ahk.message.StringResponseMessage", result)
     }
     DetectHiddenWindows, %current_detect_hw%
     SetTitleMatchMode, %current_match_mode%
@@ -2270,19 +2204,17 @@ AHKControlGetText(ByRef command) {
     {% endblock AHKControlGetText %}
 }
 
-
-AHKControlGetPos(ByRef command) {
+AHKControlGetPos(args*) {
     {% block AHKControlGetPos %}
-    global POSITIONRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
-    ctrl := command[2]
-    title := command[3]
-    text := command[4]
-    extitle := command[5]
-    extext := command[6]
-    detect_hw := command[7]
-    match_mode := command[8]
-    match_speed := command[9]
+
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2300,10 +2232,10 @@ AHKControlGetPos(ByRef command) {
 
     ControlGetPos, x, y, w, h, %ctrl%, %title%, %text%, %extitle%, %extext%
     if (ErrorLevel = 1) {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem getting the text")
+        response := FormatResponse("ahk.message.ExceptionResponseMessage", "There was a problem getting the text")
     } else {
         result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
-        response := FormatResponse(PositionResponseMessage, result)
+        response := FormatResponse("ahk.message.PositionResponseMessage", result)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -2312,21 +2244,20 @@ AHKControlGetPos(ByRef command) {
 
     return response
 
-
     {% endblock AHKControlGetPos %}
 }
 
-AHKControlSend(ByRef command) {
+AHKControlSend(args*) {
     {% block AHKControlSend %}
-    ctrl := command[2]
-    keys := command[3]
-    title := command[4]
-    text := command[5]
-    extitle := command[6]
-    extext := command[7]
-    detect_hw := command[8]
-    match_mode := command[9]
-    match_speed := command[10]
+    ctrl := args[1]
+    keys := args[2]
+    title := args[3]
+    text := args[4]
+    extitle := args[5]
+    extext := args[6]
+    detect_hw := args[7]
+    match_mode := args[8]
+    match_speed := args[9]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2349,52 +2280,47 @@ AHKControlSend(ByRef command) {
     {% endblock AHKControlSend %}
 }
 
-
-
-
-AHKWinFromMouse(ByRef command) {
+AHKWinFromMouse(args*) {
     {% block AHKWinFromMouse %}
-    global WINDOWRESPONSEMESSAGE
+
     MouseGetPos,,, MouseWin
 
     if (MouseWin = "") {
         return FormatNoValueResponse()
     }
 
-    return FormatResponse(WINDOWRESPONSEMESSAGE, MouseWin)
+    return FormatResponse("ahk.message.WindowResponseMessage", MouseWin)
     {% endblock AHKWinFromMouse %}
 }
 
-
-AHKWinIsAlwaysOnTop(ByRef command) {
+AHKWinIsAlwaysOnTop(args*) {
     {% block AHKWinIsAlwaysOnTop %}
-    global BOOLEANRESPONSEMESSAGE
-    title := command[2]
+
+    title := args[1]
     WinGet, ExStyle, ExStyle, %title%
     if (ExStyle = "")
         return FormatNoValueResponse()
 
     if (ExStyle & 0x8)  ; 0x8 is WS_EX_TOPMOST.
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 1)
+        return FormatResponse("ahk.message.BooleanResponseMessage", 1)
     else
-        return FormatResponse(BOOLEANRESPONSEMESSAGE, 0)
+        return FormatResponse("ahk.message.BooleanResponseMessage", 0)
     {% endblock AHKWinIsAlwaysOnTop %}
 }
 
-
-AHKWinMove(ByRef command) {
+AHKWinMove(args*) {
     {% block AHKWinMove %}
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
-    x := command[9]
-    y := command[10]
-    width := command[11]
-    height := command[12]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    x := args[8]
+    y := args[9]
+    width := args[10]
+    height := args[11]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2421,18 +2347,16 @@ AHKWinMove(ByRef command) {
     {% endblock AHKWinMove %}
 }
 
-AHKWinGetPos(ByRef command) {
+AHKWinGetPos(args*) {
     {% block AHKWinGetPos %}
-    global POSITIONRESPONSEMESSAGE
-    global EXCEPTIONRESPONSEMESSAGE
 
-    title := command[2]
-    text := command[3]
-    extitle := command[4]
-    extext := command[5]
-    detect_hw := command[6]
-    match_mode := command[7]
-    match_speed := command[8]
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
 
     current_match_mode := Format("{}", A_TitleMatchMode)
     current_match_speed := Format("{}", A_TitleMatchModeSpeed)
@@ -2450,11 +2374,11 @@ AHKWinGetPos(ByRef command) {
 
     WinGetPos, x, y, w, h, %title%, %text%, %extitle%, %extext%
 
-    if (ErrorLevel = 1) {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, "There was a problem getting the position")
+    if (x = "") {
+        response := FormatNoValueResponse()
     } else {
         result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
-        response := FormatResponse(PositionResponseMessage, result)
+        response := FormatResponse("ahk.message.PositionResponseMessage", result)
     }
 
     DetectHiddenWindows, %current_detect_hw%
@@ -2465,73 +2389,71 @@ AHKWinGetPos(ByRef command) {
     {% endblock AHKWinGetPos %}
 }
 
-
-AHKGetVolume(ByRef command) {
+AHKGetVolume(args*) {
     {% block AHKGetVolume %}
-    global EXCEPTIONRESPONSEMESSAGE
-    global FLOATRESPONSEMESSAGE
-    device_number := command[2]
+
+    device_number := args[1]
 
     try {
     SoundGetWaveVolume, retval, %device_number%
     } catch e {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("There was a problem getting the volume with device of index {} ({})", device_number, e.message))
+        response := FormatResponse("ahk.message.ExceptionResponseMessage", Format("There was a problem getting the volume with device of index {} ({})", device_number, e.message))
         return response
     }
     if (ErrorLevel = 1) {
-        response := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("There was a problem getting the volume with device of index {}", device_number))
+        response := FormatResponse("ahk.message.ExceptionResponseMessage", Format("There was a problem getting the volume with device of index {}", device_number))
     } else {
-        response := FormatResponse(FLOATRESPONSEMESSAGE, Format("{}", retval))
+        response := FormatResponse("ahk.message.FloatResponseMessage", Format("{}", retval))
     }
     return response
     {% endblock AHKGetVolume %}
 }
 
-AHKSoundBeep(ByRef command) {
+AHKSoundBeep(args*) {
     {% block AHKSoundBeep %}
-    freq := command[2]
-    duration := command[3]
+    freq := args[1]
+    duration := args[2]
     SoundBeep , %freq%, %duration%
     return FormatNoValueResponse()
     {% endblock AHKSoundBeep %}
 }
 
-AHKSoundGet(ByRef command) {
+AHKSoundGet(args*) {
     {% block AHKSoundGet %}
-    global STRINGRESPONSEMESSAGE
-    device_number := command[2]
-    component_type := command[3]
-    control_type := command[4]
+
+    device_number := args[1]
+    component_type := args[2]
+    control_type := args[3]
 
     SoundGet, retval, %component_type%, %control_type%, %device_number%
     ; TODO interpret return type
-    return FormatResponse(STRINGRESPONSEMESSAGE, Format("{}", retval))
+    return FormatResponse("ahk.message.StringResponseMessage", Format("{}", retval))
     {% endblock AHKSoundGet %}
 }
 
-AHKSoundSet(ByRef command) {
+AHKSoundSet(args*) {
     {% block AHKSoundSet %}
-    device_number := command[2]
-    component_type := command[3]
-    control_type := command[4]
-    value := command[5]
+    device_number := args[1]
+    component_type := args[2]
+    control_type := args[3]
+    value := args[4]
     SoundSet, %value%, %component_type%, %control_type%, %device_number%
     return FormatNoValueResponse()
     {% endblock AHKSoundSet %}
 }
 
-AHKSoundPlay(ByRef command) {
+AHKSoundPlay(args*) {
     {% block AHKSoundPlay %}
-    filename := command[2]
+    filename := args[1]
     SoundPlay, %filename%
     return FormatNoValueResponse()
     {% endblock AHKSoundPlay %}
 }
 
-AHKSetVolume(ByRef command) {
+AHKSetVolume(args*) {
     {% block AHKSetVolume %}
-    device_number := command[2]
-    value := command[3]
+    device_number := args[1]
+    value := args[2]
     SoundSetWaveVolume, %value%, %device_number%
     return FormatNoValueResponse()
     {% endblock AHKSetVolume %}
@@ -2544,203 +2466,202 @@ CountNewlines(ByRef s) {
     return count
 }
 
-AHKEcho(ByRef command) {
+AHKEcho(args*) {
     {% block AHKEcho %}
-    global STRINGRESPONSEMESSAGE
-    return FormatResponse(STRINGRESPONSEMESSAGE, command)
+    arg := args[1]
+    return FormatResponse("ahk.message.StringResponseMessage", arg)
     {% endblock AHKEcho %}
 }
 
-AHKTraytip(ByRef command) {
+AHKTraytip(args*) {
     {% block AHKTraytip %}
-    title := command[2]
-    text := command[3]
-    second := command[4]
-    option := command[5]
+    title := args[1]
+    text := args[2]
+    second := args[3]
+    option := args[4]
 
     TrayTip, %title%, %text%, %second%, %option%
     return FormatNoValueResponse()
     {% endblock AHKTraytip %}
 }
 
-AHKShowToolTip(ByRef command) {
+AHKShowToolTip(args*) {
     {% block AHKShowToolTip %}
-    text := command[2]
-    x := command[3]
-    y := command[4]
-    which := command[5]
+    text := args[1]
+    x := args[2]
+    y := args[3]
+    which := args[4]
     ToolTip, %text%, %x%, %y%, %which%
     return FormatNoValueResponse()
     {% endblock AHKShowToolTip %}
 }
 
-AHKGetClipboard(ByRef command) {
+AHKGetClipboard(args*) {
     {% block AHKGetClipboard %}
-    global STRINGRESPONSEMESSAGE
-    return FormatResponse(STRINGRESPONSEMESSAGE, Clipboard)
+
+    return FormatResponse("ahk.message.StringResponseMessage", Clipboard)
     {% endblock AHKGetClipboard %}
 }
 
-AHKGetClipboardAll(ByRef command) {
+AHKGetClipboardAll(args*) {
     {% block AHKGetClipboardAll %}
     data := ClipboardAll
     return FormatBinaryResponse(data)
     {% endblock AHKGetClipboardAll %}
 }
 
-AHKSetClipboard(ByRef command) {
+AHKSetClipboard(args*) {
     {% block AHKSetClipboard %}
-    text := command[2]
+    text := args[1]
     Clipboard := text
     return FormatNoValueResponse()
     {% endblock AHKSetClipboard %}
 }
 
-AHKSetClipboardAll(ByRef command) {
+AHKSetClipboardAll(args*) {
     {% block AHKSetClipboardAll %}
     ; TODO there should be a way for us to accept a base64 string instead
-    filename := command[2]
+    filename := args[1]
     FileRead, Clipboard, %filename%
     return FormatNoValueResponse()
     {% endblock AHKSetClipboardAll %}
 }
 
-AHKClipWait(ByRef command) {
-    global TIMEOUTRESPONSEMESSAGE
-    timeout := command[2]
-    wait_for_any_data := command[3]
+AHKClipWait(args*) {
 
+    timeout := args[1]
+    wait_for_any_data := args[2]
 
     ClipWait, %timeout%, %wait_for_any_data%
 
     if (ErrorLevel = 1) {
-        return FormatResponse(TIMEOUTRESPONSEMESSAGE, "timed out waiting for clipboard data")
+        return FormatResponse("ahk.message.TimeoutResponseMessage", "timed out waiting for clipboard data")
     }
     return FormatNoValueResponse()
 }
 
-AHKBlockInput(ByRef command) {
-    value := command[2]
+AHKBlockInput(args*) {
+    value := args[1]
     BlockInput, %value%
     return FormatNoValueResponse()
 }
 
-AHKMenuTrayTip(ByRef command) {
-    value := command[2]
+AHKMenuTrayTip(args*) {
+    value := args[1]
     Menu, Tray, Tip, %value%
     return FormatNoValueResponse()
 }
 
-AHKMenuTrayShow(ByRef command) {
+AHKMenuTrayShow(args*) {
     Menu, Tray, Icon
     return FormatNoValueResponse()
 }
 
-AHKMenuTrayIcon(ByRef command) {
-    filename := command[2]
-    icon_number := command[3]
-    freeze := command[4]
+AHKMenuTrayIcon(args*) {
+    filename := args[1]
+    icon_number := args[2]
+    freeze := args[3]
     Menu, Tray, Icon, %filename%, %icon_number%,%freeze%
     return FormatNoValueResponse()
 }
 
-AHKGuiNew(ByRef command) {
-    global STRINGRESPONSEMESSAGE
-    options := command[2]
-    title := command[3]
+AHKGuiNew(args*) {
+
+    options := args[1]
+    title := args[2]
     Gui, New, %options%, %title%
-    return FormatResponse(STRINGRESPONSEMESSAGE, hwnd)
+    return FormatResponse("ahk.message.StringResponseMessage", hwnd)
 }
 
-AHKMsgBox(ByRef command) {
-    global TIMEOUTRESPONSEMESSAGE
-    global STRINGRESPONSEMESSAGE
-    options := command[2]
-    title := command[3]
-    text := command[4]
-    timeout := command[5]
+AHKMsgBox(args*) {
+
+    options := args[1]
+    title := args[2]
+    text := args[3]
+    timeout := args[4]
     MsgBox,% options, %title%, %text%, %timeout%
     IfMsgBox, Yes
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Yes")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "Yes")
     IfMsgBox, No
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "No")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "No")
     IfMsgBox, OK
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "OK")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "OK")
     IfMsgBox, Cancel
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Cancel")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "Cancel")
     IfMsgBox, Abort
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Abort")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "Abort")
     IfMsgBox, Ignore
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Ignore")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "Ignore")
     IfMsgBox, Retry
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Retry")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "Retry")
     IfMsgBox, Continue
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "Continue")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "Continue")
     IfMsgBox, TryAgain
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, "TryAgain")
+        ret := FormatResponse("ahk.message.StringResponseMessage", "TryAgain")
     IfMsgBox, Timeout
-        ret := FormatResponse(TIMEOUTRESPONSEMESSAGE, "MsgBox timed out")
+        ret := FormatResponse("ahk.message.TimeoutResponseMessage", "MsgBox timed out")
     return ret
 }
 
-AHKInputBox(ByRef command) {
-    global STRINGRESPONSEMESSAGE
-    global TIMEOUTRESPONSEMESSAGE
-    title := command[2]
-    prompt := command[3]
-    hide := command[4]
-    width := command[5]
-    height := command[6]
-    x := command[7]
-    y := command[8]
-    locale := command[9]
-    timeout := command[10]
-    default := command[11]
+AHKInputBox(args*) {
+
+    title := args[1]
+    prompt := args[2]
+    hide := args[3]
+    width := args[4]
+    height := args[5]
+    x := args[6]
+    y := args[7]
+    locale := args[8]
+    timeout := args[9]
+    default := args[10]
 
     InputBox, output, %title%, %prompt%, %hide%, %width%, %height%, %x%, %y%, %locale%, %timeout%, %default%
     if (ErrorLevel = 2) {
-        ret := FormatResponse(TIMEOUTRESPONSEMESSAGE, "Input box timed out")
+        ret := FormatResponse("ahk.message.TimeoutResponseMessage", "Input box timed out")
     } else if (ErrorLevel = 1) {
         ret := FormatNoValueResponse()
     } else {
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        ret := FormatResponse("ahk.message.StringResponseMessage", output)
     }
     return ret
 }
 
-AHKFileSelectFile(byRef command) {
-    global STRINGRESPONSEMESSAGE
-    options := command[2]
-    root := command[3]
-    title := command[4]
-    filter := command[5]
+AHKFileSelectFile(byRef args) {
+
+    options := args[1]
+    root := args[2]
+    title := args[3]
+    filter := args[4]
     FileSelectFile, output, %options%, %root%, %title%, %filter%
     if (ErrorLevel = 1) {
         ret := FormatNoValueResponse()
     } else {
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        ret := FormatResponse("ahk.message.StringResponseMessage", output)
     }
     return ret
 }
 
-AHKFileSelectFolder(byRef command) {
-    global STRINGRESPONSEMESSAGE
-    starting_folder := command[2]
-    options := command[3]
-    prompt := command[4]
+AHKFileSelectFolder(byRef args) {
+
+    starting_folder := args[1]
+    options := args[2]
+    prompt := args[3]
 
     FileSelectFolder, output, %starting_folder%, %options%, %prompt%
 
     if (ErrorLevel = 1) {
         ret := FormatNoValueResponse()
     } else {
-        ret := FormatResponse(STRINGRESPONSEMESSAGE, output)
+        ret := FormatResponse("ahk.message.StringResponseMessage", output)
     }
     return ret
 }
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
+
+
 b64decode(ByRef pszString) {
-    ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
     ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
     ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.
@@ -2762,9 +2683,8 @@ b64decode(ByRef pszString) {
     pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
     pdwFlags := 0 ; We don't need this, so make it null
 
-
     ; The first call calculates the required size. The result is written to pbBinary
-    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    success := DllCall("Crypt32\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags)
     if (success = 0) {
         return ""
     }
@@ -2774,7 +2694,7 @@ b64decode(ByRef pszString) {
 
     ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
 
-    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "Ptr", &ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    success := DllCall("Crypt32\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "Ptr", &ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags)
     if (success=0) {
         return ""
     }
@@ -2790,7 +2710,6 @@ b64encode(ByRef data) {
     ;  [out, optional] LPSTR      pszString: A pointer to the string, or null (0) to calculate size
     ;  [in, out]       DWORD      *pcchString: A pointer to a DWORD variable that contains the size, in TCHARs, of the pszString buffer
 
-
     cbBinary := StrLen(data) * (A_IsUnicode ? 2 : 1)
     if (cbBinary = 0) {
         return ""
@@ -2804,19 +2723,17 @@ b64encode(ByRef data) {
         throw Exception(msg, -1)
     }
 
-
     VarSetCapacity(ret, buff_size * (A_IsUnicode ? 2 : 1))
 
     ; Now we do the conversion to base64 and rteturn the string
 
-    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", buff_size)
+    success := DllCall("Crypt32\CryptBinaryToString", "Ptr", &data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", buff_size)
     if (success = 0) {
         msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
         throw Exception(msg, -1)
     }
     return ret
 }
-
 
 ; End of included content
 
@@ -2833,7 +2750,12 @@ CommandArrayFromQuery(ByRef text) {
     return decoded_commands
 }
 
+; BEGIN extension scripts
+{% for ext in extensions %}
+{{ ext.script_text }}
 
+{% endfor %}
+; END extension scripts
 {% block before_autoexecute %}
 {% endblock before_autoexecute %}
 
@@ -2843,25 +2765,26 @@ pyresp := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
-    commandArray := CommandArrayFromQuery(query)
+    argsArray := CommandArrayFromQuery(query)
     try {
-        func := commandArray[1]
+        func := argsArray[1]
+        argsArray.RemoveAt(1)
         {% block before_function %}
         {% endblock before_function %}
-        pyresp := %func%(commandArray)
+        pyresp := %func%(argsArray*)
         {% block after_function %}
         {% endblock after_function %}
     } catch e {
         {% block function_error_handle %}
         message := Format("Error occurred in {}. The error message was: {}", e.What, e.message)
-        pyresp := FormatResponse(EXCEPTIONRESPONSEMESSAGE, message)
+        pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", message)
         {% endblock function_error_handle %}
     }
     {% block send_response %}
     if (pyresp) {
         FileAppend, %pyresp%, *, UTF-8
     } else {
-        msg := FormatResponse(EXCEPTIONRESPONSEMESSAGE, Format("Unknown Error when calling {}", func))
+        msg := FormatResponse("ahk.message.ExceptionResponseMessage", Format("Unknown Error when calling {}", func))
         FileAppend, %msg%, *, UTF-8
     }
     {% endblock send_response %}
@@ -2871,7 +2794,8 @@ Loop {
 
 """
 
-HOTKEYS_SCRIPT_TEMPLATE = r"""#Persistent
+HOTKEYS_SCRIPT_TEMPLATE = r"""#Requires AutoHotkey v1.1.17+
+#Persistent
 {% for directive in directives %}
 {% if directive.apply_to_hotkeys_process %}
 
@@ -2885,6 +2809,7 @@ OnClipboardChange("ClipChanged")
 KEEPALIVE := Chr(57344)
 SetTimer, keepalive, 1000
 
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
 b64decode(ByRef pszString) {
     ; TODO load DLL globally for performance
@@ -2969,5 +2894,2999 @@ ClipChanged(Type) {
 keepalive:
 global KEEPALIVE
 FileAppend, %KEEPALIVE%`n, *, UTF-8
+
+"""
+
+DAEMON_SCRIPT_V2_TEMPLATE = r"""{% block daemon_script %}
+{% block directives %}
+;#NoEnv
+#Requires Autohotkey >= 2.0-
+Persistent
+;#Warn All, Off
+#SingleInstance Off
+; BEGIN user-defined directives
+{% block user_directives %}
+{% for directive in directives %}
+{{ directive }}
+
+{% endfor %}
+
+; END user-defined directives
+{% endblock user_directives %}
+{% endblock directives %}
+
+Critical 100
+
+
+{% block message_types %}
+MESSAGE_TYPES := Map({% for tom, msg_class in message_registry.items() %}"{{ msg_class.fqn() }}", "{{ tom.decode('utf-8') }}"{% if not loop.last %}, {% endif %}{% endfor %})
+{% endblock message_types %}
+
+NOVALUE_SENTINEL := Chr(57344)
+
+StrCount(haystack, needle) {
+    StrReplace(haystack, needle, "",, &count)
+    return count
+}
+
+FormatResponse(MessageType, payload) {
+    global MESSAGE_TYPES
+    newline_count := StrCount(payload, "`n")
+    response := Format("{}`n{}`n{}`n", MESSAGE_TYPES[MessageType], newline_count, payload)
+    return response
+}
+
+FormatNoValueResponse() {
+    global NOVALUE_SENTINEL
+    return FormatResponse("ahk.message.NoValueResponseMessage", NOVALUE_SENTINEL)
+}
+
+FormatBinaryResponse(bin) {
+    b64 := b64encode(bin)
+    return FormatResponse("ahk.message.B64BinaryResponseMessage", b64)
+}
+
+AHKSetDetectHiddenWindows(args*) {
+    {% block AHKSetDetectHiddenWindows %}
+    value := args[1]
+    DetectHiddenWindows(value)
+    return FormatNoValueResponse()
+    {% endblock AHKSetDetectHiddenWindows %}
+}
+
+AHKSetTitleMatchMode(args*) {
+    {% block AHKSetTitleMatchMode %}
+    val1 := args[1]
+    val2 := args[2]
+    if (val1 != "") {
+        SetTitleMatchMode(val1)
+    }
+    if (val2 != "") {
+        SetTitleMatchMode(val2)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSetTitleMatchMode %}
+}
+
+AHKGetTitleMatchMode(args*) {
+    {% block AHKGetTitleMatchMode %}
+
+    return FormatResponse("ahk.message.StringResponseMessage", A_TitleMatchMode)
+    {% endblock AHKGetTitleMatchMode %}
+}
+
+AHKGetTitleMatchSpeed(args*) {
+    {% block AHKGetTitleMatchSpeed %}
+
+    return FormatResponse("ahk.message.StringResponseMessage", A_TitleMatchModeSpeed)
+    {% endblock AHKGetTitleMatchSpeed %}
+}
+
+AHKSetSendLevel(args*) {
+    {% block AHKSetSendLevel %}
+    level := args[1]
+    SendLevel(level)
+    return FormatNoValueResponse()
+    {% endblock AHKSetSendLevel %}
+}
+
+AHKGetSendLevel(args*) {
+    {% block AHKGetSendLevel %}
+
+    return FormatResponse("ahk.message.IntegerResponseMessage", A_SendLevel)
+    {% endblock AHKGetSendLevel %}
+}
+
+AHKWinExist(args*) {
+    {% block AHKWinExist %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    if WinExist(title, text, extitle, extext) {
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    } else {
+        resp := FormatResponse("ahk.message.BooleanResponseMessage", 0)
+    }
+
+    DetectHiddenWindows(current_detect_hw)
+    SetTitleMatchMode(current_match_mode)
+    SetTitleMatchMode(current_match_speed)
+
+    return resp
+    {% endblock AHKWinExist %}
+}
+
+AHKWinClose(args*) {
+    {% block AHKWinClose %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    secondstowait := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        if (secondstowait != "") {
+            WinClose(title, text, secondstowait, extitle, extext)
+        } else {
+            WinClose(title, text,, extitle, extext)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinClose %}
+}
+
+AHKWinKill(args*) {
+    {% block AHKWinKill %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    secondstowait := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        if (secondstowait != "") {
+            WinKill(title, text, secondstowait, extitle, extext)
+        } else {
+            WinKill(title, text,, extitle, extext)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinKill %}
+}
+
+AHKWinWait(args*) {
+    {% block AHKWinWait %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        if (timeout != "") {
+            output := WinWait(title, text, timeout, extitle, extext)
+            if (output = 0) {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
+            } else {
+                resp := resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+            }
+        } else {
+            output := WinWait(title, text,, extitle, extext)
+            resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return resp
+    {% endblock AHKWinWait %}
+}
+
+AHKWinWaitActive(args*) {
+    {% block AHKWinWaitActive %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        if (timeout != "") {
+            output := WinWaitActive(title, text, timeout, extitle, extext)
+            if (output = 0) {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWaitActive timed out waiting for the window")
+            } else {
+                resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+            }
+        } else {
+            output := WinWaitActive(title, text,, extitle, extext)
+            resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return resp
+    {% endblock AHKWinWaitActive %}
+}
+
+AHKWinWaitNotActive(args*) {
+    {% block AHKWinWaitNotActive %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        if (timeout != "") {
+            if (WinWaitNotActive(title, text, timeout, extitle, extext) = 1) {
+                output := WinGetID()
+                resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+            } else {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
+            }
+        } else {
+            WinWaitNotActive(title, text,, extitle, extext)
+            output := WinGetID()
+            resp := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return resp
+    {% endblock AHKWinWaitNotActive %}
+}
+
+AHKWinWaitClose(args*) {
+    {% block AHKWinWaitClose %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    timeout := args[8]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        if (timeout != "") {
+            if (WinWaitClose(title, text, timeout, extitle, extext) = 1) {
+                resp := FormatNoValueResponse()
+            } else {
+                resp := FormatResponse("ahk.message.TimeoutResponseMessage", "WinWait timed out waiting for window")
+            }
+        } else {
+            WinWaitClose(title, text,, extitle, extext)
+            resp := FormatNoValueResponse()
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return resp
+    {% endblock AHKWinWaitClose %}
+}
+
+AHKWinMinimize(args*) {
+    {% block AHKWinMinimize %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinMinimize(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinMinimize %}
+}
+
+AHKWinMaximize(args*) {
+    {% block AHKWinMaximize %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinMaximize(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinMaximize %}
+}
+
+AHKWinRestore(args*) {
+    {% block AHKWinRestore %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinRestore(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinRestore %}
+}
+
+AHKWinIsActive(args*) {
+    {% block AHKWinIsActive %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        if WinActive(title, text, extitle, extext) {
+            response := FormatResponse("ahk.message.BooleanResponseMessage", 1)
+        } else {
+            response := FormatResponse("ahk.message.BooleanResponseMessage", 0)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinIsActive %}
+}
+
+AHKWinGetID(args*) {
+    {% block AHKWinGetID %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        output := WinGetID(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetID %}
+}
+
+AHKWinGetTitle(args*) {
+    {% block AHKWinGetTitle %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        text := WinGetTitle(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatResponse("ahk.message.StringResponseMessage", text)
+    {% endblock AHKWinGetTitle %}
+}
+
+AHKWinGetIDLast(args*) {
+    {% block AHKWinGetIDLast %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        output := WinGetIDLast(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.WindowResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetIDLast %}
+}
+
+AHKWinGetPID(args*) {
+    {% block AHKWinGetPID %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        output := WinGetPID(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetPID %}
+}
+
+AHKWinGetProcessName(args*) {
+    {% block AHKWinGetProcessName %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        output := WinGetProcessName(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.StringResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetProcessName %}
+}
+
+AHKWinGetProcessPath(args*) {
+    {% block AHKWinGetProcessPath %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        output := WinGetProcessPath(title, text, extitle, extext)
+        if (output = 0 || output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.StringResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetProcessPath %}
+}
+
+AHKWinGetCount(args*) {
+    {% block AHKWinGetCount %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        output := WinGetCount(title, text, extitle, extext)
+        if (output = 0) {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        } else {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetCount %}
+}
+
+AHKWinGetMinMax(args*) {
+    {% block AHKWinGetMinMax %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        output := WinGetMinMax(title, text, extitle, extext)
+        if (output = "") {
+            response := FormatNoValueResponse()
+        } else {
+            response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetMinMax %}
+}
+
+AHKWinGetControlList(args*) {
+    {% block AHKWinGetControlList %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        ahkid := WinGetID(title, text, extitle, extext)
+        if (ahkid = "") {
+            return FormatNoValueResponse()
+        }
+        ctrList := WinGetControls(title, text, extitle, extext)
+        ctrListID := WinGetControlsHwnd(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    if (ctrListID = "") {
+        return FormatResponse("ahk.message.WindowControlListResponseMessage", Format("('{}', [])", ahkid))
+    }
+
+    if (ctrList.Length != ctrListID.Length) {
+        return FormatResponse("ahk.message.ExceptionResponseMessage", "Control hwnd/class lists have unexpected lengths")
+    }
+
+    output := Format("('{}', [", ahkid)
+
+    for index, hwnd in ctrListID {
+        classname := ctrList[index]
+        output .= Format("('{}', '{}'), ", hwnd, classname)
+
+    }
+    output .= "])"
+    response := FormatResponse("ahk.message.WindowControlListResponseMessage", output)
+    return response
+    {% endblock AHKWinGetControlList %}
+}
+
+AHKWinGetTransparent(args*) {
+    {% block AHKWinGetTransparent %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        output := WinGetTransparent(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.IntegerResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetTransparent %}
+}
+AHKWinGetTransColor(args*) {
+    {% block AHKWinGetTransColor %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        output := WinGetTransColor(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.NoValueResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetTransColor %}
+}
+AHKWinGetStyle(args*) {
+    {% block AHKWinGetStyle %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        output := WinGetStyle(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.NoValueResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetStyle %}
+}
+
+AHKWinGetExStyle(args*) {
+    {% block AHKWinGetExStyle %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        output := WinGetExStyle(title, text, extitle, extext)
+        response := FormatResponse("ahk.message.NoValueResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKWinGetExStyle %}
+}
+
+AHKWinGetText(args*) {
+    {% block AHKWinGetText %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        output := WinGetText(title,text,extitle,extext)
+        response := FormatResponse("ahk.message.StringResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+
+    return response
+    {% endblock AHKWinGetText %}
+}
+
+AHKWinSetTitle(args*) {
+    {% block AHKWinSetTitle %}
+    new_title := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinSetTitle(new_title, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetTitle %}
+}
+
+AHKWinSetAlwaysOnTop(args*) {
+    {% block AHKWinSetAlwaysOnTop %}
+    toggle := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    if (toggle = "On") {
+        toggle := 1
+    } else if (toggle = "Off") {
+        toggle := 0
+    } else if (toggle = "") {
+        toggle := 1
+    }
+
+    try {
+        WinSetAlwaysOnTop(toggle, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetAlwaysOnTop %}
+}
+
+AHKWinSetBottom(args*) {
+    {% block AHKWinSetBottom %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinMoveBottom(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetBottom %}
+}
+
+AHKWinShow(args*) {
+    {% block AHKWinShow %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinShow(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinShow %}
+}
+
+AHKWinHide(args*) {
+    {% block AHKWinHide %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinHide(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinHide %}
+}
+
+AHKWinSetTop(args*) {
+    {% block AHKWinSetTop %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinMoveTop(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetTop %}
+}
+
+AHKWinSetEnable(args*) {
+    {% block AHKWinSetEnable %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinSetEnabled(1, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetEnable %}
+}
+
+AHKWinSetDisable(args*) {
+    {% block AHKWinSetDisable %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinSetEnabled(0, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetDisable %}
+}
+
+AHKWinSetRedraw(args*) {
+    {% block AHKWinSetRedraw %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinRedraw(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetRedraw %}
+}
+
+AHKWinSetStyle(args*) {
+    {% block AHKWinSetStyle %}
+
+    style := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinSetStyle(style, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    {% endblock AHKWinSetStyle %}
+}
+
+AHKWinSetExStyle(args*) {
+    {% block AHKWinSetExStyle %}
+
+    style := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        WinSetExStyle(style, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    {% endblock AHKWinSetExStyle %}
+}
+
+AHKWinSetRegion(args*) {
+    {% block AHKWinSetRegion %}
+
+    options := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinSetRegion(options, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    {% endblock AHKWinSetRegion %}
+}
+
+AHKWinSetTransparent(args*) {
+    {% block AHKWinSetTransparent %}
+
+    transparency := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinSetTransparent(transparency, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetTransparent %}
+}
+
+AHKWinSetTransColor(args*) {
+    {% block AHKWinSetTransColor %}
+
+    color := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        WinSetTransColor(color, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinSetTransColor %}
+}
+
+AHKImageSearch(args*) {
+    {% block AHKImageSearch %}
+
+    imagepath := args[5]
+    x1 := args[1]
+    y1 := args[2]
+    x2 := args[3]
+    y2 := args[4]
+    coord_mode := args[6]
+
+    current_mode := Format("{}", A_CoordModePixel)
+
+    if (coord_mode != "") {
+        CoordMode("Pixel", coord_mode)
+    }
+
+    if (x2 = "A_ScreenWidth") {
+        x2 := A_ScreenWidth
+    }
+    if (y2 = "A_ScreenHeight") {
+        y2 := A_ScreenHeight
+    }
+
+    try {
+        if (ImageSearch(&xpos, &ypos, x1, y1, x2, y2, imagepath) = 1) {
+            s := FormatResponse("ahk.message.CoordinateResponseMessage", Format("({}, {})", xpos, ypos))
+        } else {
+            s := FormatNoValueResponse()
+        }
+    }
+    finally {
+        if (coord_mode != "") {
+            CoordMode("Pixel", current_mode)
+        }
+    }
+
+    return s
+    {% endblock AHKImageSearch %}
+}
+
+AHKPixelGetColor(args*) {
+    {% block AHKPixelGetColor %}
+
+    x := args[1]
+    y := args[2]
+    coord_mode := args[3]
+    options := args[4]
+
+    current_mode := Format("{}", A_CoordModePixel)
+
+    if (coord_mode != "") {
+        CoordMode("Pixel", coord_mode)
+    }
+
+    try {
+        color := PixelGetColor(x, y, options)
+    }
+    finally {
+        if (coord_mode != "") {
+            CoordMode("Pixel", current_mode)
+        }
+    }
+
+    return FormatResponse("ahk.message.StringResponseMessage", color)
+    {% endblock AHKPixelGetColor %}
+}
+
+AHKPixelSearch(args*) {
+    {% block AHKPixelSearch %}
+
+    x1 := args[1]
+    y1 := args[2]
+    x2 := args[3]
+    y2 := args[4]
+    color := args[5]
+    variation := args[6]
+    options := args[7]
+    coord_mode := args[8]
+
+    current_mode := Format("{}", A_CoordModePixel)
+
+    if (coord_mode != "") {
+        CoordMode("Pixel", coord_mode)
+    }
+    try {
+        if (PixelSearch(&resultx, &resulty, x1, y1, x2, y2, color, variation) = 1) {
+            payload := Format("({}, {})", resultx, resulty)
+            ret := FormatResponse("ahk.message.CoordinateResponseMessage", payload)
+        } else {
+            ret := FormatNoValueResponse()
+        }
+    }
+    finally {
+        if (coord_mode != "") {
+            CoordMode("Pixel", current_mode)
+        }
+    }
+
+    return ret
+
+    {% endblock AHKPixelSearch %}
+}
+
+AHKMouseGetPos(args*) {
+    {% block AHKMouseGetPos %}
+
+    coord_mode := args[1]
+    current_coord_mode := Format("{}", A_CoordModeMouse)
+    if (coord_mode != "") {
+        CoordMode("Mouse", coord_mode)
+    }
+    MouseGetPos(&xpos, &ypos)
+
+    payload := Format("({}, {})", xpos, ypos)
+    resp := FormatResponse("ahk.message.CoordinateResponseMessage", payload)
+
+    if (coord_mode != "") {
+        CoordMode("Mouse", current_coord_mode)
+    }
+
+    return resp
+    {% endblock AHKMouseGetPos %}
+}
+
+AHKKeyState(args*) {
+    {% block AHKKeyState %}
+
+    keyname := args[1]
+    mode := args[2]
+    if (mode != "") {
+        state := GetKeyState(keyname, mode)
+    } else{
+        state := GetKeyState(keyname)
+    }
+
+    if (state = "") {
+        return FormatNoValueResponse()
+    }
+
+    if IsInteger(state)
+        return FormatResponse("ahk.message.IntegerResponseMessage", state)
+
+    if IsFloat(state)
+        return FormatResponse("ahk.message.FloatResponseMessage", state)
+
+    if IsAlnum(state)
+        return FormatResponse("ahk.message.StringResponseMessage", state)
+
+    msg := Format("Unexpected key state {}", state)
+    return FormatResponse("ahk.message.ExceptionResponseMessage", msg)
+    {% endblock AHKKeyState %}
+}
+
+AHKMouseMove(args*) {
+    {% block AHKMouseMove %}
+    x := args[1]
+    y := args[2]
+    speed := args[3]
+    relative := args[4]
+    if (relative != "") {
+    MouseMove(x, y, speed, "R")
+    } else {
+    MouseMove(x, y, speed)
+    }
+    resp := FormatNoValueResponse()
+    return resp
+    {% endblock AHKMouseMove %}
+}
+
+AHKClick(args*) {
+    {% block AHKClick %}
+    x := args[1]
+    y := args[2]
+    button := args[3]
+    click_count := args[4]
+    direction := args[5]
+    r := args[6]
+    relative_to := args[7]
+    current_coord_rel := Format("{}", A_CoordModeMouse)
+
+    if (relative_to != "") {
+        CoordMode("Mouse", relative_to)
+    }
+
+    Click(x, y, button, direction, r)
+
+    if (relative_to != "") {
+        CoordMode("Mouse", current_coord_rel)
+    }
+
+    return FormatNoValueResponse()
+
+    {% endblock AHKClick %}
+}
+
+AHKGetCoordMode(args*) {
+    {% block AHKGetCoordMode %}
+
+    target := args[1]
+
+    if (target = "ToolTip") {
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeToolTip)
+    }
+    if (target = "Pixel") {
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModePixel)
+    }
+    if (target = "Mouse") {
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeMouse)
+    }
+    if (target = "Caret") {
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeCaret)
+    }
+    if (target = "Menu") {
+        return FormatResponse("ahk.message.StringResponseMessage", A_CoordModeMenu)
+    }
+    return FormatResponse("ahk.message.ExceptionResponseMessage", "Invalid coord mode")
+    {% endblock AHKGetCoordMode %}
+}
+
+AHKSetCoordMode(args*) {
+    {% block AHKSetCoordMode %}
+    target := args[1]
+    relative_to := args[2]
+    CoordMode(target, relative_to)
+
+    return FormatNoValueResponse()
+    {% endblock AHKSetCoordMode %}
+}
+
+AHKMouseClickDrag(args*) {
+    {% block AHKMouseClickDrag %}
+    button := args[1]
+    x1 := args[2]
+    y1 := args[3]
+    x2 := args[4]
+    y2 := args[5]
+    speed := args[6]
+    relative := args[7]
+    relative_to := args[8]
+
+    current_coord_rel := Format("{}", A_CoordModeMouse)
+
+    if (relative_to != "") {
+        CoordMode("Mouse", relative_to)
+    }
+
+    MouseClickDrag(button, x1, y1, x2, y2, speed, relative)
+
+    if (relative_to != "") {
+        CoordMode("Mouse", current_coord_rel)
+    }
+
+    return FormatNoValueResponse()
+
+    {% endblock AHKMouseClickDrag %}
+}
+
+AHKRegRead(args*) {
+    {% block RegRead %}
+
+    key_name := args[1]
+    value_name := args[2]
+
+    output := RegRead(key_name, value_name)
+    resp := FormatResponse("ahk.message.StringResponseMessage", Format("{}", output))
+    return resp
+    {% endblock RegRead %}
+}
+
+AHKRegWrite(args*) {
+    {% block RegWrite %}
+    value_type := args[1]
+    key_name := args[2]
+    value_name := args[3]
+    value := args[4]
+;    RegWrite(value_type, key_name, value_name, value)
+    if (value_name != "") {
+        RegWrite(value, value_type, key_name, value_name)
+    } else {
+        RegWrite(value, value_type, key_name)
+    }
+    return FormatNoValueResponse()
+    {% endblock RegWrite %}
+}
+
+AHKRegDelete(args*) {
+    {% block RegDelete %}
+
+    key_name := args[1]
+    value_name := args[2]
+    if (value_name != "") {
+        RegDelete(key_name, value_name)
+    } else {
+        RegDelete(key_name)
+    }
+    return FormatNoValueResponse()
+
+    {% endblock RegDelete %}
+}
+
+AHKKeyWait(args*) {
+    {% block AHKKeyWait %}
+
+    keyname := args[1]
+    if (args.Length = 2) {
+        ret := KeyWait(keyname)
+    } else {
+        options := args[2]
+        ret := KeyWait(keyname, options)
+    }
+    return FormatResponse("ahk.message.IntegerResponseMessage", ret)
+    {% endblock AHKKeyWait %}
+}
+
+;SetKeyDelay(args*) {
+;    {% block SetKeyDelay %}
+;    SetKeyDelay(args[1], args[2])
+;    {% endblock SetKeyDelay %}
+;}
+
+AHKSend(args*) {
+    {% block AHKSend %}
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(key_delay, key_press_duration)
+    }
+
+
+    Send(str)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(current_delay, current_key_duration)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSend %}
+}
+
+AHKSendRaw(args*) {
+    {% block AHKSendRaw %}
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(key_delay, key_press_duration)
+    }
+
+    Send("{Raw}" str)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(current_delay, current_key_duration)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSendRaw %}
+}
+
+AHKSendInput(args*) {
+    {% block AHKSendInput %}
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(key_delay, key_press_duration)
+    }
+
+    SendInput(str)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(current_delay, current_key_duration)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSendInput %}
+}
+
+AHKSendEvent(args*) {
+    {% block AHKSendEvent %}
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
+    current_delay := Format("{}", A_KeyDelay)
+    current_key_duration := Format("{}", A_KeyDuration)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(key_delay, key_press_duration)
+    }
+
+    SendEvent(str)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(current_delay, current_key_duration)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSendEvent %}
+}
+
+AHKSendPlay(args*) {
+    {% block AHKSendPlay %}
+    str := args[1]
+    key_delay := args[2]
+    key_press_duration := args[3]
+    current_delay := Format("{}", A_KeyDelayPlay)
+    current_key_duration := Format("{}", A_KeyDurationPlay)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(key_delay, key_press_duration, "Play")
+    }
+
+    SendPlay(str)
+
+    if (key_delay != "" or key_press_duration != "") {
+        SetKeyDelay(current_delay, current_key_duration)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSendPlay %}
+}
+
+AHKSetCapsLockState(args*) {
+    {% block AHKSetCapsLockState %}
+    state := args[1]
+    if (state = "") {
+        SetCapsLockState(!GetKeyState("CapsLock", "T"))
+    } else {
+        SetCapsLockState(state)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSetCapsLockState %}
+}
+
+HideTrayTip(args*) {
+    {% block HideTrayTip %}
+    TrayTip ; Attempt to hide it the normal way.
+    if SubStr(A_OSVersion,1,3) = "10." {
+        A_IconHidden := true
+        Sleep 200 ; It may be necessary to adjust this sleep.
+        A_IconHidden := false
+    }
+    {% endblock HideTrayTip %}
+}
+
+AHKWinGetClass(args*) {
+    {% block AHKWinGetClass %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        output := WinGetClass(title,text,extitle,extext)
+        response := FormatResponse("ahk.message.StringResponseMessage", output)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+
+    return response
+    {% endblock AHKWinGetClass %}
+}
+
+AHKWinActivate(args*) {
+    {% block AHKWinActivate %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        WinActivate(title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKWinActivate %}
+}
+
+AHKWindowList(args*) {
+    {% block AHKWindowList %}
+
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    if (detect_hw) {
+        DetectHiddenWindows(detect_hw)
+    }
+    try {
+        windows := WinGetList(title, text, extitle, extext)
+        r := ""
+        for id in windows
+        {
+            r .= id . "`,"
+        }
+        resp := FormatResponse("ahk.message.WindowListResponseMessage", r)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return resp
+    {% endblock AHKWindowList %}
+}
+
+AHKControlClick(args*) {
+    {% block AHKControlClick %}
+
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    button := args[4]
+    click_count := args[5]
+    options := args[6]
+    exclude_title := args[7]
+    exclude_text := args[8]
+    detect_hw := args[9]
+    match_mode := args[10]
+    match_speed := args[11]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        ControlClick(ctrl, title, text, button, click_count, options, exclude_title, exclude_text)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    response := FormatNoValueResponse()
+    return response
+    {% endblock AHKControlClick %}
+}
+
+AHKControlGetText(args*) {
+    {% block AHKControlGetText %}
+
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        result := ControlGetText(ctrl, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    response := FormatResponse("ahk.message.StringResponseMessage", result)
+
+    return response
+    {% endblock AHKControlGetText %}
+}
+
+AHKControlGetPos(args*) {
+    {% block AHKControlGetPos %}
+
+    ctrl := args[1]
+    title := args[2]
+    text := args[3]
+    extitle := args[4]
+    extext := args[5]
+    detect_hw := args[6]
+    match_mode := args[7]
+    match_speed := args[8]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        ControlGetPos(&x, &y, &w, &h, ctrl, title, text, extitle, extext)
+        result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
+        response := FormatResponse("ahk.message.PositionResponseMessage", result)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return response
+    {% endblock AHKControlGetPos %}
+}
+
+AHKControlSend(args*) {
+    {% block AHKControlSend %}
+    ctrl := args[1]
+    keys := args[2]
+    title := args[3]
+    text := args[4]
+    extitle := args[5]
+    extext := args[6]
+    detect_hw := args[7]
+    match_mode := args[8]
+    match_speed := args[9]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        if (ctrl != "") {
+            ControlSend(keys, ctrl, title, text, extitle, extext)
+        } else {
+            ControlSend(keys,, title, text, extitle, extext)
+        }
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKControlSend %}
+}
+
+AHKWinFromMouse(args*) {
+    {% block AHKWinFromMouse %}
+
+    MouseGetPos(,, &MouseWin)
+
+    if (MouseWin = "") {
+        return FormatNoValueResponse()
+    }
+
+    return FormatResponse("ahk.message.WindowResponseMessage", MouseWin)
+    {% endblock AHKWinFromMouse %}
+}
+
+AHKWinIsAlwaysOnTop(args*) {
+    {% block AHKWinIsAlwaysOnTop %}
+    ; TODO: detect hidden windows / etc?
+    title := args[1]
+    ExStyle := WinGetExStyle(title)
+    if (ExStyle = "")
+        return FormatNoValueResponse()
+
+    if (ExStyle & 0x8)  ; 0x8 is WS_EX_TOPMOST.
+        return FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    else
+        return FormatResponse("ahk.message.BooleanResponseMessage", 0)
+    {% endblock AHKWinIsAlwaysOnTop %}
+}
+
+AHKWinMove(args*) {
+    {% block AHKWinMove %}
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+    x := args[8]
+    y := args[9]
+    width := args[10]
+    height := args[11]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        WinMove(x, y, width, height, title, text, extitle, extext)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+    return FormatNoValueResponse()
+
+    {% endblock AHKWinMove %}
+}
+
+AHKWinGetPos(args*) {
+    {% block AHKWinGetPos %}
+
+    title := args[1]
+    text := args[2]
+    extitle := args[3]
+    extext := args[4]
+    detect_hw := args[5]
+    match_mode := args[6]
+    match_speed := args[7]
+
+    current_match_mode := Format("{}", A_TitleMatchMode)
+    current_match_speed := Format("{}", A_TitleMatchModeSpeed)
+    if (match_mode != "") {
+        SetTitleMatchMode(match_mode)
+    }
+    if (match_speed != "") {
+        SetTitleMatchMode(match_speed)
+    }
+    current_detect_hw := Format("{}", A_DetectHiddenWindows)
+
+    if (detect_hw != "") {
+        DetectHiddenWindows(detect_hw)
+    }
+
+    try {
+        WinGetPos(&x, &y, &w, &h, title, text, extitle, extext)
+        result := Format("({1:i}, {2:i}, {3:i}, {4:i})", x, y, w, h)
+        response := FormatResponse("ahk.message.PositionResponseMessage", result)
+    }
+    finally {
+        DetectHiddenWindows(current_detect_hw)
+        SetTitleMatchMode(current_match_mode)
+        SetTitleMatchMode(current_match_speed)
+    }
+
+    return response
+    {% endblock AHKWinGetPos %}
+}
+
+AHKGetVolume(args*) {
+    {% block AHKGetVolume %}
+
+    device_number := args[1]
+
+    retval := SoundGetVolume(,device_number)
+    response := FormatResponse("ahk.message.FloatResponseMessage", Format("{}", retval))
+    return response
+    {% endblock AHKGetVolume %}
+}
+
+AHKSoundBeep(args*) {
+    {% block AHKSoundBeep %}
+    freq := args[1]
+    duration := args[2]
+    SoundBeep(freq, duration)
+    return FormatNoValueResponse()
+    {% endblock AHKSoundBeep %}
+}
+
+AHKSoundGet(args*) {
+    {% block AHKSoundGet %}
+    return FormatResponse("ahk.message.ExceptionResponseMessage", "SoundGet is not supported in ahk v2")
+    {% endblock AHKSoundGet %}
+}
+
+AHKSoundSet(args*) {
+    {% block AHKSoundSet %}
+    return FormatResponse("ahk.message.ExceptionResponseMessage", "SoundSet is not supported in ahk v2")
+    {% endblock AHKSoundSet %}
+}
+
+AHKSoundPlay(args*) {
+    {% block AHKSoundPlay %}
+    filename := args[1]
+    SoundPlay(filename)
+    return FormatNoValueResponse()
+    {% endblock AHKSoundPlay %}
+}
+
+AHKSetVolume(args*) {
+    {% block AHKSetVolume %}
+    device_number := args[1]
+    value := args[2]
+    SoundSetVolume(value,,device_number)
+    return FormatNoValueResponse()
+    {% endblock AHKSetVolume %}
+}
+
+
+AHKEcho(args*) {
+    {% block AHKEcho %}
+    arg := args[1]
+    return FormatResponse("ahk.message.StringResponseMessage", arg)
+    {% endblock AHKEcho %}
+}
+
+AHKTraytip(args*) {
+    {% block AHKTraytip %}
+    title := args[1]
+    text := args[2]
+    second := args[3]
+    option := args[4]
+
+    TrayTip(title, text, option)
+    return FormatNoValueResponse()
+    {% endblock AHKTraytip %}
+}
+
+AHKShowToolTip(args*) {
+    {% block AHKShowToolTip %}
+    text := args[1]
+    x := args[2]
+    y := args[3]
+    which := args[4]
+    ToolTip(text, x, y, which)
+    return FormatNoValueResponse()
+    {% endblock AHKShowToolTip %}
+}
+
+AHKGetClipboard(args*) {
+    {% block AHKGetClipboard %}
+
+    return FormatResponse("ahk.message.StringResponseMessage", A_Clipboard)
+    {% endblock AHKGetClipboard %}
+}
+
+AHKGetClipboardAll(args*) {
+    {% block AHKGetClipboardAll %}
+    data := ClipboardAll()
+    return FormatBinaryResponse(&data)
+    {% endblock AHKGetClipboardAll %}
+}
+
+AHKSetClipboard(args*) {
+    {% block AHKSetClipboard %}
+    text := args[1]
+    A_Clipboard := text
+    return FormatNoValueResponse()
+    {% endblock AHKSetClipboard %}
+}
+
+AHKSetClipboardAll(args*) {
+    {% block AHKSetClipboardAll %}
+    ; TODO there should be a way for us to accept a base64 string instead
+    filename := args[1]
+    contents := FileRead(filename, "RAW")
+    A_Clipboard := ClipboardAll(contents)
+    return FormatNoValueResponse()
+    {% endblock AHKSetClipboardAll %}
+}
+
+AHKClipWait(args*) {
+
+    timeout := args[1]
+    wait_for_any_data := args[2]
+
+    if ClipWait(timeout, wait_for_any_data)
+        return FormatNoValueResponse()
+    else
+        return FormatResponse("ahk.message.TimeoutResponseMessage", "timed out waiting for clipboard data")
+    return FormatNoValueResponse()
+}
+
+AHKBlockInput(args*) {
+    value := args[1]
+    BlockInput(value)
+    return FormatNoValueResponse()
+}
+
+AHKMenuTrayTip(args*) {
+    value := args[1]
+    A_IconTip := value
+    return FormatNoValueResponse()
+}
+
+AHKMenuTrayShow(args*) {
+    A_IconHidden := 0
+    return FormatNoValueResponse()
+}
+
+AHKMenuTrayIcon(args*) {
+    filename := args[1]
+    icon_number := args[2]
+    freeze := args[3]
+    TraySetIcon(filename, icon_number, freeze)
+    return FormatNoValueResponse()
+}
+
+;AHKGuiNew(args*) {
+;
+;    options := args[1]
+;    title := args[2]
+;    Gui(New, options, title)
+;    return FormatResponse("ahk.message.StringResponseMessage", hwnd)
+;}
+
+AHKMsgBox(args*) {
+
+    options := args[1]
+    title := args[2]
+    text := args[3]
+    timeout := args[4]
+    if (timeout != "") {
+        options := "" options " T" timeout
+    }
+    res := MsgBox(text, title, options)
+    if (res = "Timeout") {
+        ret := FormatResponse("ahk.message.TimeoutResponseMessage", "MsgBox timed out")
+    } else {
+        ret := FormatResponse("ahk.message.StringResponseMessage", res)
+    }
+    return ret
+}
+
+AHKInputBox(args*) {
+
+    title := args[1]
+    prompt := args[2]
+    hide := args[3]
+    width := args[4]
+    height := args[5]
+    x := args[6]
+    y := args[7]
+    locale := args[8]
+    timeout := args[9]
+    default := args[10]
+
+    ; TODO: support options correctly
+    options := ""
+    if (timeout != "") {
+        options .= "T" timeout
+    }
+    output := InputBox(prompt, title, options, default)
+    if (output.Result = "Timeout") {
+        ret := FormatResponse("ahk.message.TimeoutResponseMessage", "Input box timed out")
+    } else if (output.Result = "Cancel") {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse("ahk.message.StringResponseMessage", output.Value)
+    }
+    return ret
+}
+
+AHKFileSelectFile(args*) {
+
+    options := args[1]
+    root := args[2]
+    title := args[3]
+    filter := args[4]
+    output := FileSelect(options, root, title, filter)
+    if (output = "") {
+        ret := FormatNoValueResponse()
+    } else {
+        if IsObject(output) {
+            if (output.Length = 0) {
+                ret := FormatNoValueResponse()
+            }
+            else {
+                files := ""
+                for index, filename in output
+                    if (A_Index != 1) {
+                        files .= "`n"
+                    }
+                    files .= filename
+                ret := FormatResponse("ahk.message.StringResponseMessage", files)
+            }
+        } else {
+            ret := FormatResponse("ahk.message.StringResponseMessage", output)
+        }
+    }
+    return ret
+}
+
+AHKFileSelectFolder(args*) {
+
+    starting_folder := args[1]
+    options := args[2]
+    prompt := args[3]
+
+    output := DirSelect(starting_folder, options, prompt)
+
+    if (output = "") {
+        ret := FormatNoValueResponse()
+    } else {
+        ret := FormatResponse("ahk.message.StringResponseMessage", output)
+    }
+    return ret
+}
+
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
+
+b64decode(&pszString) {
+    ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
+    ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
+    ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.
+    ;  [in]      DWORD  dwFlags,    Indicates the format of the string to be converted. (see table in link above)
+    ;  [in]      BYTE   *pbBinary,  A pointer to a buffer that receives the returned sequence of bytes. If this parameter is NULL, the function calculates the length of the buffer needed and returns the size, in bytes, of required memory in the DWORD pointed to by pcbBinary.
+    ;  [in, out] DWORD  *pcbBinary, A pointer to a DWORD variable that, on entry, contains the size, in bytes, of the pbBinary buffer. After the function returns, this variable contains the number of bytes copied to the buffer. If this value is not large enough to contain all of the data, the function fails and GetLastError returns ERROR_MORE_DATA.
+    ;  [out]     DWORD  *pdwSkip,   A pointer to a DWORD value that receives the number of characters skipped to reach the beginning of the -----BEGIN ...----- header. If no header is present, then the DWORD is set to zero. This parameter is optional and can be NULL if it is not needed.
+    ;  [out]     DWORD  *pdwFlags   A pointer to a DWORD value that receives the flags actually used in the conversion. These are the same flags used for the dwFlags parameter. In many cases, these will be the same flags that were passed in the dwFlags parameter. If dwFlags contains one of the following flags, this value will receive a flag that indicates the actual format of the string. This parameter is optional and can be NULL if it is not needed.
+
+    if (pszString = "") {
+        return ""
+    }
+
+    cchString := StrLen(pszString)
+
+    dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
+    getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
+;    buff_size := 0 ; The function will write to this variable on our first call
+    pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
+    pdwFlags := 0 ; We don't need this, so make it null
+
+    ; The first call calculates the required size. The result is written to pbBinary
+    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", &buff_size := 0, "Int", pdwSkip, "Int", pdwFlags )
+    if (success = 0) {
+        return ""
+    }
+
+    ; We're going to give a pointer to a variable to the next call, but first we want to make the buffer the correct size using VarSetCapacity using the previous return value
+    ret := Buffer(buff_size)
+
+    ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
+
+    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "Ptr", ret.Ptr, "UIntP", &buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    if (success=0) {
+        return ""
+    }
+    return StrGet(ret, "UTF-8")
+}
+
+
+b64encode(&data) {
+    ; REF: https://learn.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptbinarytostringa
+    ;  [in]            const BYTE *pbBinary: A pointer to the array of bytes to be converted into a string.
+    ;  [in]            DWORD      cbBinary: The number of elements in the pbBinary array.
+    ;  [in]            DWORD      dwFlags: Specifies the format of the resulting formatted string (see table in REF)
+    ;  [out, optional] LPSTR      pszString: A pointer to the string, or null (0) to calculate size
+    ;  [in, out]       DWORD      *pcchString: A pointer to a DWORD variable that contains the size, in TCHARs, of the pszString buffer
+
+    cbBinary := data.Size
+    if (cbBinary = 0) {
+        return ""
+    }
+    dwFlags := 0x00000001 | 0x40000000  ; CRYPT_STRING_BASE64 + CRYPT_STRING_NOCRLF
+
+    ; First step is to get the size so we can set the capacity of our return buffer correctly
+    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", data, "UInt", cbBinary, "UInt", dwFlags, "Ptr", 0, "UIntP", &buff_size := 0)
+    if (success = 0) {
+        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
+        throw Error(msg, -1)
+    }
+
+    VarSetStrCapacity(&ret, buff_size * 2)
+
+    ; Now we do the conversion to base64 and rteturn the string
+
+    success := DllCall("Crypt32.dll\CryptBinaryToString", "Ptr", data, "UInt", cbBinary, "UInt", dwFlags, "Str", ret, "UIntP", &buff_size)
+    if (success = 0) {
+        msg := Format("Problem converting data to base64 when calling CryptBinaryToString ({})", A_LastError)
+        throw Error(msg, -1)
+    }
+    return ret
+}
+
+
+CommandArrayFromQuery(text) {
+    decoded_commands := []
+    encoded_array := StrSplit(text, "|")
+    function_name := encoded_array[1]
+    encoded_array.RemoveAt(1)
+    decoded_commands.push(function_name)
+    for index, encoded_value in encoded_array {
+        decoded_value := b64decode(&encoded_value)
+        decoded_commands.push(decoded_value)
+    }
+    return decoded_commands
+}
+
+; BEGIN extension scripts
+{% for ext in extensions %}
+{{ ext.script_text }}
+
+{% endfor %}
+; END extension scripts
+{% block before_autoexecute %}
+{% endblock before_autoexecute %}
+
+{% block autoexecute %}
+stdin  := FileOpen("*", "r `n", "UTF-8")  ; Requires [v1.1.17+]
+stdout := FileOpen("*", "w", "UTF-8")
+pyresp := ""
+
+Loop {
+    query := RTrim(stdin.ReadLine(), "`n")
+    argsArray := CommandArrayFromQuery(query)
+    try {
+        func_name := argsArray[1]
+        argsArray.RemoveAt(1)
+        {% block before_function %}
+        {% endblock before_function %}
+        pyresp := %func_name%(argsArray*)
+        {% block after_function %}
+        {% endblock after_function %}
+    } catch Any as e {
+        {% block function_error_handle %}
+        message := Format("Error occurred in {} (line {}). The error message was: {}. Specifically: {}`nStack:`n{}", e.what, e.line, e.message, e.extra, e.stack)
+        pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", message)
+        {% endblock function_error_handle %}
+    }
+    {% block send_response %}
+    if (pyresp) {
+        stdout.Write(pyresp)
+        stdout.Read(0)
+    } else {
+        msg := FormatResponse("ahk.message.ExceptionResponseMessage", Format("Unknown Error when calling {}", func_name))
+        stdout.Write(msg)
+        stdout.Read(0)
+    }
+    {% endblock send_response %}
+}
+
+{% endblock autoexecute %}
+{% endblock daemon_script %}
+
+"""
+
+HOTKEYS_SCRIPT_V2_TEMPLATE = r"""#Requires AutoHotkey >= 2.0-
+{% for directive in directives %}
+{% if directive.apply_to_hotkeys_process %}
+
+{{ directive }}
+{% endif %}
+{% endfor %}
+
+
+KEEPALIVE := Chr(57344)
+;SetTimer, keepalive, 1000
+
+stdout := FileOpen("*", "w", "UTF-8")
+
+WriteStdout(s) {
+    global stdout
+    Critical "On"
+    stdout.Write(s)
+    stdout.Read(0)
+    Critical "Off"
+}
+
+Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
+
+b64decode(&pszString) {
+    ; TODO load DLL globally for performance
+    ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
+    ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
+    ;  [in]      DWORD  cchString,  The number of characters of the formatted string to be converted, not including the terminating NULL character. If this parameter is zero, pszString is considered to be a null-terminated string.
+    ;  [in]      DWORD  dwFlags,    Indicates the format of the string to be converted. (see table in link above)
+    ;  [in]      BYTE   *pbBinary,  A pointer to a buffer that receives the returned sequence of bytes. If this parameter is NULL, the function calculates the length of the buffer needed and returns the size, in bytes, of required memory in the DWORD pointed to by pcbBinary.
+    ;  [in, out] DWORD  *pcbBinary, A pointer to a DWORD variable that, on entry, contains the size, in bytes, of the pbBinary buffer. After the function returns, this variable contains the number of bytes copied to the buffer. If this value is not large enough to contain all of the data, the function fails and GetLastError returns ERROR_MORE_DATA.
+    ;  [out]     DWORD  *pdwSkip,   A pointer to a DWORD value that receives the number of characters skipped to reach the beginning of the -----BEGIN ...----- header. If no header is present, then the DWORD is set to zero. This parameter is optional and can be NULL if it is not needed.
+    ;  [out]     DWORD  *pdwFlags   A pointer to a DWORD value that receives the flags actually used in the conversion. These are the same flags used for the dwFlags parameter. In many cases, these will be the same flags that were passed in the dwFlags parameter. If dwFlags contains one of the following flags, this value will receive a flag that indicates the actual format of the string. This parameter is optional and can be NULL if it is not needed.
+
+    if (pszString = "") {
+        return ""
+    }
+
+    cchString := StrLen(pszString)
+
+    dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
+    getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
+;    buff_size := 0 ; The function will write to this variable on our first call
+    pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
+    pdwFlags := 0 ; We don't need this, so make it null
+
+    ; The first call calculates the required size. The result is written to pbBinary
+    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", &buff_size := 0, "Int", pdwSkip, "Int", pdwFlags )
+    if (success = 0) {
+        return ""
+    }
+
+    ; We're going to give a pointer to a variable to the next call, but first we want to make the buffer the correct size using VarSetCapacity using the previous return value
+    ret := Buffer(buff_size)
+
+    ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
+
+    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "Ptr", ret.Ptr, "UIntP", &buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    if (success=0) {
+        return ""
+    }
+    return StrGet(ret, "UTF-8")
+}
+
+
+
+{% for hotkey in hotkeys %}
+
+{{ hotkey.keyname }}::
+{
+    WriteStdout("{{ hotkey._id }}`n")
+    return
+}
+{% endfor %}
+
+{% for hotstring in hotstrings %}
+{% if hotstring.replacement %}
+:{{ hotstring.options }}:{{ hotstring.trigger }}::
+    hostring_{{ hotstring._id }}_func(hs) {
+        replacement_b64 := "{{ hotstring._replacement_as_b64 }}"
+        replacement := b64decode(&replacement_b64)
+        Send(replacement)
+    }
+{% else %}
+:{{ hotstring.options }}:{{ hotstring.trigger }}::
+    hostring_{{ hotstring._id }}_func(hs) {
+        WriteStdout("{{ hotstring._id }}`n")
+    }
+{% endif %}
+
+
+{% endfor %}
+
+{% if on_clipboard %}
+
+
+ClipChanged(Type) {
+    CLIPBOARD_SENTINEL := Chr(57345)
+    ret := Format("{}{}`n", CLIPBOARD_SENTINEL, Type)
+    WriteStdout(ret)
+    return
+}
+
+OnClipboardChange(ClipChanged)
+
+{% endif %}
+
+
+;keepalive:
+;global KEEPALIVE
+;FileAppend, %KEEPALIVE%`n, *, UTF-8
 
 """

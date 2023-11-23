@@ -17,6 +17,7 @@ ahk Python wrapper documentation
    quickstart
    README
    api/index
+   extending
 
 
 

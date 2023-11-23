@@ -33,3 +33,8 @@ class TestGui(unittest.TestCase):
         assert win is not None
         with pytest.raises(TimeoutError):
             r = box.result()
+
+
+class TestGuiV2(TestGui):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')

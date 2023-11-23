@@ -14,3 +14,4 @@ about the programming interface. This is largely auto-generated documentation.
    async
    methods
    directives
+   message

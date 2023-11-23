@@ -12,7 +12,7 @@ from ahk import Window
 sleep = time.sleep
 
 
-class TestWindowAsync(unittest.TestCase):
+class TestKeysAsync(unittest.TestCase):
     win: Window
 
     def setUp(self) -> None:
@@ -76,3 +76,13 @@ class TestWindowAsync(unittest.TestCase):
             self.ahk.send('btw ')
             sleep(1)
             m.assert_called()
+
+
+class TestKeysAsyncV2(TestKeysAsync):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
+        self.ahk.set_capslock_state('Off')

@@ -1,5 +1,6 @@
 import asyncio
 import os
+import pathlib
 import threading
 import time
 from itertools import product
@@ -43,7 +44,7 @@ class TestScreen(TestCase):
         self._show_in_thread()
         time.sleep(3)
         self.im.save('testimage.png')
-        position = self.ahk.image_search('testimage.png')
+        position = self.ahk.image_search(str(pathlib.Path('testimage.png').absolute()))
         assert isinstance(position, tuple)
 
     def test_pixel_search(self):
@@ -53,7 +54,7 @@ class TestScreen(TestCase):
         self._show_in_thread()
         time.sleep(3)
         self.im.save('testimage.png')
-        position = self.ahk.image_search('testimage.png')
+        position = self.ahk.image_search(str(pathlib.Path('testimage.png').absolute()))
         assert position is not None
         x, y = position
         color = self.ahk.pixel_get_color(x, y)
@@ -71,7 +72,7 @@ class TestScreen(TestCase):
         self._show_in_thread()
         time.sleep(3)
         self.im.save('testimage.png')
-        position = self.ahk.image_search('testimage.png', color_variation=50)
+        position = self.ahk.image_search(str(pathlib.Path('testimage.png').absolute()), color_variation=50)
         assert isinstance(position, tuple)
 
     # async def test_pixel_get_color(self):
@@ -79,3 +80,13 @@ class TestScreen(TestCase):
     #     result = await self.ahk.pixel_get_color(x, y)
     #     self.assertIsNotNone(result)
     #     self.assertEqual(int(result, 16), 0xFF0000)
+
+
+class TestScreenV2(TestScreen):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')
+        self.before_windows = self.ahk.list_windows()
+        self.im = Image.new('RGB', (20, 20))
+        for coord in product(range(20), range(20)):
+            self.im.putpixel(coord, (255, 0, 0))
+        time.sleep(1)

@@ -60,3 +60,40 @@ class TestScripts(unittest.TestCase):
         script = 'FileAppend, foo, *, UTF-8'
         fut = self.ahk.run_script(script, blocking=False)
         assert fut.result() == 'foo'
+
+
+class TestScriptsV2(TestScripts):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')
+
+    def test_run_script_text(self):
+        assert not self.ahk.win_exists(title='Untitled - Notepad')
+        script = 'stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foobar")\nstdout.Read(0)'
+        result = self.ahk.run_script(script)
+        assert result == 'foobar'
+
+    def test_run_script_file(self):
+        assert not self.ahk.win_exists(title='Untitled - Notepad')
+        with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False) as f:
+            f.write('stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foobar")\nstdout.Read(0)')
+        res = self.ahk.run_script(f.name)
+        assert res == 'foobar'
+
+    def test_run_script_file_unicode(self):
+        assert not self.ahk.win_exists(title='Untitled - Notepad')
+        subprocess.Popen('Notepad')
+        self.ahk.win_wait(title='Untitled - Notepad', timeout=3)
+        with tempfile.NamedTemporaryFile(suffix='.ahk', mode='w', delete=False, encoding='utf-8') as f:
+            f.write(
+                'WinActivate "Untitled - Notepad"\nSend "א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ"'
+            )
+        self.ahk.run_script(f.name)
+        notepad = self.ahk.win_wait(title='*Untitled - Notepad', timeout=3)
+        assert notepad is not None
+        text = notepad.get_text()
+        assert 'א ב ג ד ה ו ז ח ט י ך כ ל ם מ ן נ ס ע ף פ ץ צ ק ר ש ת װ ױ' in text
+
+    def test_run_script_nonblocking(self):
+        script = 'stdout := FileOpen("*", "w", "UTF-8")\nstdout.Write("foo")\nstdout.Read(0)'
+        fut = self.ahk.run_script(script, blocking=False)
+        assert fut.result() == 'foo'

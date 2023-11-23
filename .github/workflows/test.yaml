@@ -21,9 +21,9 @@ jobs:
           python -m pip install -r requirements-dev.txt
           python -m pip install .
           python -m pip install tox
-          python -m pip install ahk-binary
+          python -m pip install "ahk-binary==2023.9.0"
       - name: Test with coverage/pytest
-        timeout-minutes: 5
+        timeout-minutes: 10
         env:
           PYTHONUNBUFFERED: "1"
         run: |
@@ -31,6 +31,18 @@ jobs:
       - name: Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_PARALLEL: "true"
+          COVERALLS_SERVICE_JOB_ID: ${{ github.run_id }}
         run: |
           pip install --upgrade coveralls
           coveralls --service=github
+  finish:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: finish coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pip install --upgrade coveralls
+          coveralls --service=github --finish

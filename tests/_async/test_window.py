@@ -6,6 +6,10 @@ import time
 import tracemalloc
 from unittest import IsolatedAsyncioTestCase
 
+import pytest
+
+import ahk
+
 tracemalloc.start()
 
 from ahk import AsyncAHK
@@ -113,12 +117,12 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         assert await self.win.get_title() == 'Foo'
 
     async def test_control_send_window(self):
-        await self.win.send('hello world')
+        await self.win.send('hello world', control='Edit1')
         text = await self.win.get_text()
         assert 'hello world' in text
 
     async def test_send_literal_comma(self):
-        await self.win.send('hello, world')
+        await self.win.send('hello, world', control='Edit1')
         text = await self.win.get_text()
         assert 'hello, world' in text
 
@@ -129,9 +133,16 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         text = await self.win.get_text()
         assert '!' in text
 
+    async def test_send_input_manual_escapes(self):
+        await self.win.activate()
+        await self.ahk.send_input('Hello{Enter}World{!}')
+        time.sleep(0.4)
+        text = await self.win.get_text()
+        assert 'Hello\r\nWorld!' in text
+
     async def test_send_literal_tilde_n(self):
         expected_text = '```nim\nimport std/strformat\n```'
-        await self.win.send(expected_text)
+        await self.win.send(expected_text, control='Edit1')
         text = await self.win.get_text()
         assert '```nim' in text
         assert '\nimport std/strformat' in text
@@ -188,3 +199,16 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
     async def test_win_is_active(self):
         await self.win.activate()
         assert await self.win.is_active() is True
+
+
+class TestWindowAsyncV2(TestWindowAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = await self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
+
+    async def test_win_get_returns_none_nonexistent(self):
+        with pytest.raises(ahk.message.AHKExecutionException):
+            win = await self.ahk.win_get(title='DOES NOT EXIST')

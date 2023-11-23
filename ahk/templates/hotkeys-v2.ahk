@@ -1,5 +1,4 @@
-#Requires AutoHotkey v1.1.17+
-#Persistent
+#Requires AutoHotkey >= 2.0-
 {% for directive in directives %}
 {% if directive.apply_to_hotkeys_process %}
 
@@ -7,15 +6,23 @@
 {% endif %}
 {% endfor %}
 
-{% if on_clipboard %}
-OnClipboardChange("ClipChanged")
-{% endif %}
+
 KEEPALIVE := Chr(57344)
-SetTimer, keepalive, 1000
+;SetTimer, keepalive, 1000
+
+stdout := FileOpen("*", "w", "UTF-8")
+
+WriteStdout(s) {
+    global stdout
+    Critical "On"
+    stdout.Write(s)
+    stdout.Read(0)
+    Critical "Off"
+}
 
 Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
-b64decode(ByRef pszString) {
+b64decode(&pszString) {
     ; TODO load DLL globally for performance
     ; REF: https://docs.microsoft.com/en-us/windows/win32/api/wincrypt/nf-wincrypt-cryptstringtobinaryw
     ;  [in]      LPCSTR pszString,  A pointer to a string that contains the formatted string to be converted.
@@ -31,52 +38,54 @@ b64decode(ByRef pszString) {
     }
 
     cchString := StrLen(pszString)
+
     dwFlags := 0x00000001  ; CRYPT_STRING_BASE64: Base64, without headers.
     getsize := 0 ; When this is NULL, the function returns the required size in bytes (for our first call, which is needed for our subsequent call)
-    buff_size := 0 ; The function will write to this variable on our first call
+;    buff_size := 0 ; The function will write to this variable on our first call
     pdwSkip := 0 ; We don't use any headers or preamble, so this is zero
     pdwFlags := 0 ; We don't need this, so make it null
 
-
     ; The first call calculates the required size. The result is written to pbBinary
-    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    success := DllCall("Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "UInt", getsize, "UIntP", &buff_size := 0, "Int", pdwSkip, "Int", pdwFlags )
     if (success = 0) {
         return ""
     }
 
     ; We're going to give a pointer to a variable to the next call, but first we want to make the buffer the correct size using VarSetCapacity using the previous return value
-    VarSetCapacity(ret, buff_size, 0)
+    ret := Buffer(buff_size)
 
     ; Now that we know the buffer size we need and have the variable's capacity set to the proper size, we'll pass a pointer to the variable for the decoded value to be written to
 
-    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", &pszString, "UInt", cchString, "UInt", dwFlags, "Ptr", &ret, "UIntP", buff_size, "Int", pdwSkip, "Int", pdwFlags )
+    success := DllCall( "Crypt32.dll\CryptStringToBinary", "Ptr", StrPtr(pszString), "UInt", cchString, "UInt", dwFlags, "Ptr", ret.Ptr, "UIntP", &buff_size, "Int", pdwSkip, "Int", pdwFlags )
     if (success=0) {
         return ""
     }
-
-    return StrGet(&ret, "UTF-8")
+    return StrGet(ret, "UTF-8")
 }
+
+
 
 {% for hotkey in hotkeys %}
 
 {{ hotkey.keyname }}::
-    FileAppend, {{ hotkey._id }}`n, *, UTF-8
+{
+    WriteStdout("{{ hotkey._id }}`n")
     return
-
+}
 {% endfor %}
 
 {% for hotstring in hotstrings %}
 {% if hotstring.replacement %}
 :{{ hotstring.options }}:{{ hotstring.trigger }}::
-    hostring_{{ hotstring._id }}_func() {
+    hostring_{{ hotstring._id }}_func(hs) {
         replacement_b64 := "{{ hotstring._replacement_as_b64 }}"
-        replacement := b64decode(replacement_b64)
-        Send, %replacement%
+        replacement := b64decode(&replacement_b64)
+        Send(replacement)
     }
 {% else %}
 :{{ hotstring.options }}:{{ hotstring.trigger }}::
-    hostring_{{ hotstring._id }}_func() {
-        FileAppend, {{ hotstring._id }}`n, *, UTF-8
+    hostring_{{ hotstring._id }}_func(hs) {
+        WriteStdout("{{ hotstring._id }}`n")
     }
 {% endif %}
 
@@ -89,12 +98,15 @@ b64decode(ByRef pszString) {
 ClipChanged(Type) {
     CLIPBOARD_SENTINEL := Chr(57345)
     ret := Format("{}{}`n", CLIPBOARD_SENTINEL, Type)
-    FileAppend, %ret%, *, UTF-8
+    WriteStdout(ret)
     return
 }
+
+OnClipboardChange(ClipChanged)
+
 {% endif %}
 
 
-keepalive:
-global KEEPALIVE
-FileAppend, %KEEPALIVE%`n, *, UTF-8
+;keepalive:
+;global KEEPALIVE
+;FileAppend, %KEEPALIVE%`n, *, UTF-8

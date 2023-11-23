@@ -8,6 +8,12 @@ with open('ahk/templates/daemon.ahk') as f:
 with open('ahk/templates/hotkeys.ahk') as hotkeyfile:
     hotkey_script = hotkeyfile.read()
 
+with open('ahk/templates/daemon-v2.ahk') as fv2:
+    daemon_script_v2 = fv2.read()
+
+with open('ahk/templates/hotkeys-v2.ahk') as hotkeyfilev2:
+    hotkey_script_v2 = hotkeyfilev2.read()
+
 GIT_EXECUTABLE = shutil.which('git')
 
 if not GIT_EXECUTABLE:
@@ -21,6 +27,12 @@ DAEMON_SCRIPT_TEMPLATE = r"""{daemon_script}
 """
 
 HOTKEYS_SCRIPT_TEMPLATE = r"""{hotkey_script}
+"""
+
+DAEMON_SCRIPT_V2_TEMPLATE = r"""{daemon_script_v2}
+"""
+
+HOTKEYS_SCRIPT_V2_TEMPLATE = r"""{hotkey_script_v2}
 """
 '''
 

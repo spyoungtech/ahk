@@ -100,8 +100,11 @@ TOMS = tom_generator()
 
 
 class ResponseMessage:
-    type: Optional[str] = None
     _type_order_mark = next(TOMS)
+
+    @classmethod
+    def fqn(cls) -> str:
+        return f'{cls.__module__}.{cls.__qualname__}'
 
     @classmethod
     def __init_subclass__(cls: Type[T_ResponseMessageType], **kwargs: Any) -> None:
@@ -109,15 +112,14 @@ class ResponseMessage:
         cls._type_order_mark = tom
         assert tom not in _message_registry, f'cannot register class {cls!r} with TOM {tom!r} which is already in use'
         _message_registry[tom] = cls
-        assert cls.type is not None, f'must assign a type for class {cls!r}'
         super().__init_subclass__(**kwargs)
 
-    def __init__(self, raw_content: bytes, engine: Optional[Union[AsyncAHK, AHK]] = None):
+    def __init__(self, raw_content: bytes, engine: Optional[Union[AsyncAHK[Any], AHK[Any]]] = None):
         self._raw_content: bytes = raw_content
-        self._engine: Optional[Union[AsyncAHK, AHK]] = engine
+        self._engine: Optional[Union[AsyncAHK[Any], AHK[Any]]] = engine
 
     def __repr__(self) -> str:
-        return f'ResponseMessage<type={self.type!r}>'
+        return f'ResponseMessage<fqn={self.fqn()!r}>'
 
     @staticmethod
     def _tom_lookup(tom: bytes) -> 'ResponseMessageClassTypes':
@@ -128,7 +130,7 @@ class ResponseMessage:
 
     @classmethod
     def from_bytes(
-        cls: Type[T_ResponseMessageType], b: bytes, engine: Optional[Union[AsyncAHK, AHK]] = None
+        cls: Type[T_ResponseMessageType], b: bytes, engine: Optional[Union[AsyncAHK[Any], AHK[Any]]] = None
     ) -> 'ResponseMessageTypes':
         tom, _, message_bytes = b.split(b'\n', 2)
         klass = cls._tom_lookup(tom)
@@ -147,8 +149,6 @@ _message_registry: dict[bytes, 'ResponseMessageClassTypes'] = {}
 
 
 class TupleResponseMessage(ResponseMessage):
-    type = 'tuple'
-
     def unpack(self) -> Tuple[Any, ...]:
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
@@ -157,8 +157,6 @@ class TupleResponseMessage(ResponseMessage):
 
 
 class CoordinateResponseMessage(ResponseMessage):
-    type = 'coordinate'
-
     def unpack(self) -> Tuple[int, int]:
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
@@ -168,8 +166,6 @@ class CoordinateResponseMessage(ResponseMessage):
 
 
 class IntegerResponseMessage(ResponseMessage):
-    type = 'integer'
-
     def unpack(self) -> int:
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
@@ -178,8 +174,6 @@ class IntegerResponseMessage(ResponseMessage):
 
 
 class BooleanResponseMessage(IntegerResponseMessage):
-    type = 'boolean'
-
     def unpack(self) -> bool:
         val = super().unpack()
         assert val in (1, 0)
@@ -187,15 +181,11 @@ class BooleanResponseMessage(IntegerResponseMessage):
 
 
 class StringResponseMessage(ResponseMessage):
-    type = 'string'
-
     def unpack(self) -> str:
         return self._raw_content.decode('utf-8')
 
 
 class WindowListResponseMessage(ResponseMessage):
-    type = 'windowlist'
-
     def unpack(self) -> Union[List[Window], List[AsyncWindow]]:
         from ._async.engine import AsyncAHK
         from ._async.window import AsyncWindow
@@ -216,8 +206,6 @@ class WindowListResponseMessage(ResponseMessage):
 
 
 class NoValueResponseMessage(ResponseMessage):
-    type = 'novalue'
-
     def unpack(self) -> None:
         assert self._raw_content == b'\xee\x80\x80', f'Unexpected or Malformed response: {self._raw_content!r}'
         return None
@@ -228,7 +216,6 @@ class AHKExecutionException(Exception):
 
 
 class ExceptionResponseMessage(ResponseMessage):
-    type = 'exception'
     _exception_type: Type[Exception] = AHKExecutionException
 
     def unpack(self) -> NoReturn:
@@ -237,8 +224,6 @@ class ExceptionResponseMessage(ResponseMessage):
 
 
 class WindowControlListResponseMessage(ResponseMessage):
-    type = 'windowcontrollist'
-
     def unpack(self) -> Union[List[AsyncControl], List[Control]]:
         from ._async.engine import AsyncAHK
         from ._async.window import AsyncWindow, AsyncControl
@@ -272,8 +257,6 @@ class WindowControlListResponseMessage(ResponseMessage):
 
 
 class WindowResponseMessage(ResponseMessage):
-    type = 'window'
-
     def unpack(self) -> Union[Window, AsyncWindow]:
         from ._async.engine import AsyncAHK
         from ._async.window import AsyncWindow
@@ -293,8 +276,6 @@ class WindowResponseMessage(ResponseMessage):
 
 
 class PositionResponseMessage(TupleResponseMessage):
-    type = 'position'
-
     def unpack(self) -> Position:
         resp = super().unpack()
         if not len(resp) == 4:
@@ -304,8 +285,6 @@ class PositionResponseMessage(TupleResponseMessage):
 
 
 class FloatResponseMessage(ResponseMessage):
-    type = 'float'
-
     def unpack(self) -> float:
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
@@ -314,13 +293,10 @@ class FloatResponseMessage(ResponseMessage):
 
 
 class TimeoutResponseMessage(ExceptionResponseMessage):
-    type = 'timeoutexception'
     _exception_type = TimeoutError
 
 
 class B64BinaryResponseMessage(ResponseMessage):
-    type = 'binary'
-
     def unpack(self) -> bytes:
         b64_content = self._raw_content
         b = base64.b64decode(b64_content)

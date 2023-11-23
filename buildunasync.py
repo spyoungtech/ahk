@@ -17,7 +17,8 @@ build_py = unasync.cmdclass_build_py(
                 'a_send_nonblocking': 'send_nonblocking',
                 'async_sleep': 'sleep',
                 'AsyncFutureResult': 'FutureResult',
-                '_async_run_nonblocking': '_sync_run_nonblocking'
+                '_async_run_nonblocking': '_sync_run_nonblocking',
+                'acommunicate': 'communicate'
                 # "__aenter__": "__aenter__",
             },
         ),

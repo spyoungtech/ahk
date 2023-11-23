@@ -13,7 +13,7 @@ async_sleep = asyncio.sleep  # unasync: remove
 sleep = time.sleep
 
 
-class TestWindowAsync(unittest.IsolatedAsyncioTestCase):
+class TestKeysAsync(unittest.IsolatedAsyncioTestCase):
     win: AsyncWindow
 
     async def asyncSetUp(self) -> None:
@@ -77,3 +77,13 @@ class TestWindowAsync(unittest.IsolatedAsyncioTestCase):
             await self.ahk.send('btw ')
             await async_sleep(1)
             m.assert_called()
+
+
+class TestKeysAsyncV2(TestKeysAsync):
+    async def asyncSetUp(self) -> None:
+        self.ahk = AsyncAHK(version='v2')
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = await self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
+        await self.ahk.set_capslock_state('Off')

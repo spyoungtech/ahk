@@ -10,6 +10,7 @@ from typing import overload
 from typing import Sequence
 from typing import Tuple
 from typing import TYPE_CHECKING
+from typing import TypeVar
 from typing import Union
 
 from ahk.message import Position
@@ -45,16 +46,18 @@ _SETTERS_REMOVED_ERROR_MESSAGE = (
     'Use of the {0} property setter is not supported in the async API. Use the set_{0} instead.'
 )
 
+T_EngineVersion = TypeVar('T_EngineVersion', bound=Optional[Literal['v1', 'v2']])
+
 
 class AsyncWindow:
-    def __init__(self, engine: AsyncAHK, ahk_id: str):
-        self._engine: AsyncAHK = engine
+    def __init__(self, engine: AsyncAHK[T_EngineVersion], ahk_id: str):
+        self._engine: AsyncAHK[T_EngineVersion] = engine
         if not ahk_id:
             raise ValueError(f'Invalid ahk_id: {ahk_id!r}')
         self._ahk_id: str = ahk_id
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__qualname__} ahk_id={self._ahk_id}>'
+        return f'<{self.__class__.__qualname__} ahk_id={self._ahk_id!r}>'
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, AsyncWindow):
@@ -302,17 +305,20 @@ class AsyncWindow:
 
     # fmt: off
     @overload
-    async def send(self, keys: str) -> None: ...
+    async def send(self, keys: str, control: str = '') -> None: ...
     @overload
-    async def send(self, keys: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def send(self, keys: str, control: str = '', *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    async def send(self, keys: str, control: str = '', *, blocking: Literal[True]) -> None: ...
     @overload
-    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def send(self, keys: str, control: str = '', *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
-    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    async def send(
+        self, keys: str, control: str = '', *, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.control_send(
             keys=keys,
+            control=control,
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
@@ -378,10 +384,12 @@ class AsyncWindow:
     @overload
     async def get_position(self, *, blocking: Literal[True]) -> Position: ...
     @overload
-    async def get_position(self, *, blocking: bool = True) -> Union[Position, AsyncFutureResult[Optional[Position]]]: ...
+    async def get_position(self, *, blocking: bool = True) -> Union[Position, AsyncFutureResult[Optional[Position]], AsyncFutureResult[Position]]: ...
     # fmt: on
-    async def get_position(self, *, blocking: bool = True) -> Union[Position, AsyncFutureResult[Optional[Position]]]:
-        resp = await self._engine.win_get_position(
+    async def get_position(
+        self, *, blocking: bool = True
+    ) -> Union[Position, AsyncFutureResult[Optional[Position]], AsyncFutureResult[Position]]:
+        resp = await self._engine.win_get_position(  # type: ignore[misc] # this appears to be a mypy bug
             title=f'ahk_id {self._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
@@ -649,11 +657,11 @@ class AsyncWindow:
         )
 
     @classmethod
-    async def from_pid(cls, engine: AsyncAHK, pid: int) -> Optional[AsyncWindow]:
+    async def from_pid(cls, engine: AsyncAHK[Any], pid: int) -> Optional[AsyncWindow]:
         return await engine.win_get(title=f'ahk_pid {pid}')
 
     @classmethod
-    async def from_mouse_position(cls, engine: AsyncAHK) -> Optional[AsyncWindow]:
+    async def from_mouse_position(cls, engine: AsyncAHK[Any]) -> Optional[AsyncWindow]:
         return await engine.win_get_from_mouse_position()
 
 

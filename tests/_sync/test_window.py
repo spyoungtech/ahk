@@ -6,6 +6,10 @@ import time
 import tracemalloc
 from unittest import TestCase
 
+import pytest
+
+import ahk
+
 tracemalloc.start()
 
 from ahk import AHK
@@ -113,12 +117,12 @@ class TestWindowAsync(TestCase):
         assert self.win.get_title() == 'Foo'
 
     def test_control_send_window(self):
-        self.win.send('hello world')
+        self.win.send('hello world', control='Edit1')
         text = self.win.get_text()
         assert 'hello world' in text
 
     def test_send_literal_comma(self):
-        self.win.send('hello, world')
+        self.win.send('hello, world', control='Edit1')
         text = self.win.get_text()
         assert 'hello, world' in text
 
@@ -129,9 +133,16 @@ class TestWindowAsync(TestCase):
         text = self.win.get_text()
         assert '!' in text
 
+    def test_send_input_manual_escapes(self):
+        self.win.activate()
+        self.ahk.send_input('Hello{Enter}World{!}')
+        time.sleep(0.4)
+        text = self.win.get_text()
+        assert 'Hello\r\nWorld!' in text
+
     def test_send_literal_tilde_n(self):
         expected_text = '```nim\nimport std/strformat\n```'
-        self.win.send(expected_text)
+        self.win.send(expected_text, control='Edit1')
         text = self.win.get_text()
         assert '```nim' in text
         assert '\nimport std/strformat' in text
@@ -188,3 +199,16 @@ class TestWindowAsync(TestCase):
     def test_win_is_active(self):
         self.win.activate()
         assert self.win.is_active() is True
+
+
+class TestWindowAsyncV2(TestWindowAsync):
+    def setUp(self) -> None:
+        self.ahk = AHK(version='v2')
+        self.p = subprocess.Popen('notepad')
+        time.sleep(1)
+        self.win = self.ahk.win_get(title='Untitled - Notepad')
+        self.assertIsNotNone(self.win)
+
+    def test_win_get_returns_none_nonexistent(self):
+        with pytest.raises(ahk.message.AHKExecutionException):
+            win = self.ahk.win_get(title='DOES NOT EXIST')
