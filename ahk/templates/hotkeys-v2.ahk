@@ -8,9 +8,9 @@
 
 
 KEEPALIVE := Chr(57344)
-;SetTimer, keepalive, 1000
 
 stdout := FileOpen("*", "w", "UTF-8")
+stdin  := FileOpen("*", "r `n", "UTF-8")
 
 WriteStdout(s) {
     global stdout
@@ -105,8 +105,15 @@ ClipChanged(Type) {
 OnClipboardChange(ClipChanged)
 
 {% endif %}
+SetTimer KeepAliveFunc, 1000
 
-
-;keepalive:
-;global KEEPALIVE
-;FileAppend, %KEEPALIVE%`n, *, UTF-8
+KeepAliveFunc() {
+    global stdin
+    global KEEPALIVE
+    WriteStdout(Format("{}`n", KEEPALIVE))
+    alivesignal := RTrim(stdin.ReadLine(), "`n")
+    if (alivesignal = "") {
+        ExitApp
+    }
+    return
+}

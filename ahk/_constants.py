@@ -2806,6 +2806,7 @@ Loop {
 
 HOTKEYS_SCRIPT_TEMPLATE = r"""#Requires AutoHotkey v1.1.17+
 #Persistent
+#Warn
 {% for directive in directives %}
 {% if directive.apply_to_hotkeys_process %}
 
@@ -2817,6 +2818,7 @@ HOTKEYS_SCRIPT_TEMPLATE = r"""#Requires AutoHotkey v1.1.17+
 OnClipboardChange("ClipChanged")
 {% endif %}
 KEEPALIVE := Chr(57344)
+stdin  := FileOpen("*", "r `n", "UTF-8")
 SetTimer, keepalive, 1000
 
 Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
@@ -2902,8 +2904,14 @@ ClipChanged(Type) {
 
 
 keepalive:
-global KEEPALIVE
-FileAppend, %KEEPALIVE%`n, *, UTF-8
+    global KEEPALIVE
+    global stdin
+    FileAppend, %KEEPALIVE%`n, *, UTF-8
+    alivesignal := RTrim(stdin.ReadLine(), "`n")
+    if (alivesignal = "") {
+        ExitApp
+    }
+    return
 
 """
 
@@ -5805,9 +5813,9 @@ HOTKEYS_SCRIPT_V2_TEMPLATE = r"""#Requires AutoHotkey >= 2.0-
 
 
 KEEPALIVE := Chr(57344)
-;SetTimer, keepalive, 1000
 
 stdout := FileOpen("*", "w", "UTF-8")
+stdin  := FileOpen("*", "r `n", "UTF-8")
 
 WriteStdout(s) {
     global stdout
@@ -5902,10 +5910,17 @@ ClipChanged(Type) {
 OnClipboardChange(ClipChanged)
 
 {% endif %}
+SetTimer KeepAliveFunc, 1000
 
-
-;keepalive:
-;global KEEPALIVE
-;FileAppend, %KEEPALIVE%`n, *, UTF-8
+KeepAliveFunc() {
+    global stdin
+    global KEEPALIVE
+    WriteStdout(Format("{}`n", KEEPALIVE))
+    alivesignal := RTrim(stdin.ReadLine(), "`n")
+    if (alivesignal = "") {
+        ExitApp
+    }
+    return
+}
 
 """

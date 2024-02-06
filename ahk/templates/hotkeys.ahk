@@ -1,5 +1,6 @@
 #Requires AutoHotkey v1.1.17+
 #Persistent
+#Warn
 {% for directive in directives %}
 {% if directive.apply_to_hotkeys_process %}
 
@@ -11,6 +12,7 @@
 OnClipboardChange("ClipChanged")
 {% endif %}
 KEEPALIVE := Chr(57344)
+stdin  := FileOpen("*", "r `n", "UTF-8")
 SetTimer, keepalive, 1000
 
 Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
@@ -96,5 +98,11 @@ ClipChanged(Type) {
 
 
 keepalive:
-global KEEPALIVE
-FileAppend, %KEEPALIVE%`n, *, UTF-8
+    global KEEPALIVE
+    global stdin
+    FileAppend, %KEEPALIVE%`n, *, UTF-8
+    alivesignal := RTrim(stdin.ReadLine(), "`n")
+    if (alivesignal = "") {
+        ExitApp
+    }
+    return
