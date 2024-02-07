@@ -2756,6 +2756,7 @@ CommandArrayFromQuery(ByRef text) {
 
 {% endfor %}
 ; END extension scripts
+
 {% block before_autoexecute %}
 {% endblock before_autoexecute %}
 
@@ -2765,6 +2766,15 @@ pyresp := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
+    if (query = "") {
+        ; Technically this should only happen if the Python process has died, so sending a message is probably futile
+        ; But if this somehow triggers in some other case, we'll try to have an informative error raised.
+        pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", "Unexpected empty message; AHK exiting. This is likely a bug. Please report this issue at https://github.com/spyoungtech/ahk/issues")
+        FileAppend, %pyresp%, *, UTF-8
+
+        ; Exit to avoid leaving the process hanging around needlessly
+        ExitApp
+    }
     argsArray := CommandArrayFromQuery(query)
     try {
         func := argsArray[1]
@@ -2796,6 +2806,7 @@ Loop {
 
 HOTKEYS_SCRIPT_TEMPLATE = r"""#Requires AutoHotkey v1.1.17+
 #Persistent
+
 {% for directive in directives %}
 {% if directive.apply_to_hotkeys_process %}
 
@@ -2807,7 +2818,8 @@ HOTKEYS_SCRIPT_TEMPLATE = r"""#Requires AutoHotkey v1.1.17+
 OnClipboardChange("ClipChanged")
 {% endif %}
 KEEPALIVE := Chr(57344)
-SetTimer, keepalive, 1000
+stdin  := FileOpen("*", "r `n", "UTF-8")
+SetTimer, keepalive, 2000
 
 Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
@@ -2892,8 +2904,16 @@ ClipChanged(Type) {
 
 
 keepalive:
-global KEEPALIVE
-FileAppend, %KEEPALIVE%`n, *, UTF-8
+    global KEEPALIVE
+    global stdin
+    FileAppend, %KEEPALIVE%`n, *, UTF-8
+    alive_message := RTrim(stdin.ReadLine(), "`n")
+    if (alive_message != KEEPALIVE) {
+        ; The parent Python process has terminated unexpectedly
+        ; Exit to avoid leaving the hotkey process around
+        ExitApp
+    }
+    return
 
 """
 
@@ -5744,6 +5764,15 @@ pyresp := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
+    if (query = "") {
+        ; Technically, this should only happen if the Python process has died, so sending a message is probably futile
+        ; But if this somehow triggers in some other case and the Python process is still listening, we'll try to have an informative error raised.
+        pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", "Unexpected empty message; AHK exiting. This is likely a bug. Please report this issue at https://github.com/spyoungtech/ahk/issues")
+        stdout.Write(pyresp)
+        stdout.Read(0)
+        ; Exit to avoid leaving the process hanging around
+        ExitApp
+    }
     argsArray := CommandArrayFromQuery(query)
     try {
         func_name := argsArray[1]
@@ -5786,9 +5815,9 @@ HOTKEYS_SCRIPT_V2_TEMPLATE = r"""#Requires AutoHotkey >= 2.0-
 
 
 KEEPALIVE := Chr(57344)
-;SetTimer, keepalive, 1000
 
 stdout := FileOpen("*", "w", "UTF-8")
+stdin  := FileOpen("*", "r `n", "UTF-8")
 
 WriteStdout(s) {
     global stdout
@@ -5883,10 +5912,19 @@ ClipChanged(Type) {
 OnClipboardChange(ClipChanged)
 
 {% endif %}
+SetTimer KeepAliveFunc, 2000
 
-
-;keepalive:
-;global KEEPALIVE
-;FileAppend, %KEEPALIVE%`n, *, UTF-8
+KeepAliveFunc() {
+    global stdin
+    global KEEPALIVE
+    WriteStdout(Format("{}`n", KEEPALIVE))
+    alive_message := RTrim(stdin.ReadLine(), "`n")
+    if (alive_message != KEEPALIVE) {
+        ; The parent Python process has terminated unexpectedly
+        ; Exit to avoid leaving the hotkey process around
+        ExitApp
+    }
+    return
+}
 
 """

@@ -336,11 +336,14 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 stderr=subprocess.STDOUT,
             )
             atexit.register(kill, self._proc)
+            assert self._proc.stdout is not None
+            assert self._proc.stdin is not None
             while self._running:
-                assert self._proc.stdout is not None
                 line = self._proc.stdout.readline()
                 if line.rstrip(b'\n') == _KEEPALIVE_SENTINEL:
                     logging.debug('keepalive received')
+                    self._proc.stdin.write(b'\xee\x80\x80\n')
+                    self._proc.stdin.flush()
                     continue
                 if not line.strip():
                     logging.debug('Listener: Process probably died, exiting')

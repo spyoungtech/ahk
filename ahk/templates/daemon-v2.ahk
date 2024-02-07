@@ -2845,6 +2845,15 @@ pyresp := ""
 
 Loop {
     query := RTrim(stdin.ReadLine(), "`n")
+    if (query = "") {
+        ; Technically, this should only happen if the Python process has died, so sending a message is probably futile
+        ; But if this somehow triggers in some other case and the Python process is still listening, we'll try to have an informative error raised.
+        pyresp := FormatResponse("ahk.message.ExceptionResponseMessage", "Unexpected empty message; AHK exiting. This is likely a bug. Please report this issue at https://github.com/spyoungtech/ahk/issues")
+        stdout.Write(pyresp)
+        stdout.Read(0)
+        ; Exit to avoid leaving the process hanging around
+        ExitApp
+    }
     argsArray := CommandArrayFromQuery(query)
     try {
         func_name := argsArray[1]
