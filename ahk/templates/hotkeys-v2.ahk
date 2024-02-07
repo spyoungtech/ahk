@@ -105,14 +105,16 @@ ClipChanged(Type) {
 OnClipboardChange(ClipChanged)
 
 {% endif %}
-SetTimer KeepAliveFunc, 1000
+SetTimer KeepAliveFunc, 2000
 
 KeepAliveFunc() {
     global stdin
     global KEEPALIVE
     WriteStdout(Format("{}`n", KEEPALIVE))
-    alivesignal := RTrim(stdin.ReadLine(), "`n")
-    if (alivesignal = "") {
+    alive_message := RTrim(stdin.ReadLine(), "`n")
+    if (alive_message != KEEPALIVE) {
+        ; The parent Python process has terminated unexpectedly
+        ; Exit to avoid leaving the hotkey process around
         ExitApp
     }
     return

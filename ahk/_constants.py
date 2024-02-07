@@ -2806,7 +2806,7 @@ Loop {
 
 HOTKEYS_SCRIPT_TEMPLATE = r"""#Requires AutoHotkey v1.1.17+
 #Persistent
-#Warn
+
 {% for directive in directives %}
 {% if directive.apply_to_hotkeys_process %}
 
@@ -2819,7 +2819,7 @@ OnClipboardChange("ClipChanged")
 {% endif %}
 KEEPALIVE := Chr(57344)
 stdin  := FileOpen("*", "r `n", "UTF-8")
-SetTimer, keepalive, 1000
+SetTimer, keepalive, 2000
 
 Crypt32 := DllCall("LoadLibrary", "Str", "Crypt32.dll", "Ptr")
 
@@ -2907,8 +2907,10 @@ keepalive:
     global KEEPALIVE
     global stdin
     FileAppend, %KEEPALIVE%`n, *, UTF-8
-    alivesignal := RTrim(stdin.ReadLine(), "`n")
-    if (alivesignal = "") {
+    alive_message := RTrim(stdin.ReadLine(), "`n")
+    if (alive_message != KEEPALIVE) {
+        ; The parent Python process has terminated unexpectedly
+        ; Exit to avoid leaving the hotkey process around
         ExitApp
     }
     return
@@ -5910,14 +5912,16 @@ ClipChanged(Type) {
 OnClipboardChange(ClipChanged)
 
 {% endif %}
-SetTimer KeepAliveFunc, 1000
+SetTimer KeepAliveFunc, 2000
 
 KeepAliveFunc() {
     global stdin
     global KEEPALIVE
     WriteStdout(Format("{}`n", KEEPALIVE))
-    alivesignal := RTrim(stdin.ReadLine(), "`n")
-    if (alivesignal = "") {
+    alive_message := RTrim(stdin.ReadLine(), "`n")
+    if (alive_message != KEEPALIVE) {
+        ; The parent Python process has terminated unexpectedly
+        ; Exit to avoid leaving the hotkey process around
         ExitApp
     }
     return

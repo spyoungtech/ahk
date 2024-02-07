@@ -342,7 +342,7 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 line = self._proc.stdout.readline()
                 if line.rstrip(b'\n') == _KEEPALIVE_SENTINEL:
                     logging.debug('keepalive received')
-                    self._proc.stdin.write(b'alive\n')
+                    self._proc.stdin.write(b'\xee\x80\x80\n')
                     self._proc.stdin.flush()
                     continue
                 if not line.strip():
