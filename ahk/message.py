@@ -28,8 +28,7 @@ from typing import TypeVar
 from typing import Union
 
 
-class OutOfMessageTypes(Exception):
-    ...
+class OutOfMessageTypes(Exception): ...
 
 
 Position = namedtuple('Position', ('x', 'y', 'width', 'height'))
@@ -37,8 +36,7 @@ Position = namedtuple('Position', ('x', 'y', 'width', 'height'))
 
 @runtime_checkable
 class BytesLineReadable(Protocol):
-    def readline(self) -> bytes:
-        ...
+    def readline(self) -> bytes: ...
 
 
 def is_window_control_list_response(resp_obj: object) -> TypeGuard[Tuple[str, List[Tuple[str, str]]]]:

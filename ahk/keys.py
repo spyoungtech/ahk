@@ -115,8 +115,7 @@ class KeyCombo:
 
 @runtime_checkable
 class Stringable(Protocol):
-    def __str__(self) -> str:
-        ...
+    def __str__(self) -> str: ...
 
 
 class KeyModifier(Key):
