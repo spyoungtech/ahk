@@ -1,6 +1,3 @@
-"""
-Contains directive classes
-"""
 from types import SimpleNamespace
 from typing import Any
 from typing import NoReturn

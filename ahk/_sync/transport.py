@@ -57,8 +57,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 T_SyncFuture = TypeVar('T_SyncFuture')
 
 
-class AHKProtocolError(Exception):
-    ...
+class AHKProtocolError(Exception): ...
 
 
 
@@ -183,8 +182,7 @@ FunctionName = Literal[
 
 @runtime_checkable
 class Killable(Protocol):
-    def kill(self) -> None:
-        ...
+    def kill(self) -> None: ...
 
 
 def kill(proc: Killable) -> None:
@@ -205,13 +203,11 @@ def async_assert_send_nonblocking_type_correct(
 class Communicable(Protocol):
     runargs: List[str]
 
-    def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
-        ...
+    def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]: ...
 
 
     @property
-    def returncode(self) -> Optional[int]:
-        ...
+    def returncode(self) -> Optional[int]: ...
 
 
 class SyncAHKProcess:

@@ -31,7 +31,7 @@ repos:
     -   id: trailing-whitespace
     -   id: double-quote-string-fixer
 -   repo: https://github.com/psf/black
-    rev: '23.12.1'
+    rev: '24.2.0'
     hooks:
     -   id: black
         args:
@@ -60,5 +60,5 @@ repos:
     -   id: flake8
         args:
           - "--ignore"
-          - "E501,E704,E301,W503"
+          - "E501,E704,E301,W503,E701"
         files: ahk\/(?!_sync).*

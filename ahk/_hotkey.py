@@ -158,8 +158,7 @@ class HotkeyTransportBase(ABC):
             self.restart()
 
 
-class STOP:
-    ...
+class STOP: ...
 
 
 class ThreadedHotkeyTransport(HotkeyTransportBase):
@@ -453,8 +452,7 @@ class Hotstring:
 
 @runtime_checkable
 class Killable(Protocol):
-    def kill(self) -> None:
-        ...
+    def kill(self) -> None: ...
 
 
 def kill(proc: Killable) -> None:
