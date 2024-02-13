@@ -58,8 +58,7 @@ T_AsyncFuture = TypeVar('T_AsyncFuture')  # unasync: remove
 T_SyncFuture = TypeVar('T_SyncFuture')
 
 
-class AHKProtocolError(Exception):
-    ...
+class AHKProtocolError(Exception): ...
 
 
 class AsyncFutureResult(Generic[T_AsyncFuture]):  # unasync: remove
@@ -191,8 +190,7 @@ FunctionName = Literal[
 
 @runtime_checkable
 class Killable(Protocol):
-    def kill(self) -> None:
-        ...
+    def kill(self) -> None: ...
 
 
 def kill(proc: Killable) -> None:
@@ -213,17 +211,14 @@ def async_assert_send_nonblocking_type_correct(
 class Communicable(Protocol):
     runargs: List[str]
 
-    def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]:
-        ...
+    def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]: ...
 
     async def acommunicate(  # unasync: remove
         self, input_bytes: Optional[bytes], timeout: Optional[int] = None
-    ) -> Tuple[bytes, bytes]:
-        ...
+    ) -> Tuple[bytes, bytes]: ...
 
     @property
-    def returncode(self) -> Optional[int]:
-        ...
+    def returncode(self) -> Optional[int]: ...
 
 
 class AsyncAHKProcess:

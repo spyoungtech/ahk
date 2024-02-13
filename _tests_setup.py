@@ -1,7 +1,4 @@
-"""
-Not a real setup package
-This is just to unasync our tests files
-"""
+# Not a real setup package. This is just to unasync our tests files
 import setuptools
 import unasync
 

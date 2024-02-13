@@ -1,6 +1,3 @@
-"""
-The ahk.keys module contains some useful constants and classes for working with keys.
-"""
 from __future__ import annotations
 
 from typing import Any
@@ -115,8 +112,7 @@ class KeyCombo:
 
 @runtime_checkable
 class Stringable(Protocol):
-    def __str__(self) -> str:
-        ...
+    def __str__(self) -> str: ...
 
 
 class KeyModifier(Key):
