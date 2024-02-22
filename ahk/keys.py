@@ -24,7 +24,7 @@ class Key:
     @property
     def DOWN(self) -> str:
         nameLen = len(self.name)
-        if '{' == self.name[0] and nameLen > 1: # don't add extra curly brackets if already braced 
+        if '{' == self.name[0] and nameLen > 1:  # don't add extra curly brackets if already braced
             return f'{self.name[0:nameLen-1]} down' + '}'
         else:
             return '{' + f'{self.name} down' + '}'
@@ -32,7 +32,7 @@ class Key:
     @property
     def UP(self) -> str:
         nameLen = len(self.name)
-        if '{' == self.name[0] and nameLen > 1: # don't add extra curly brackets if already braced 
+        if '{' == self.name[0] and nameLen > 1:  # don't add extra curly brackets if already braced
             return f'{self.name[0:nameLen-1]} up' + '}'
         else:
             return '{' + f'{self.name} up' + '}'
