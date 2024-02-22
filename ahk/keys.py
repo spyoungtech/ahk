@@ -23,11 +23,19 @@ class Key:
 
     @property
     def DOWN(self) -> str:
-        return '{' + f'{self.name} down' + '}'
+        nameLen = len(self.name)
+        if '{' == self.name[0] and nameLen > 1: # don't add extra curly brackets if already braced 
+            return f'{self.name[0:nameLen-1]} down' + '}'
+        else:
+            return '{' + f'{self.name} down' + '}'
 
     @property
     def UP(self) -> str:
-        return '{' + f'{self.name} up' + '}'
+        nameLen = len(self.name)
+        if '{' == self.name[0] and nameLen > 1: # don't add extra curly brackets if already braced 
+            return f'{self.name[0:nameLen-1]} up' + '}'
+        else:
+            return '{' + f'{self.name} up' + '}'
 
     def __str__(self) -> str:
         return '{' + self.name + '}'
