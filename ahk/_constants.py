@@ -4815,7 +4815,17 @@ AHKMouseClickDrag(args*) {
         CoordMode("Mouse", relative_to)
     }
 
-    MouseClickDrag(button, x1, y1, x2, y2, speed, relative)
+    if (speed = "") {
+        speed := A_DefaultMouseSpeed
+    }
+
+    if (x1 = "" and y1 = "") {
+        MouseClickDrag(button, , , x2, y2, speed, relative)
+    }
+    else {
+        MouseClickDrag(button, x1, y1, x2, y2, speed, relative)
+    }
+
 
     if (relative_to != "") {
         CoordMode("Mouse", current_coord_rel)
