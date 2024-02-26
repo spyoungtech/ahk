@@ -2901,7 +2901,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         *,
         from_position: Optional[Tuple[int, int]] = None,
         speed: Optional[int] = None,
-        button: MouseButton = 1,
+        button: MouseButton = 'left',
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
@@ -2927,6 +2927,8 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
         if coord_mode:
             args.append(coord_mode)
+        else:
+            args.append('')
 
         await self._transport.function_call('AHKMouseClickDrag', args, blocking=blocking)
 
