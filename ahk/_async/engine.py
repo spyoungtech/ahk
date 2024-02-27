@@ -2901,7 +2901,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         *,
         from_position: Optional[Tuple[int, int]] = None,
         speed: Optional[int] = None,
-        button: MouseButton = 'left',
+        button: Optional[Union[MouseButton, str]] = None,
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
@@ -2909,6 +2909,10 @@ class AsyncAHK(Generic[T_AHKVersion]):
         """
         Analog for `MouseClickDrag <https://www.autohotkey.com/docs/commands/MouseClickDrag.htm>`_
         """
+        if button is None:
+            button = 'Left'
+        else:
+            button = _resolve_button(button)
         if from_position:
             x1, y1 = from_position
             args = [str(button), str(x1), str(y1), str(x), str(y)]
