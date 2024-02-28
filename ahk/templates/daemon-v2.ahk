@@ -2007,13 +2007,19 @@ AHKKeyWait(args*) {
     {% block AHKKeyWait %}
 
     keyname := args[1]
-    if (args.Length = 2) {
+    options := args[2]
+
+    if (options = "") {
         ret := KeyWait(keyname)
     } else {
-        options := args[2]
         ret := KeyWait(keyname, options)
     }
-    return FormatResponse("ahk.message.IntegerResponseMessage", ret)
+
+    if (ret = 0) {
+        return FormatResponse("ahk.message.BooleanResponseMessage", 0)
+    } else {
+        return FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    }
     {% endblock AHKKeyWait %}
 }
 

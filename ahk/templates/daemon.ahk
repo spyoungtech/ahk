@@ -1888,13 +1888,24 @@ AHKKeyWait(args*) {
     {% block AHKKeyWait %}
 
     keyname := args[1]
-    if (args.Length() = 2) {
+    options := args[2]
+
+    if (options = "") {
         KeyWait,% keyname
     } else {
-        options := args[2]
         KeyWait,% keyname,% options
     }
-    return FormatResponse("ahk.message.IntegerResponseMessage", ErrorLevel)
+    ret := ErrorLevel
+
+    if (ret = 1) {
+        return FormatResponse("ahk.message.BooleanResponseMessage", 0)
+    } else if (ret = 0) {
+        return FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    } else {
+        ; Unclear if this is even reachable
+        return FormatResponse("ahk.message.ExceptionResponseMessage", Format("There was a problem. ErrorLevel: {}", ret))
+    }
+
     {% endblock AHKKeyWait %}
 }
 

@@ -153,8 +153,10 @@ ahk.key_press('a')  # Press and release a key
 ahk.key_down('Control')  # Press down (but do not release) Control key
 ahk.key_up('Control')  # Release the key
 ahk.set_capslock_state("On")  # Turn CapsLock on
-ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be pressed. NOTE: This throws
-                              # a TimeoutError if the key isn't pressed within the timeout window
+if ahk.key_wait('x', timeout=3):  # wait for a key to be pressed; returns a boolean
+    print('X was pressed within 3 seconds')
+else:
+    print('X was not pressed within 3 seconds')
 ```
 
 ## Windows

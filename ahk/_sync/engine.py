@@ -370,6 +370,9 @@ class AHK(Generic[T_AHKVersion]):
         return resp
 
     def set_send_mode(self, mode: SendMode) -> None:
+        """
+        Analog for `SendMode <https://www.autohotkey.com/docs/v1/lib/SendMode.htm>`_
+        """
         args = [str(mode)]
         self._transport.function_call('AHKSetSendMode', args)
         return None
@@ -1114,13 +1117,13 @@ class AHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> int: ...
+    def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> bool: ...
     @overload
-    def key_wait(self, key_name: str, *, blocking: Literal[True], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> int: ...
+    def key_wait(self, key_name: str, *, blocking: Literal[True], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> bool: ...
     @overload
-    def key_wait(self, key_name: str, *, blocking: Literal[False], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> FutureResult[int]: ...
+    def key_wait(self, key_name: str, *, blocking: Literal[False], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> FutureResult[bool]: ...
     @overload
-    def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False, blocking: bool = True) -> Union[int, FutureResult[int]]: ...
+    def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False, blocking: bool = True) -> Union[bool, FutureResult[bool]]: ...
     # fmt: on
     def key_wait(
         self,
@@ -1130,7 +1133,7 @@ class AHK(Generic[T_AHKVersion]):
         logical_state: bool = False,
         released: bool = False,
         blocking: bool = True,
-    ) -> Union[int, FutureResult[int]]:
+    ) -> Union[bool, FutureResult[bool]]:
         """
         Analog for `KeyWait <https://www.autohotkey.com/docs/commands/KeyWait.htm>`_
         """
@@ -1139,11 +1142,10 @@ class AHK(Generic[T_AHKVersion]):
             options += 'D'
         if logical_state:
             options += 'L'
-        if timeout:
+        if timeout is not None:
+            assert timeout >= 0, 'Timeout value must be non-negative'
             options += f'T{timeout}'
-        args = [key_name]
-        if options:
-            args.append(options)
+        args = [key_name, options]
 
         resp = self._transport.function_call('AHKKeyWait', args, blocking=blocking)
         return resp
