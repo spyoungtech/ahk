@@ -82,8 +82,8 @@ Mouse and Keyboard
      - Implemented
      - :py:meth:`~ahk._sync.engine.AHK.set_send_level`
    * - `SendMode <https://www.autohotkey.com/docs/commands/SendMode.htm>`_
-     - Not Implemented
-     -
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.AHK.set_send_mode`
    * - `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
      - Implemented
      - :py:meth:`~ahk._sync.engine.AHK.set_capslock_state`
