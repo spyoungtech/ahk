@@ -95,6 +95,7 @@ FunctionName = Literal[
     'AHKGetClipboardAll',
     'AHKGetCoordMode',
     'AHKGetSendLevel',
+    'AHKGetSendMode',
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKGetVolume',
@@ -125,6 +126,7 @@ FunctionName = Literal[
     'AHKSetCoordMode',
     'AHKSetDetectHiddenWindows',
     'AHKSetSendLevel',
+    'AHKSetSendMode',
     'AHKSetTitleMatchMode',
     'AHKSetVolume',
     'AHKShowToolTip',
@@ -539,6 +541,10 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKSetCoordMode'], args: List[str]) -> None: ...
     @overload
     async def function_call(self, function_name: Literal['AHKGetSendLevel']) -> int: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKSetSendMode'], args: List[str]) -> None: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKGetSendMode']) -> str: ...
     @overload
     async def function_call(self, function_name: Literal['AHKSetSendLevel'], args: List[str]) -> None: ...
     @overload

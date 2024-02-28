@@ -1725,13 +1725,24 @@ AHKClick(args*) {
     direction := args[5]
     r := args[6]
     relative_to := args[7]
+    send_mode := args[8]
     current_coord_rel := Format("{}", A_CoordModeMouse)
+    current_send_mode := Format("{}", A_SendMode)
+
+    if (send_mode != "") {
+        SendMode, %send_mode%
+    }
 
     if (relative_to != "") {
         CoordMode, Mouse, %relative_to%
     }
 
+
     Click, %x%, %y%, %button%, %direction%, %r%
+
+   if (send_mode != "") {
+        SendMode, %current_send_mode%
+    }
 
     if (relative_to != "") {
         CoordMode, Mouse, %current_coord_rel%
@@ -1776,6 +1787,18 @@ AHKSetCoordMode(args*) {
     {% endblock AHKSetCoordMode %}
 }
 
+AHKGetSendMode(args*) {
+    return FormatResponse("ahk.message.StringResponseMessage", A_SendMode)
+}
+
+
+AHKSetSendMode(args*) {
+    mode := args[1]
+    SendMode, %mode%
+    return FormatNoValueResponse()
+}
+
+
 AHKMouseClickDrag(args*) {
     {% block AHKMouseClickDrag %}
     button := args[1]
@@ -1786,6 +1809,11 @@ AHKMouseClickDrag(args*) {
     speed := args[6]
     relative := args[7]
     relative_to := args[8]
+    send_mode := args[8]
+    current_send_mode := Format("{}", A_SendMode)
+   if (send_mode != "") {
+        SendMode, %send_mode%
+    }
 
     current_coord_rel := Format("{}", A_CoordModeMouse)
 
@@ -1797,6 +1825,10 @@ AHKMouseClickDrag(args*) {
 
     if (relative_to != "") {
         CoordMode, Mouse, %current_coord_rel%
+    }
+
+   if (send_mode != "") {
+        SendMode, %current_send_mode%
     }
 
     return FormatNoValueResponse()
@@ -1877,11 +1909,17 @@ AHKSend(args*) {
     str := args[1]
     key_delay := args[2]
     key_press_duration := args[3]
+    send_mode := args[4]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
+    current_send_mode := Format("{}", A_SendMode)
 
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay, %key_delay%, %key_press_duration%
+    }
+
+    if (send_mode != "") {
+        SendMode, %send_mode%
     }
 
     Send,% str
@@ -1889,6 +1927,11 @@ AHKSend(args*) {
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay, %current_delay%, %current_key_duration%
     }
+
+   if (send_mode != "") {
+        SendMode, %current_send_mode%
+    }
+
     return FormatNoValueResponse()
     {% endblock AHKSend %}
 }
@@ -1898,11 +1941,18 @@ AHKSendRaw(args*) {
     str := args[1]
     key_delay := args[2]
     key_press_duration := args[3]
+    send_mode := args[4]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
+    current_send_mode := Format("{}", A_SendMode)
+
 
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay, %key_delay%, %key_press_duration%
+    }
+
+    if (send_mode != "") {
+        SendMode, %send_mode%
     }
 
     SendRaw,% str
@@ -1910,6 +1960,11 @@ AHKSendRaw(args*) {
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay, %current_delay%, %current_key_duration%
     }
+
+    if (send_mode != "") {
+        SendMode, %current_send_mode%
+    }
+
     return FormatNoValueResponse()
     {% endblock AHKSendRaw %}
 }
