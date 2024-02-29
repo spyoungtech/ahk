@@ -2911,61 +2911,16 @@ class AHK(Generic[T_AHKVersion]):
         resp = self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
 
+    # fmt: off
     @overload
-    def mouse_drag(
-        self,
-        x: int,
-        y: int,
-        *,
-        from_position: Optional[Tuple[int, int]] = None,
-        speed: Optional[int] = None,
-        button: Optional[Union[MouseButton, str]] = None,
-        relative: Optional[bool] = None,
-        coord_mode: Optional[CoordModeRelativeTo] = None,
-        send_mode: Optional[SendMode] = None,
-    ) -> None: ...
+    def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    def mouse_drag(
-        self,
-        x: int,
-        y: int,
-        *,
-        from_position: Optional[Tuple[int, int]] = None,
-        speed: Optional[int] = None,
-        button: Optional[Union[MouseButton, str]] = None,
-        relative: Optional[bool] = None,
-        coord_mode: Optional[CoordModeRelativeTo] = None,
-        send_mode: Optional[SendMode] = None,
-        blocking: Literal[False],
-    ) -> FutureResult[None]: ...
+    def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def mouse_drag(
-        self,
-        x: int,
-        y: int,
-        *,
-        from_position: Optional[Tuple[int, int]] = None,
-        speed: Optional[int] = None,
-        button: Optional[Union[MouseButton, str]] = None,
-        relative: Optional[bool] = None,
-        coord_mode: Optional[CoordModeRelativeTo] = None,
-        send_mode: Optional[SendMode] = None,
-        blocking: Literal[True],
-    ) -> None: ...
+    def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None, blocking: Literal[True]) -> None: ...
     @overload
-    def mouse_drag(
-        self,
-        x: int,
-        y: int,
-        *,
-        from_position: Optional[Tuple[int, int]] = None,
-        speed: Optional[int] = None,
-        button: Optional[Union[MouseButton, str]] = None,
-        relative: Optional[bool] = None,
-        blocking: bool = True,
-        coord_mode: Optional[CoordModeRelativeTo] = None,
-        send_mode: Optional[SendMode] = None,
-    ) -> Union[None, FutureResult[None]]: ...
+    def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
     def mouse_drag(
         self,
         x: int,
