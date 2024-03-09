@@ -82,8 +82,8 @@ Mouse and Keyboard
      - Implemented
      - :py:meth:`~ahk._sync.engine.AHK.set_send_level`
    * - `SendMode <https://www.autohotkey.com/docs/commands/SendMode.htm>`_
-     - Not Implemented
-     -
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.AHK.set_send_mode`
    * - `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
      - Implemented
      - :py:meth:`~ahk._sync.engine.AHK.set_capslock_state`
@@ -534,7 +534,7 @@ For example, to use the :py:class:`~ahk.directives.NoTrayIcon` directive
    * - `#MenuMaskKey <https://www.autohotkey.com/docs/commands/_MenuMaskKey.htm>`_
      -
    * - `#NoEnv <https://www.autohotkey.com/docs/commands/_NoEnv.htm>`_
-     -
+     - Removed in ``ahk`` v1.0.0 -- Used by default when using AutoHotkey v1. Not available in AutoHotkey v2.
    * - `#NoTrayIcon <https://www.autohotkey.com/docs/commands/_NoTrayIcon.htm>`_
      - If you use hotkeys or hotstrings, you probably also want to configure this as a hotkey transport option
    * - `#Persistent <https://www.autohotkey.com/docs/commands/_Persistent.htm>`_

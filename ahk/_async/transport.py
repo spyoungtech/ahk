@@ -95,6 +95,7 @@ FunctionName = Literal[
     'AHKGetClipboardAll',
     'AHKGetCoordMode',
     'AHKGetSendLevel',
+    'AHKGetSendMode',
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKGetVolume',
@@ -125,6 +126,7 @@ FunctionName = Literal[
     'AHKSetCoordMode',
     'AHKSetDetectHiddenWindows',
     'AHKSetSendLevel',
+    'AHKSetSendMode',
     'AHKSetTitleMatchMode',
     'AHKSetVolume',
     'AHKShowToolTip',
@@ -422,7 +424,7 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKMouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
-    async def function_call(self, function_name: Literal['AHKKeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[int, AsyncFutureResult[int]]: ...
+    async def function_call(self, function_name: Literal['AHKKeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[bool, AsyncFutureResult[bool]]: ...
     @overload
     async def function_call(self, function_name: Literal['SetKeyDelay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[None, AsyncFutureResult[None]]: ...
     @overload
@@ -539,6 +541,10 @@ class AsyncTransport(ABC):
     async def function_call(self, function_name: Literal['AHKSetCoordMode'], args: List[str]) -> None: ...
     @overload
     async def function_call(self, function_name: Literal['AHKGetSendLevel']) -> int: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKSetSendMode'], args: List[str]) -> None: ...
+    @overload
+    async def function_call(self, function_name: Literal['AHKGetSendMode']) -> str: ...
     @overload
     async def function_call(self, function_name: Literal['AHKSetSendLevel'], args: List[str]) -> None: ...
     @overload

@@ -109,6 +109,8 @@ MouseButton: TypeAlias = Union[
     ],
 ]
 
+SendMode: TypeAlias = Literal['Event', 'Input', 'InputThenPlay', 'Play', '']
+
 AsyncPropertyReturnTupleIntInt: TypeAlias = Coroutine[None, None, Tuple[int, int]]  # unasync: remove
 SyncPropertyReturnTupleIntInt: TypeAlias = Tuple[int, int]
 
@@ -370,6 +372,18 @@ class AsyncAHK(Generic[T_AHKVersion]):
         """
         args = [str(target)]
         resp = await self._transport.function_call('AHKGetCoordMode', args)
+        return resp
+
+    async def set_send_mode(self, mode: SendMode) -> None:
+        """
+        Analog for `SendMode <https://www.autohotkey.com/docs/v1/lib/SendMode.htm>`_
+        """
+        args = [str(mode)]
+        await self._transport.function_call('AHKSetSendMode', args)
+        return None
+
+    async def get_send_mode(self) -> str:
+        resp = await self._transport.function_call('AHKGetSendMode')
         return resp
 
     # fmt: off
@@ -769,13 +783,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False) -> None: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[True], speed: Optional[int] = None, relative: bool = False) -> None: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[True], speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[False], speed: Optional[int] = None, relative: bool = False, ) -> AsyncFutureResult[None]: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[False], speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None) -> AsyncFutureResult[None]: ...
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False, blocking: bool = True, send_mode: Optional[SendMode] = None) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def mouse_move(
         self,
@@ -784,6 +798,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         *,
         speed: Optional[int] = None,
         relative: bool = False,
+        send_mode: Optional[SendMode] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         """
@@ -804,6 +819,11 @@ class AsyncAHK(Generic[T_AHKVersion]):
             args.append('R')
         else:
             args.append('')
+        if send_mode:
+            args.append(send_mode)
+        else:
+            args.append('')
+
         resp = await self._transport.function_call('AHKMouseMove', args, blocking=blocking)
         return resp
 
@@ -1109,13 +1129,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> int: ...
+    async def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> bool: ...
     @overload
-    async def key_wait(self, key_name: str, *, blocking: Literal[True], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> int: ...
+    async def key_wait(self, key_name: str, *, blocking: Literal[True], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> bool: ...
     @overload
-    async def key_wait(self, key_name: str, *, blocking: Literal[False], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> AsyncFutureResult[int]: ...
+    async def key_wait(self, key_name: str, *, blocking: Literal[False], timeout: Optional[int] = None, logical_state: bool = False, released: bool = False) -> AsyncFutureResult[bool]: ...
     @overload
-    async def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False, blocking: bool = True) -> Union[int, AsyncFutureResult[int]]: ...
+    async def key_wait(self, key_name: str, *, timeout: Optional[int] = None, logical_state: bool = False, released: bool = False, blocking: bool = True) -> Union[bool, AsyncFutureResult[bool]]: ...
     # fmt: on
     async def key_wait(
         self,
@@ -1125,7 +1145,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         logical_state: bool = False,
         released: bool = False,
         blocking: bool = True,
-    ) -> Union[int, AsyncFutureResult[int]]:
+    ) -> Union[bool, AsyncFutureResult[bool]]:
         """
         Analog for `KeyWait <https://www.autohotkey.com/docs/commands/KeyWait.htm>`_
         """
@@ -1134,11 +1154,10 @@ class AsyncAHK(Generic[T_AHKVersion]):
             options += 'D'
         if logical_state:
             options += 'L'
-        if timeout:
+        if timeout is not None:
+            assert timeout >= 0, 'Timeout value must be non-negative'
             options += f'T{timeout}'
-        args = [key_name]
-        if options:
-            args.append(options)
+        args = [key_name, options]
 
         resp = await self._transport.function_call('AHKKeyWait', args, blocking=blocking)
         return resp
@@ -1173,13 +1192,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None) -> None: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[True]) -> None: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, send_mode: Optional[SendMode] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, send_mode: Optional[SendMode] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def send(self, s: str, *, raw: bool = False, key_delay: Optional[int] = None, key_press_duration: Optional[int] = None, send_mode: Optional[SendMode] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def send(
         self,
@@ -1188,6 +1207,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         raw: bool = False,
         key_delay: Optional[int] = None,
         key_press_duration: Optional[int] = None,
+        send_mode: Optional[SendMode] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         """
@@ -1200,6 +1220,10 @@ class AsyncAHK(Generic[T_AHKVersion]):
             args.append('')
         if key_press_duration:
             args.append(str(key_press_duration))
+        else:
+            args.append('')
+        if send_mode:
+            args.append(send_mode)
         else:
             args.append('')
 
@@ -2754,13 +2778,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> AsyncFutureResult[None]: ...
     @overload
-    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def right_click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def right_click(
         self,
@@ -2772,6 +2796,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
+        send_mode: Optional[SendMode] = None,
     ) -> Union[None, AsyncFutureResult[None]]:
         button = 'R'
         return await self.click(
@@ -2783,17 +2808,18 @@ class AsyncAHK(Generic[T_AHKVersion]):
             relative=relative,
             blocking=blocking,
             coord_mode=coord_mode,
+            send_mode=send_mode,
         )
 
     # fmt: off
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[True], coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> None: ...
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: Literal[False], coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> AsyncFutureResult[None]: ...
     @overload
-    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def click(self, x: Optional[Union[int, Tuple[int, int]]] = None, y: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, click_count: Optional[int] = None, direction: Optional[Literal['U', 'D', 'Up', 'Down']] = None, *, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def click(
         self,
@@ -2806,6 +2832,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
+        send_mode: Optional[SendMode] = None,
     ) -> Union[None, AsyncFutureResult[None]]:
         """
         Analog for `Click <https://www.autohotkey.com/docs/commands/Click.htm>`_
@@ -2825,7 +2852,9 @@ class AsyncAHK(Generic[T_AHKVersion]):
             r = ''
         if coord_mode is None:
             coord_mode = ''
-        args = [str(x), str(y), button, str(click_count), direction or '', r, coord_mode]
+        if send_mode is None:
+            send_mode = ''
+        args = [str(x), str(y), button, str(click_count), direction or '', r, coord_mode, str(send_mode)]
         resp = await self._transport.function_call('AHKClick', args, blocking=blocking)
         return resp
 
@@ -2894,6 +2923,16 @@ class AsyncAHK(Generic[T_AHKVersion]):
         resp = await self._transport.function_call('AHKImageSearch', args, blocking=blocking)
         return resp
 
+    # fmt: off
+    @overload
+    async def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> None: ...
+    @overload
+    async def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None, blocking: Literal[True]) -> None: ...
+    @overload
+    async def mouse_drag(self, x: int, y: int, *, from_position: Optional[Tuple[int, int]] = None, speed: Optional[int] = None, button: Optional[Union[MouseButton, str]] = None, relative: Optional[bool] = None, blocking: bool = True, coord_mode: Optional[CoordModeRelativeTo] = None, send_mode: Optional[SendMode] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
     async def mouse_drag(
         self,
         x: int,
@@ -2901,14 +2940,19 @@ class AsyncAHK(Generic[T_AHKVersion]):
         *,
         from_position: Optional[Tuple[int, int]] = None,
         speed: Optional[int] = None,
-        button: MouseButton = 'left',
+        button: Optional[Union[MouseButton, str]] = None,
         relative: Optional[bool] = None,
         blocking: bool = True,
         coord_mode: Optional[CoordModeRelativeTo] = None,
-    ) -> None:
+        send_mode: Optional[SendMode] = None,
+    ) -> Union[None, AsyncFutureResult[None]]:
         """
         Analog for `MouseClickDrag <https://www.autohotkey.com/docs/commands/MouseClickDrag.htm>`_
         """
+        if button is None:
+            button = 'Left'
+        else:
+            button = _resolve_button(button)
         if from_position:
             x1, y1 = from_position
             args = [str(button), str(x1), str(y1), str(x), str(y)]
@@ -2930,7 +2974,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
         else:
             args.append('')
 
-        await self._transport.function_call('AHKMouseClickDrag', args, blocking=blocking)
+        if send_mode:
+            args.append(send_mode)
+        else:
+            args.append('')
+
+        resp = await self._transport.function_call('AHKMouseClickDrag', args, blocking=blocking)
+        return resp
 
     # fmt: off
     @overload

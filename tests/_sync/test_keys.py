@@ -5,6 +5,8 @@ import sys
 import time
 import unittest.mock
 
+import pytest
+
 from ahk import AHK
 from ahk import Window
 
@@ -76,6 +78,20 @@ class TestKeysAsync(unittest.TestCase):
             self.ahk.send('btw ')
             sleep(1)
             m.assert_called()
+
+    def test_key_wait(self):
+        res = self.ahk.key_wait('x', timeout=3, blocking=False)
+        self.ahk.set_send_level(1)
+        sleep(1)
+        self.ahk.key_down('x')
+        sleep(1)
+        self.ahk.key_up('x')
+        result = res.result()
+        assert result is True
+
+    def test_key_wait_timeout(self):
+        res = self.ahk.key_wait('x', timeout=1)
+        assert res is False
 
 
 class TestKeysAsyncV2(TestKeysAsync):

@@ -87,6 +87,7 @@ FunctionName = Literal[
     'AHKGetClipboardAll',
     'AHKGetCoordMode',
     'AHKGetSendLevel',
+    'AHKGetSendMode',
     'AHKGetTitleMatchMode',
     'AHKGetTitleMatchSpeed',
     'AHKGetVolume',
@@ -117,6 +118,7 @@ FunctionName = Literal[
     'AHKSetCoordMode',
     'AHKSetDetectHiddenWindows',
     'AHKSetSendLevel',
+    'AHKSetSendMode',
     'AHKSetTitleMatchMode',
     'AHKSetVolume',
     'AHKShowToolTip',
@@ -395,7 +397,7 @@ class Transport(ABC):
     @overload
     def function_call(self, function_name: Literal['AHKMouseClickDrag'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
-    def function_call(self, function_name: Literal['AHKKeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[int, FutureResult[int]]: ...
+    def function_call(self, function_name: Literal['AHKKeyWait'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[bool, FutureResult[bool]]: ...
     @overload
     def function_call(self, function_name: Literal['SetKeyDelay'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AHK[Any]] = None) -> Union[None, FutureResult[None]]: ...
     @overload
@@ -512,6 +514,10 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKSetCoordMode'], args: List[str]) -> None: ...
     @overload
     def function_call(self, function_name: Literal['AHKGetSendLevel']) -> int: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKSetSendMode'], args: List[str]) -> None: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKGetSendMode']) -> str: ...
     @overload
     def function_call(self, function_name: Literal['AHKSetSendLevel'], args: List[str]) -> None: ...
     @overload

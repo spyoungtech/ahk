@@ -1809,11 +1809,23 @@ AHKMouseMove(args*) {
     y := args[2]
     speed := args[3]
     relative := args[4]
-    if (relative != "") {
-    MouseMove(x, y, speed, "R")
-    } else {
-    MouseMove(x, y, speed)
+    send_mode := args[5]
+    current_send_mode := Format("{}", A_SendMode)
+
+    if (send_mode != "") {
+        SendMode send_mode
     }
+
+    if (relative != "") {
+        MouseMove(x, y, speed, "R")
+    } else {
+        MouseMove(x, y, speed)
+    }
+
+    if (send_mode != "") {
+        SendMode current_send_mode
+    }
+
     resp := FormatNoValueResponse()
     return resp
     {% endblock AHKMouseMove %}
@@ -1828,7 +1840,13 @@ AHKClick(args*) {
     direction := args[5]
     r := args[6]
     relative_to := args[7]
+    send_mode := args[8]
     current_coord_rel := Format("{}", A_CoordModeMouse)
+    current_send_mode := Format("{}", A_SendMode)
+
+    if (send_mode != "") {
+        SendMode send_mode
+    }
 
     if (relative_to != "") {
         CoordMode("Mouse", relative_to)
@@ -1840,6 +1858,9 @@ AHKClick(args*) {
         CoordMode("Mouse", current_coord_rel)
     }
 
+    if (send_mode != "") {
+        SendMode current_send_mode
+    }
     return FormatNoValueResponse()
 
     {% endblock AHKClick %}
@@ -1879,6 +1900,19 @@ AHKSetCoordMode(args*) {
     {% endblock AHKSetCoordMode %}
 }
 
+
+AHKGetSendMode(args*) {
+    return FormatResponse("ahk.message.StringResponseMessage", A_SendMode)
+}
+
+
+AHKSetSendMode(args*) {
+    mode := args[1]
+    SendMode mode
+    return FormatNoValueResponse()
+}
+
+
 AHKMouseClickDrag(args*) {
     {% block AHKMouseClickDrag %}
     button := args[1]
@@ -1889,8 +1923,13 @@ AHKMouseClickDrag(args*) {
     speed := args[6]
     relative := args[7]
     relative_to := args[8]
-
+    send_mode := args[9]
     current_coord_rel := Format("{}", A_CoordModeMouse)
+    current_send_mode := Format("{}", A_SendMode)
+
+    if (send_mode != "") {
+        SendMode send_mode
+    }
 
     if (relative_to != "") {
         CoordMode("Mouse", relative_to)
@@ -1910,6 +1949,10 @@ AHKMouseClickDrag(args*) {
 
     if (relative_to != "") {
         CoordMode("Mouse", current_coord_rel)
+    }
+
+    if (send_mode != "") {
+        SendMode current_send_mode
     }
 
     return FormatNoValueResponse()
@@ -1964,13 +2007,19 @@ AHKKeyWait(args*) {
     {% block AHKKeyWait %}
 
     keyname := args[1]
-    if (args.Length = 2) {
+    options := args[2]
+
+    if (options = "") {
         ret := KeyWait(keyname)
     } else {
-        options := args[2]
         ret := KeyWait(keyname, options)
     }
-    return FormatResponse("ahk.message.IntegerResponseMessage", ret)
+
+    if (ret = 0) {
+        return FormatResponse("ahk.message.BooleanResponseMessage", 0)
+    } else {
+        return FormatResponse("ahk.message.BooleanResponseMessage", 1)
+    }
     {% endblock AHKKeyWait %}
 }
 
@@ -1985,8 +2034,14 @@ AHKSend(args*) {
     str := args[1]
     key_delay := args[2]
     key_press_duration := args[3]
+    send_mode := args[4]
     current_delay := Format("{}", A_KeyDelay)
     current_key_duration := Format("{}", A_KeyDuration)
+    current_send_mode := Format("{}", A_SendMode)
+
+    if (send_mode != "") {
+        SendMode send_mode
+    }
 
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay(key_delay, key_press_duration)
@@ -1994,6 +2049,10 @@ AHKSend(args*) {
 
 
     Send(str)
+
+    if (send_mode != "") {
+        SendMode current_send_mode
+    }
 
     if (key_delay != "" or key_press_duration != "") {
         SetKeyDelay(current_delay, current_key_duration)

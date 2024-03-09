@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+- name: documentation
+  url: https://ahk.readthedocs.io/en/latest/
+  about: See the full documentation

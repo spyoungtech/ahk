@@ -153,8 +153,10 @@ ahk.key_press('a')  # Press and release a key
 ahk.key_down('Control')  # Press down (but do not release) Control key
 ahk.key_up('Control')  # Release the key
 ahk.set_capslock_state("On")  # Turn CapsLock on
-ahk.key_wait('a', timeout=3)  # Wait up to 3 seconds for the "a" key to be pressed. NOTE: This throws
-                              # a TimeoutError if the key isn't pressed within the timeout window
+if ahk.key_wait('x', timeout=3):  # wait for a key to be pressed; returns a boolean
+    print('X was pressed within 3 seconds')
+else:
+    print('X was not pressed within 3 seconds')
 ```
 
 ## Windows
@@ -192,29 +194,44 @@ from ahk import AHK
 ahk = AHK()
 
 ahk.run_script('Run Notepad') # Open notepad
-win = ahk.find_window(title='Untitled - Notepad') # Find the opened window
+win = ahk.find_window(title='Untitled - Notepad') # Find the opened window; returns a `Window` object
 
-win.send('hello')  # Send keys directly to the window (does not need focus!)
+# Window object methods
+win.send('hello', control='Edit1')  # Send keys directly to the window (does not need focus!)
+# OR ahk.control_send(title='Untitled - Notepad', control='Edit1')
 win.move(x=200, y=300, width=500, height=800)
 
-win.activate()           # Give the window focus
-win.close()              # Close the window
-win.hide()               # Hide the windwow
-win.kill()               # Kill the window
-win.maximize()           # Maximize the window
-win.minimize()           # Minimize the window
-win.restore()            # Restore the window
-win.show()               # Show the window
-win.disable()            # Make the window non-interactable
-win.enable()             # Enable it again
-win.to_top()             # Move the window on top of other windows
-win.to_bottom()          # Move the window to the bottom of the other windows
+win.activate()                  # Give the window focus
+win.close()                     # Close the window
+win.hide()                      # Hide the window
+win.kill()                      # Kill the window
+win.maximize()                  # Maximize the window
+win.minimize()                  # Minimize the window
+win.restore()                   # Restore the window
+win.show()                      # Show the window
+win.disable()                   # Make the window non-interactable
+win.enable()                    # Enable it again
+win.to_top()                    # Move the window on top of other windows
+win.to_bottom()                 # Move the window to the bottom of the other windows
+win.get_class()                 # Get the class name of the window
+win.get_minmax()                # Get the min/max status
+win.get_process_name()          # Get the process name (e.g., "notepad.exe")
+win.process_name                # Property; same as `.get_process_name()` above
+win.is_always_on_top()          # Whether the window has the 'always on top' style applied
+win.list_controls()             # Get a list of controls (list of `Control` objects)
+win.redraw()                    # Redraw the window
+win.set_style("-0xC00000")      # Set a style on the window (in this case, removing the title bar)
+win.set_ex_style("^0x80")       # Set an ExStyle on the window (in this case, removes the window from alt-tab list)
+win.set_region("")              # See: https://www.autohotkey.com/docs/v2/lib/WinSetRegion.htm
+win.set_trans_color("White")    # Makes all pixels of the chosen color invisible inside the specified window.
+win.set_transparent(155)        # Makes the specified window semi-transparent (or "Off" to turn off transparency)
+
 
 win.always_on_top = 'On' # Make the window always on top
 # or
 win.set_always_on_top('On')
 
-for window in ahk.list_windows():
+for window in ahk.list_windows():  # list all (non-hidden) windows -- ``detect_hidden_windows=True`` to include hidden
     print(window.title)
 
     # Some more attributes
@@ -230,7 +247,19 @@ if win.active:        # or win.is_active()
 
 if win.exist:         # or win.exists()
     ...
+
+# Controls
+
+edit_control = win.list_controls()[0]  # get the first control for the window, in this case "Edit1" for Notepad
+edit_control.get_text()      # get the text in Notepad
+edit_control.get_position()  # returns a `Postion` namedtuple: e.g. Position(x=6, y=49, width=2381, height=1013)
+
 ```
+
+Various window methods can also be called directly without first creating a `Window` object by using the underlying `win_*` methods on the `AHK` class.
+For example, instead of `win.close()` as above, one could call `ahk.win_close(title='Untitled - Notepad')` instead.
+
+
 
 ## Screen
 
@@ -259,6 +288,10 @@ ahk = AHK()
 ahk.set_clipboard('hello \N{EARTH GLOBE AMERICAS}')  # set clipboard text contents
 ahk.get_clipboard() # get clipboard text contents
 # 'hello 🌎'
+ahk.set_clipboard("")  # Clear the clipboard
+
+ahk.clip_wait(timeout=3)  # Wait for clipboard contents to change (with text or file(s))
+ahk.clip_wait(timeout=3, wait_for_any_data=True)  # wait for _any_ clipboard contents
 ```
 
 You may also get/set `ClipboardAll` -- however, you should never try to call `set_clipboard_all` with any other
@@ -275,6 +308,29 @@ ahk.set_clipboard('something else')
 ahk.set_clipboard_all(saved_clipboard)  # restore saved content from earlier
 ```
 
+You can also set a callback to execute when the clipboard contents change. As with Hotkey methods mentioned above,
+you can also set an exception handler. Like hotkeys, `on_clipboard_change` callbacks also require `.start_hotkeys()`
+to be called to take effect.
+
+The callback function must accept one positional argument, which is an integer indicating the clipboard datatype.
+
+```python
+from ahk import AHK
+ahk = AHK()
+def my_clipboard_callback(change_type: int):
+    if change_type == 0:
+        print('Clipboard is now empty')
+    elif change_type == 1:
+        print('Clipboard has text contents')
+    elif change_type == 2:
+        print('Clipboard has non-text contents')
+
+ahk.on_clipboard_change(my_clipboard_callback)
+ahk.start_hotkeys()  # like with hotkeys, must be called at least once for listening to start
+# ...
+ahk.set_clipboard("hello") # will cause the message "Clipboard has text contents" to be printed by the callback
+ahk.set_clipboard("") # Clears the clipboard, causing the message "Clipboard is now empty" to be printed by the callback
+```
 
 ## Sound
 
@@ -338,6 +394,7 @@ ahk.set_send_level(5)  # Change send https://www.autohotkey.com/docs/v1/lib/Send
 ahk.set_title_match_mode('Slow') # change title match speed and/or mode
 ahk.set_title_match_mode('RegEx')
 ahk.set_title_match_mode(('RegEx', 'Slow'))  # or both at the same time
+ahk.set_send_mode('Event')  # change the default SendMode
 ```
 
 ## Add directives
@@ -538,7 +595,8 @@ ahk.run_script(script_path)
 To use this package, you need the [AutoHotkey executable](https://www.autohotkey.com/download/) (e.g., `AutoHotkey.exe`).
 It's expected to be on PATH by default OR in a default installation location (`C:\Program Files\AutoHotkey\AutoHotkey.exe` for v1 or `C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe` for v2)
 
-AutoHotkey v1 is fully supported. AutoHotkey v2 support is available, but is considered to be in beta status.
+AutoHotkey v1 and v2 are both fully supported, though some behavioral differences will occur depending on which version
+you use. See notes below.
 
 The recommended way to supply the AutoHotkey binary (for both v1 and v2) is to install the `binary` extra for this package. This will
 provide the necessary executables and help ensure they are correctly placed on PATH.
@@ -594,16 +652,22 @@ the `version` keyword is omitted, the version is determined automatically from t
 
 The API of this project is originally designed against AutoHotkey v1 and function signatures are the same, even when using AutoHotkey v2.
 While most of the behavior remains the same, some behavior does change when using AutoHotkey v2 compared to v1. This is mostly due to
-underlying differences between the two versions.
+[underlying differences](https://www.autohotkey.com/docs/v2/v2-changes.htm) between the two versions.
 
-Some of the differences that you will experience when using AutoHotkey v2 include:
-
+Some of the notable differences that you may experience when using AutoHotkey v2 with this library include:
 
 1. Functions that find and return windows will often raise an exception rather than returning `None` (as in AutoHotkey v2, a TargetError is thrown in most cases where the window or control cannot be found)
 2. The behavior of `ControlSend` (`ahk.control_send` or `Window.send` or `Control.send`) differs in AutoHotkey v2 when the `control` parameter is not specified. In v1, keys are sent to the topmost controls, which is usually the correct behavior. In v2, keys are sent directly to the window. This means in many cases, you need to specify the control explicitly when using V2.
 3. Some functionality is not supported in v2 -- specifically: the `secondstowait` paramater for `TrayTip` (`ahk.show_traytip`) was removed in v2. Specifying this parameter in the Python wrapper will cause a warning to be emitted and the parameter is ignored.
 4. Some functionality that is present in v1 is not yet implemented in v2 -- this is expected to change in future versions. Specifically: some [sound functions](https://www.autohotkey.com/docs/v2/lib/Sound.htm) are not implemented.
+5. The default SendMode changes in v2 to `Input` rather than `Event` in v1 (as a consequence, for example, mouse speed parameters to `mouse_move` and `mouse_drag` will be ignored in V2 unless the send mode is changed)
 
+
+## Extending: add your own AutoHotkey code (beta)
+
+You can develop extensions for extending functionality of `ahk` -- that is: writing your own AutoHotkey code and adding
+additional methods to the AHK class. See the [extending docs](https://ahk.readthedocs.io/en/latest/extending.html) for
+more information.
 
 # Contributing
 

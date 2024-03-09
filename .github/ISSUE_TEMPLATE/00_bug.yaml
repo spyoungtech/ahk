@@ -1,0 +1,60 @@
+name: bug report
+description: something went wrong
+body:
+  - type: markdown
+    attributes:
+      value: |
+         Please use this issue template to report bug behavior
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: describe your issue
+      description: Please describe the problem, the expected behavior, and the actual behavior
+      placeholder: |
+        I was doing ...
+        I ran ...
+        I expected ...
+        I got ...
+    validations:
+      required: true
+  - type: input
+    id: library-version
+    attributes:
+      label: ahk.__version__
+      placeholder: 1.x.x
+    validations:
+      required: false
+  - type: input
+    id: ahk-version
+    attributes:
+      label: AutoHotkey version
+      placeholder: v1 or v2
+    validations:
+      required: false
+  - type: textarea
+    id: code
+    attributes:
+      label: Code to reproduce the issue
+      description: Minimal Python code that can be used to reproduce the issue. (no backticks needed)
+      placeholder: |
+        from ahk import AHK
+        ahk = AHK()
+        ahk.do_something()
+      render: python
+    validations:
+      required: false
+  - type: textarea
+    id: error-log
+    attributes:
+      label: 'Traceback/Error message'
+      description: The full traceback/error you receive or other error information, if applicable
+      placeholder: |
+        Traceback (most recent call last):
+          File "C:\path\to\yourscript.py", line 3, in <module>
+            ahk.failure()
+          File "C:\path\to\site-packages\ahk\_sync\engine.py", line 220, in __getattr__
+            raise AttributeError(f'{self.__class__.__name__!r} object has no attribute {name!r}')
+        AttributeError: 'AHK' object has no attribute 'failure'
+    validations:
+      required: false

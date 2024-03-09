@@ -1,0 +1,33 @@
+name: feature request
+description: something new
+body:
+  - type: markdown
+    attributes:
+      value: |
+         Use this form to create feature requests
+
+  - type: checkboxes
+    attributes:
+      label: Checked the documentation
+      description: |
+        The documentation contains information about features that are already implemented. Please check this first before making a request.
+        (requests for features marked as "Not Implemented" in the documentation are OK, but please provide context on how you want to use this feature).
+      options:
+        - label: I have checked [the documentation](https://ahk.readthedocs.io/en/latest/api/methods.html) for the feature I am requesting
+          required: true
+
+
+  - type: textarea
+    id: freeform
+    attributes:
+      label: describe your feature request
+      placeholder: |
+        I want to do ...
+        I tried ...
+        It does not work because ...
+
+        This feature would be useful because ...
+
+        Additional information can be found at https://www.autohotkey.com/docs/ ...
+    validations:
+      required: true
