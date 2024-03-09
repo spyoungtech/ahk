@@ -1594,6 +1594,14 @@ class AsyncAHK(Generic[T_AHKVersion]):
         await self._transport.function_call('AHKMenuTrayShow')
         return None
 
+    async def menu_tray_icon_hide(self) -> None:
+        """
+        hides the tray icon.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+        """
+        await self._transport.function_call('AHKMenuTrayHide')
+        return None
+
     # fmt: off
     @overload
     async def sound_beep(self, frequency: int = 523, duration: int = 150) -> None: ...

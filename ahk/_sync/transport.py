@@ -98,6 +98,7 @@ FunctionName = Literal[
     'AHKKeyWait',
     'AHKMenuTrayIcon',
     'AHKMenuTrayShow',
+    'AHKMenuTrayHide',
     'AHKMenuTrayTip',
     'AHKMsgBox',
     'AHKMouseClickDrag',
@@ -578,6 +579,8 @@ class Transport(ABC):
     def function_call(self, function_name: Literal['AHKMenuTrayIcon'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKMenuTrayShow'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    @overload
+    def function_call(self, function_name: Literal['AHKMenuTrayHide'], args: Optional[List[str]] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     @overload
     def function_call(self, function_name: Literal['AHKGuiNew'], args: List[str], *, engine: AHK[Any]) -> str: ...
     @overload

@@ -1582,6 +1582,15 @@ class AHK(Generic[T_AHKVersion]):
         self._transport.function_call('AHKMenuTrayShow')
         return None
 
+    def menu_tray_icon_hide(self) -> None:
+        """
+        hides the tray icon.
+        Does not affect tray icon for AHK processes started with :py:meth:`run_script` or ``blocking=False``
+        """
+        self._transport.function_call('AHKMenuTrayHide')
+        return None
+
+
     # fmt: off
     @overload
     def sound_beep(self, frequency: int = 523, duration: int = 150) -> None: ...
