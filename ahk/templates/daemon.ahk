@@ -2620,6 +2620,11 @@ AHKMenuTrayShow(args*) {
     return FormatNoValueResponse()
 }
 
+AHKMenuTrayHide(args*) {
+    Menu, Tray, NoIcon
+    return FormatNoValueResponse()
+}
+
 AHKMenuTrayIcon(args*) {
     filename := args[1]
     icon_number := args[2]
