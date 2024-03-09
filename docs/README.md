@@ -443,7 +443,10 @@ ahk.menu_tray_icon()
 # change the tooltip that shows up when hovering the mouse over the tray icon
 ahk.menu_tray_tooltip('My Program Name')
 
-# Show the tray icon that was previously hidden by ``NoTrayIcon``
+# Hide the tray icon
+ahk.menu_tray_icon_hide()
+
+# Show the tray icon that was previously hidden by ``NoTrayIcon`` or ``menu_tray_icon_hide``
 ahk.menu_tray_icon_show()
 ```
 
