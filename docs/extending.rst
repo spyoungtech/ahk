@@ -97,7 +97,7 @@ containing the AutoHotkey code we just wrote above.
     from ahk.extensions import Extension
     from typing import Literal
 
-    script_text = r'''\
+    script_text = r'''
     ; a string of your AHK script
     ; Omitted here for brevity -- copy/paste from the previous code block
     '''
@@ -322,4 +322,4 @@ Notes
 - AHK functions MUST always return a message. Failing to return a message will result in an exception being raised. If the function should return nothing, use ``return FormatNoValueResponse()`` which will translate to ``None`` in Python.
 - You cannot define hotkeys, hotstrings, or write any AutoHotkey code that would cause the end of the `auto-execute section <https://www.autohotkey.com/docs/v1/Scripts.htm#auto>`_
 - Extensions must be imported (anywhere, at least once) *before* instantiating the ``AHK`` instance
-- Although extensions can be declared explicitly, using ``extensions='auto'`` is generally the easiest method for enabling all available extensions
+- Although extensions can be declared explicitly, using ``extensions='auto'`` can be used for convenience/portability.
