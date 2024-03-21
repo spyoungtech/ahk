@@ -697,7 +697,7 @@ class AHK(Generic[T_AHKVersion]):
     @overload
     def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None) -> List[Window]: ...
     @overload
-    def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> Union[List[Window], FutureResult[List[Window]]]: ...
+    def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[False]) -> FutureResult[List[Window]]: ...
     @overload
     def list_windows(self, title: str = '', text: str = '', exclude_title: str = '', exclude_text: str = '', *, title_match_mode: Optional[TitleMatchMode] = None, detect_hidden_windows: Optional[bool] = None, blocking: Literal[True]) -> List[Window]: ...
     @overload
@@ -1589,7 +1589,6 @@ class AHK(Generic[T_AHKVersion]):
         """
         self._transport.function_call('AHKMenuTrayHide')
         return None
-
 
     # fmt: off
     @overload
