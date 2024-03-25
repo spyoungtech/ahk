@@ -103,7 +103,7 @@ containing the AutoHotkey code we just wrote above.
     '''
     simple_math_extension = Extension(script_text=script_text)
 
-    @simple_meth_extension.register  # register the method for the extension
+    @simple_math_extension.register  # register the method for the extension
     def simple_math(ahk: AHK, lhs: int, rhs: int, operator: Literal['+', '*']) -> int:
         assert isinstance(lhs, int)
         assert isinstance(rhs, int)
@@ -152,6 +152,10 @@ In addition to supplying AutoHotkey extension code via ``script_text``, you may 
 
     from ahk.extensions import Extension
     my_extension = Extension(includes=['myscript.ahk']) # equivalent to "#Include myscript.ahk"
+
+
+Extensions do not have to include python functions. They may also be used for simply including AutoHotkey code
+used by other extensions.
 
 AsyncIO considerations
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -316,6 +320,7 @@ For example, suppose you want your method to return a datetime object, you might
 In AHK code, you can reference custom response messages by the their fully qualified name, including the namespace.
 (if you're not sure what this means, you can see this value by calling the ``fqn()`` method, e.g. ``DateTimeResponseMessage.fqn()``)
 
+
 Notes
 ^^^^^
 
@@ -323,3 +328,73 @@ Notes
 - You cannot define hotkeys, hotstrings, or write any AutoHotkey code that would cause the end of the `auto-execute section <https://www.autohotkey.com/docs/v1/Scripts.htm#auto>`_
 - Extensions must be imported (anywhere, at least once) *before* instantiating the ``AHK`` instance
 - Although extensions can be declared explicitly, using ``extensions='auto'`` can be used for convenience/portability.
+
+
+Working with mypy and extensions (work in progress)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When writing an extension, such as the example we've defined above, mypy by default will not know your function
+signature or its return type:
+
+.. code-block::
+
+    ahk = AHK(extensions=[simple_math_extension])
+    result = ahk.simple_math(2, 4, operator='+')
+    reveal_type(result)  # revealed type is 'Any' rather than 'int'
+    ahk.simple_math(0, 0, operator='invalid')  # mypy accepts the invalid usage, should complain about incompatible type
+
+To get mypy to correctly work with your extension, you can write a mypy plugin to correctly hint the usage of your
+extension methods. For example, if you are distributing your extension as a package, you may create ``mypy.py`` file containing
+the plugin code. Here is an example plugin for the ``simple_math`` extension described above:
+
+.. code-block::
+
+   # yourextensionpackage/mypy.py
+   from mypy.plugin import Plugin, MethodContext
+   from mypy.types import CallableType, LiteralType, UnionType
+   from mypy.nodes import ARG_POS
+   from typing import Optional, Callable
+
+   class MyPlugin(Plugin):
+       def get_method_signature_hook(self, fullname: str) -> Optional[Callable]:
+           class_name, _, method_name = fullname.rpartition('.')
+           if class_name.endswith("AHK") and method_name == "simple_math":
+               return self.simple_math_hook
+           return None
+
+       def simple_math_hook(self, ctx: MethodContext):
+           int_type = ctx.api.named_generic_type('builtins.int', [])
+           str_type = ctx.api.named_generic_type('builtins.str', [])
+           literal_plus = LiteralType(value='+', fallback=str_type)
+           literal_mul = LiteralType(value='*', fallback=str_type)
+           plus_or_mul = UnionType([literal_plus, literal_mul])
+           # Create the callable type for the method signature
+           callable_type = CallableType(
+               arg_types=[int_type, int_type, plus_or_mul],
+               arg_kinds=[ARG_POS, ARG_POS, ARG_POS],
+               arg_names=["lhs", "rhs", "operator"],
+               ret_type=int_type,
+               fallback=ctx.api.named_generic_type('builtins.function', [])
+           )
+
+           return callable_type
+
+   def plugin(version: str):
+       # This function will be called by MyPy to instantiate the plugin.
+       return MyPlugin
+
+
+Then the user must configure the extension, for example, using ``mypy.ini``:
+
+.. code-block::
+
+   [mypy]
+   plugins = yourextensionpackage.mypy
+
+If your extension is not distributed as a package, you can simply use the path to your plugin file instead. See `extending mypy <https://mypy.readthedocs.io/en/stable/extending_mypy.html>`_ for more information.
+
+Afterwards, running ``mypy`` on the same example code above will produce the correct results
+(the revealed type will be ``int`` and it will correctly produce an error for the incorrect usage of the ``operator`` argument.)
+
+This feature is a work in progress. We hope that future research and/or changes in the extension system will help
+extensions play more nicely with static type checkers like mypy with less effort.
