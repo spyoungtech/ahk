@@ -350,19 +350,19 @@ the plugin code. Here is an example plugin for the ``simple_math`` extension des
 .. code-block::
 
    # yourextensionpackage/mypy.py
-   from mypy.plugin import Plugin, MethodContext
+   from mypy.plugin import Plugin, AttributeContext
    from mypy.types import CallableType, LiteralType, UnionType
    from mypy.nodes import ARG_POS
    from typing import Optional, Callable
 
    class MyPlugin(Plugin):
-       def get_method_signature_hook(self, fullname: str) -> Optional[Callable]:
+       def get_attribute_hook(self, fullname: str) -> Optional[Callable]:
            class_name, _, method_name = fullname.rpartition('.')
            if class_name.endswith("AHK") and method_name == "simple_math":
                return self.simple_math_hook
            return None
 
-       def simple_math_hook(self, ctx: MethodContext):
+       def simple_math_hook(self, ctx: AttributeContext):
            int_type = ctx.api.named_generic_type('builtins.int', [])
            str_type = ctx.api.named_generic_type('builtins.str', [])
            literal_plus = LiteralType(value='+', fallback=str_type)
