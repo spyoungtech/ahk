@@ -664,7 +664,7 @@ Some of the notable differences that you may experience when using AutoHotkey v2
 3. Some functionality is not supported in v2 -- specifically: the `secondstowait` paramater for `TrayTip` (`ahk.show_traytip`) was removed in v2. Specifying this parameter in the Python wrapper will cause a warning to be emitted and the parameter is ignored.
 4. Some functionality that is present in v1 is not yet implemented in v2 -- this is expected to change in future versions. Specifically: some [sound functions](https://www.autohotkey.com/docs/v2/lib/Sound.htm) are not implemented.
 5. The default SendMode changes in v2 to `Input` rather than `Event` in v1 (as a consequence, for example, mouse speed parameters to `mouse_move` and `mouse_drag` will be ignored in V2 unless the send mode is changed)
-
+6. The default [TitleMatchMode](https://www.autohotkey.com/docs/v2/lib/SetTitleMatchMode.htm) is `2` in AutoHotkey v2. It is `1` in AutoHotkey v1. Use the `title_match_mode` keyword arguments to `win_get` and other methods that accept this keyword to control this behavior or use `set_title_match_mode` to change the default behavior (non-blocking calls are run in separate processes and are not affected by `set_title_match_mode`)
 
 ## Extending: add your own AutoHotkey code (beta)
 
