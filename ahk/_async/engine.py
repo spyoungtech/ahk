@@ -1101,6 +1101,8 @@ class AsyncAHK(Generic[T_AHKVersion]):
             if mode not in ('T', 'P'):
                 raise ValueError(f'Invalid value for mode parameter. Mode must be `T` or `P`. Got {mode!r}')
             args.append(mode)
+        else:
+            args.append('')
         resp = await self._transport.function_call('AHKKeyState', args, blocking=blocking)
         return resp
 
