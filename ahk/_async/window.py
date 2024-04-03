@@ -10,6 +10,7 @@ from typing import overload
 from typing import Sequence
 from typing import Tuple
 from typing import TYPE_CHECKING
+from typing import TypedDict
 from typing import TypeVar
 from typing import Union
 
@@ -19,6 +20,11 @@ if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias
 else:
     from typing import TypeAlias
+
+if sys.version_info < (3, 11):
+    from typing_extensions import NotRequired
+else:
+    from typing import NotRequired
 
 if TYPE_CHECKING:
     from .engine import AsyncAHK
@@ -652,22 +658,34 @@ class AsyncWindow:
         return await engine.win_get_from_mouse_position()
 
 
+_ControlTargetKwargs = TypedDict('_ControlTargetKwargs', {'title': str, 'control': NotRequired[str]})
+
+
 class AsyncControl:
     def __init__(self, window: AsyncWindow, hwnd: str, control_class: str):
         self.window: AsyncWindow = window
         self.hwnd: str = hwnd
         self.control_class: str = control_class
         self._engine = window._engine
+        self.use_hwnd: bool = False
+
+    def _get_target_params(self, use_hwnd: Optional[bool] = None) -> _ControlTargetKwargs:
+        if use_hwnd is None:
+            use_hwnd = self.use_hwnd
+        if use_hwnd:
+            return {'title': f'ahk_id {self.hwnd}'}
+        else:
+            return {'title': f'ahk_id {self.window._ahk_id}', 'control': self.control_class}
 
     # fmt: off
     @overload
-    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '') -> None: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', use_hwnd: Optional[bool] = None) -> None: ...
     @overload
-    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', use_hwnd: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: Literal[True]) -> None: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', use_hwnd: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def click(self, *, button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L', click_count: int = 1, options: str = '', use_hwnd: Optional[bool] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def click(
         self,
@@ -675,65 +693,68 @@ class AsyncControl:
         button: Literal['L', 'R', 'M', 'LEFT', 'RIGHT', 'MIDDLE'] = 'L',
         click_count: int = 1,
         options: str = '',
+        use_hwnd: Optional[bool] = None,
         blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.control_click(
             button=button,
-            control=self.control_class,
             click_count=click_count,
             options=options,
-            title=f'ahk_id {self.window._ahk_id}',
             title_match_mode=(1, 'Fast'),
             detect_hidden_windows=True,
             blocking=blocking,
+            **self._get_target_params(use_hwnd),
         )
 
     # fmt: off
     @overload
-    async def send(self, keys: str) -> None: ...
+    async def send(self, keys: str, *, use_hwnd: Optional[bool] = None) -> None: ...
     @overload
-    async def send(self, keys: str, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def send(self, keys: str, *, use_hwnd: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def send(self, keys: str, *, blocking: Literal[True]) -> None: ...
+    async def send(self, keys: str, *, use_hwnd: Optional[bool] = None, blocking: Literal[True]) -> None: ...
     @overload
-    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def send(self, keys: str, *, use_hwnd: Optional[bool] = None, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
-    async def send(self, keys: str, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]:
+    async def send(
+        self, keys: str, *, use_hwnd: Optional[bool] = None, blocking: bool = True
+    ) -> Union[None, AsyncFutureResult[None]]:
         return await self._engine.control_send(
             keys=keys,
-            control=self.control_class,
-            title=f'ahk_id {self.window._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
             title_match_mode=(1, 'Fast'),
+            **self._get_target_params(use_hwnd),
         )
 
-    async def get_text(self, blocking: bool = True) -> Union[str, AsyncFutureResult[str]]:
+    async def get_text(
+        self, *, use_hwnd: Optional[bool] = None, blocking: bool = True
+    ) -> Union[str, AsyncFutureResult[str]]:
         return await self._engine.control_get_text(
-            control=self.control_class,
-            title=f'ahk_id {self.window._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
             title_match_mode=(1, 'Fast'),
+            **self._get_target_params(use_hwnd),
         )
 
     # fmt: off
     @overload
-    async def get_position(self) -> Position: ...
+    async def get_position(self, *, use_hwnd: Optional[bool] = None) -> Position: ...
     @overload
-    async def get_position(self, blocking: Literal[False]) -> AsyncFutureResult[Position]: ...
+    async def get_position(self, *, use_hwnd: Optional[bool] = None, blocking: Literal[False]) -> AsyncFutureResult[Position]: ...
     @overload
-    async def get_position(self, blocking: Literal[True]) -> Position: ...
+    async def get_position(self, *, use_hwnd: Optional[bool] = None, blocking: Literal[True]) -> Position: ...
     @overload
-    async def get_position(self, blocking: bool = True) -> Union[Position, AsyncFutureResult[Position]]: ...
+    async def get_position(self, *, use_hwnd: Optional[bool] = None, blocking: bool = True) -> Union[Position, AsyncFutureResult[Position]]: ...
     # fmt: on
-    async def get_position(self, blocking: bool = True) -> Union[Position, AsyncFutureResult[Position]]:
+    async def get_position(
+        self, *, use_hwnd: Optional[bool] = None, blocking: bool = True
+    ) -> Union[Position, AsyncFutureResult[Position]]:
         return await self._engine.control_get_position(
-            control=self.control_class,
-            title=f'ahk_id {self.window._ahk_id}',
             blocking=blocking,
             detect_hidden_windows=True,
             title_match_mode=(1, 'Fast'),
+            **self._get_target_params(use_hwnd),
         )
 
     def __repr__(self) -> str:
