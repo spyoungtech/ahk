@@ -84,6 +84,18 @@ class TestWindowAsync(IsolatedAsyncioTestCase):
         all_windows = await self.ahk.list_windows()
         assert len(all_windows) > len(non_hidden)
 
+    async def test_detect_hidden_windows_false_works(self):
+        await self.ahk.set_detect_hidden_windows(True)
+        all_windows = await self.ahk.list_windows()
+        await self.ahk.set_detect_hidden_windows(False)
+        non_hidden = await self.ahk.list_windows()
+        assert len(non_hidden) < len(all_windows)
+
+    async def test_list_windows_hidden_false(self):
+        non_hidden = await self.ahk.list_windows()
+        all_windows = await self.ahk.list_windows(detect_hidden_windows=False)
+        assert len(non_hidden) == len(all_windows)
+
     async def test_list_windows_hidden(self):
         non_hidden = await self.ahk.list_windows()
         all_windows = await self.ahk.list_windows(detect_hidden_windows=True)
