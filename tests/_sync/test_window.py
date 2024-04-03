@@ -85,15 +85,15 @@ class TestWindowAsync(TestCase):
         assert len(all_windows) > len(non_hidden)
 
     def test_detect_hidden_windows_false_works(self):
-        ahk.set_detect_hidden_windows(True)
-        all_windows = ahk.list_windows()
-        ahk.set_detect_hidden_windows(False)
+        self.ahk.set_detect_hidden_windows(True)
+        all_windows = self.ahk.list_windows()
+        self.ahk.set_detect_hidden_windows(False)
         non_hidden = self.ahk.list_windows()
         assert len(non_hidden) < len(all_windows)
 
     def test_list_windows_hidden_false(self):
-        non_hidden = ahk.list_windows()
-        all_windows = ahk.list_windows(detect_hidden_windows=False)
+        non_hidden = self.ahk.list_windows()
+        all_windows = self.ahk.list_windows(detect_hidden_windows=False)
         assert len(non_hidden) == len(all_windows)
 
     def test_list_windows_hidden(self):

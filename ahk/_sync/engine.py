@@ -412,9 +412,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [control, title, text, str(button), str(click_count), options, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -471,9 +471,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -529,9 +529,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [control, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -589,9 +589,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [control, keys, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -646,9 +646,9 @@ class AHK(Generic[T_AHKVersion]):
             raise TypeError(f'detect hidden windows must be a boolean, got object of type {type(value)}')
         args = []
         if value is True:
-            args.append('On')
+            args.append('1')
         else:
-            args.append('Off')
+            args.append('0')
         self._transport.function_call('AHKSetDetectHiddenWindows', args=args)
         return None
 
@@ -664,9 +664,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -2216,9 +2216,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [new_title, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -2274,9 +2274,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [str(toggle), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -2509,9 +2509,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [style, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -2567,9 +2567,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [style, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -2625,9 +2625,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [options, title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -2683,9 +2683,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [str(transparency), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
@@ -2741,9 +2741,9 @@ class AHK(Generic[T_AHKVersion]):
         args = [str(color), title, text, exclude_title, exclude_text]
         if detect_hidden_windows is not None:
             if detect_hidden_windows is True:
-                args.append('On')
+                args.append('1')
             elif detect_hidden_windows is False:
-                args.append('Off')
+                args.append('0')
             else:
                 raise TypeError(
                     f'Invalid value for parameter detect_hidden_windows. Expected boolean or None, got {detect_hidden_windows!r}'
