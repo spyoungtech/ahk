@@ -866,7 +866,7 @@ class AHK(Generic[T_AHKVersion]):
         if exact is not None and title_match_mode is not None:
             raise TypeError('exact and match_mode parameters are mutually exclusive')
         if exact is not None:
-            warnings.warn('exact parameter is deprecated. Use match_mode=3 instead', stacklevel=2)
+            warnings.warn('exact parameter is deprecated. Use title_match_mode instead', stacklevel=2)
             if exact:
                 title_match_mode = (3, 'Fast')
             else:
