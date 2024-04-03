@@ -5494,6 +5494,15 @@ AHKWinMove(args*) {
     if (detect_hw != "") {
         DetectHiddenWindows(detect_hw)
     }
+    if (width = "" or height = "") {
+        WinGetPos(&_, &__, &w, &h, title, text, extitle, extext)
+        if (width = "") {
+            width := w
+        }
+        if (height = "") {
+            height := h
+        }
+    }
 
     try {
         WinMove(x, y, width, height, title, text, extitle, extext)
