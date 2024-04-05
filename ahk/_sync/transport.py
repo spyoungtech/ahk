@@ -50,6 +50,7 @@ from ahk._constants import (
 )
 from ahk._utils import _version_detection_script
 from ahk.directives import Directive
+from ahk.exceptions import AHKProtocolError
 
 from concurrent.futures import Future, ThreadPoolExecutor
 
@@ -57,7 +58,6 @@ from concurrent.futures import Future, ThreadPoolExecutor
 T_SyncFuture = TypeVar('T_SyncFuture')
 
 
-class AHKProtocolError(Exception): ...
 
 
 

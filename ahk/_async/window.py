@@ -14,6 +14,7 @@ from typing import TypedDict
 from typing import TypeVar
 from typing import Union
 
+from ahk.exceptions import WindowNotFoundException
 from ahk.message import Position
 
 if sys.version_info < (3, 10):
@@ -29,9 +30,6 @@ else:
 if TYPE_CHECKING:
     from .engine import AsyncAHK
     from .transport import AsyncFutureResult
-
-
-class WindowNotFoundException(Exception): ...
 
 
 AsyncPropertyReturnStr: TypeAlias = Coroutine[None, None, str]  # unasync: remove

@@ -7,6 +7,8 @@ from shutil import which
 from typing import Literal
 from typing import Optional
 
+from ahk.exceptions import AhkExecutableNotFoundError
+
 HOTKEY_ESCAPE_SEQUENCE_MAP = {
     '\n': '`n',
     '\t': '`t',
@@ -82,10 +84,6 @@ class MsgBoxOtherOptions(enum.IntEnum):
 
 DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
 DEFAULT_EXECUTABLE_PATH_V2 = r'C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe'
-
-
-class AhkExecutableNotFoundError(EnvironmentError):
-    pass
 
 
 def _resolve_executable_path(executable_path: str = '', version: Optional[Literal['v1', 'v2']] = None) -> str:

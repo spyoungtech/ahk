@@ -50,15 +50,13 @@ from ahk._constants import (
 )
 from ahk._utils import _version_detection_script
 from ahk.directives import Directive
+from ahk.exceptions import AHKProtocolError
 
 from concurrent.futures import Future, ThreadPoolExecutor
 
 
 T_AsyncFuture = TypeVar('T_AsyncFuture')  # unasync: remove
 T_SyncFuture = TypeVar('T_SyncFuture')
-
-
-class AHKProtocolError(Exception): ...
 
 
 class AsyncFutureResult(Generic[T_AsyncFuture]):  # unasync: remove

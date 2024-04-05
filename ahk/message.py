@@ -27,6 +27,8 @@ else:
 from typing import TypeVar
 from typing import Union
 
+from ahk.exceptions import AHKExecutionException
+
 
 class OutOfMessageTypes(Exception): ...
 
@@ -207,10 +209,6 @@ class NoValueResponseMessage(ResponseMessage):
     def unpack(self) -> None:
         assert self._raw_content == b'\xee\x80\x80', f'Unexpected or Malformed response: {self._raw_content!r}'
         return None
-
-
-class AHKExecutionException(Exception):
-    pass
 
 
 class ExceptionResponseMessage(ResponseMessage):
