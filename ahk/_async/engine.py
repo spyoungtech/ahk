@@ -3756,6 +3756,9 @@ class AsyncAHK(Generic[T_AHKVersion]):
         args = [str(options), title, text]
         if timeout is not None:
             args.append(str(timeout))
+        else:
+            args.append('')
+
         return await self._transport.function_call('AHKMsgBox', args, blocking=blocking)
 
     # fmt: off
