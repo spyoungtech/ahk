@@ -3630,6 +3630,8 @@ class AsyncAHK(Generic[T_AHKVersion]):
         args = [str(timeout) if timeout else '']
         if wait_for_any_data:
             args.append('1')
+        else:
+            args.append('0')
         return await self._transport.function_call('AHKClipWait', args, blocking=blocking)
 
     async def block_input(
