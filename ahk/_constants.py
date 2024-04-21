@@ -5621,7 +5621,7 @@ AHKTraytip(args*) {
     second := args[3]
     option := args[4]
 
-    TrayTip(title, text, option)
+    TrayTip(text, title, option)
     return FormatNoValueResponse()
     {% endblock AHKTraytip %}
 }
