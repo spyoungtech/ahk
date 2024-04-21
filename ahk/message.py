@@ -7,7 +7,6 @@ import string
 import sys
 from abc import abstractmethod
 from base64 import b64encode
-from collections import namedtuple
 from typing import Any
 from typing import cast
 from typing import Generator
@@ -28,12 +27,10 @@ from typing import TypeVar
 from typing import Union
 
 from ahk.exceptions import AHKExecutionException
+from ahk._types import Position, Coordinates
 
 
 class OutOfMessageTypes(Exception): ...
-
-
-Position = namedtuple('Position', ('x', 'y', 'width', 'height'))
 
 
 @runtime_checkable
@@ -157,12 +154,12 @@ class TupleResponseMessage(ResponseMessage):
 
 
 class CoordinateResponseMessage(ResponseMessage):
-    def unpack(self) -> Tuple[int, int]:
+    def unpack(self) -> Coordinates:
         s = self._raw_content.decode(encoding='utf-8')
         val = ast.literal_eval(s)
         assert isinstance(val, tuple)
         x, y = cast(Tuple[int, int], val)
-        return x, y
+        return Coordinates(x, y)
 
 
 class IntegerResponseMessage(ResponseMessage):
