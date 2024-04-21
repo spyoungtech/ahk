@@ -308,7 +308,7 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
             t.start()
             self._callback_queue.task_done()  # maybe _do_callback should handle this?
 
-    def _render_hotkey_tempate(self) -> str:
+    def _render_hotkey_template(self) -> str:
         if self._clipboard_callback is not None:
             on_clipboard = True
         else:
@@ -322,7 +322,7 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
         return ret
 
     def listener(self) -> None:
-        hotkey_script_contents = self._render_hotkey_tempate()
+        hotkey_script_contents = self._render_hotkey_template()
         logging.debug('hotkey script contents:\n%s', hotkey_script_contents)
         with tempfile.TemporaryDirectory(prefix='python-ahk') as tmpdirname:
             exc_file = os.path.join(tmpdirname, 'executor.ahk')
