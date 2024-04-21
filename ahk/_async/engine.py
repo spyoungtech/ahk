@@ -52,9 +52,16 @@ from .transport import AsyncTransport
 from .window import AsyncControl
 from .window import AsyncWindow
 
-# from .window import AsyncGui
-from ahk.message import Position
-
+from ahk._types import (
+    Position,
+    CoordModeTargets,
+    CoordModeRelativeTo,
+    TitleMatchMode,
+    _BUTTONS,
+    MouseButton,
+    SendMode,
+    Coordinates,
+)
 
 async_sleep = asyncio.sleep  # unasync: remove
 sleep = time.sleep
@@ -62,57 +69,8 @@ sleep = time.sleep
 AsyncFilterFunc: TypeAlias = Callable[[AsyncWindow], Awaitable[bool]]  # unasync: remove
 SyncFilterFunc: TypeAlias = Callable[[AsyncWindow], bool]
 
-CoordModeTargets: TypeAlias = Union[
-    Literal['ToolTip'], Literal['Pixel'], Literal['Mouse'], Literal['Caret'], Literal['Menu']
-]
-CoordModeRelativeTo: TypeAlias = Union[Literal['Screen', 'Relative', 'Window', 'Client', '']]
-
-CoordMode: TypeAlias = Union[CoordModeTargets, Tuple[CoordModeTargets, CoordModeRelativeTo]]
-
-MatchModes: TypeAlias = Literal[1, 2, 3, 'RegEx', '']
-MatchSpeeds: TypeAlias = Literal['Fast', 'Slow', '']
-
-TitleMatchMode: TypeAlias = Optional[
-    Union[MatchModes, MatchSpeeds, Tuple[Union[MatchModes, MatchSpeeds], Union[MatchSpeeds, MatchModes]]]
-]
-
-_BUTTONS: dict[Union[str, int], str] = {
-    1: 'L',
-    2: 'R',
-    3: 'M',
-    'left': 'L',
-    'right': 'R',
-    'middle': 'M',
-    'wheelup': 'WU',
-    'wheeldown': 'WD',
-    'wheelleft': 'WL',
-    'wheelright': 'WR',
-}
-
-MouseButton: TypeAlias = Union[
-    int,
-    Literal[
-        'L',
-        'R',
-        'M',
-        'left',
-        'right',
-        'middle',
-        'wheelup',
-        'WU',
-        'wheeldown',
-        'WD',
-        'wheelleft',
-        'WL',
-        'wheelright',
-        'WR',
-    ],
-]
-
-SendMode: TypeAlias = Literal['Event', 'Input', 'InputThenPlay', 'Play', '']
-
-AsyncPropertyReturnTupleIntInt: TypeAlias = Coroutine[None, None, Tuple[int, int]]  # unasync: remove
-SyncPropertyReturnTupleIntInt: TypeAlias = Tuple[int, int]
+AsyncPropertyReturnTupleIntInt: TypeAlias = Coroutine[None, None, Coordinates]  # unasync: remove
+SyncPropertyReturnTupleIntInt: TypeAlias = Coordinates
 
 AsyncPropertyReturnOptionalAsyncWindow: TypeAlias = Coroutine[None, None, Optional[AsyncWindow]]  # unasync: remove
 SyncPropertyReturnOptionalAsyncWindow: TypeAlias = Optional[AsyncWindow]
@@ -737,17 +695,17 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[True]) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[True]) -> Coordinates: ...
     @overload
-    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[False]) -> AsyncFutureResult[Tuple[int, int]]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: Literal[False]) -> AsyncFutureResult[Coordinates]: ...
     @overload
-    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None) -> Tuple[int, int]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None) -> Coordinates: ...
     @overload
-    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
+    async def get_mouse_position(self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True) -> Union[Coordinates, AsyncFutureResult[Coordinates]]: ...
     # fmt: on
     async def get_mouse_position(
         self, coord_mode: Optional[CoordModeRelativeTo] = None, *, blocking: bool = True
-    ) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]:
+    ) -> Union[Coordinates, AsyncFutureResult[Coordinates]]:
         """
         Analog for `MouseGetPos <https://www.autohotkey.com/docs/commands/MouseGetPos.htm>`_
         """
@@ -2870,13 +2828,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None) -> Optional[Tuple[int, int]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None) -> Optional[Coordinates]: ...
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[Optional[Tuple[int, int]]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[False]) -> AsyncFutureResult[Optional[Coordinates]]: ...
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[True]) -> Optional[Tuple[int, int]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: Literal[True]) -> Optional[Coordinates]: ...
     @overload
-    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: bool = True) -> Union[Tuple[int, int], None, AsyncFutureResult[Optional[Tuple[int, int]]]]: ...
+    async def image_search(self, image_path: str, upper_bound: Tuple[Union[int, str], Union[int, str]] = (0, 0), lower_bound: Optional[Tuple[Union[int, str], Union[int, str]]] = None, *, color_variation: Optional[int] = None, coord_mode: Optional[CoordModeRelativeTo] = None, scale_height: Optional[int] = None, scale_width: Optional[int] = None, transparent: Optional[str] = None, icon: Optional[int] = None, blocking: bool = True) -> Union[Coordinates, None, AsyncFutureResult[Optional[Coordinates]]]: ...
     # fmt: on
     async def image_search(
         self,
@@ -2891,7 +2849,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         transparent: Optional[str] = None,
         icon: Optional[int] = None,
         blocking: bool = True,
-    ) -> Union[Tuple[int, int], None, AsyncFutureResult[Optional[Tuple[int, int]]]]:
+    ) -> Union[Coordinates, None, AsyncFutureResult[Optional[Coordinates]]]:
         """
         Analog for `ImageSearch <https://www.autohotkey.com/docs/commands/ImageSearch.htm>`_
         """
@@ -3026,13 +2984,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True) -> Optional[Tuple[int, int]]: ...
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True) -> Optional[Coordinates]: ...
     @overload
-    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: Literal[True]) -> Optional[Tuple[int, int]]: ...
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: Literal[True]) -> Optional[Coordinates]: ...
     @overload
-    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: Literal[False]) -> AsyncFutureResult[Optional[Tuple[int, int]]]: ...
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: Literal[False]) -> AsyncFutureResult[Optional[Coordinates]]: ...
     @overload
-    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: bool = True) -> Union[Optional[Tuple[int, int]], AsyncFutureResult[Optional[Tuple[int, int]]]]: ...
+    async def pixel_search(self, search_region_start: Tuple[int, int], search_region_end: Tuple[int, int], color: Union[str, int], variation: int = 0, *, coord_mode: Optional[CoordModeRelativeTo] = None, fast: bool = True, rgb: bool = True, blocking: bool = True) -> Union[Optional[Coordinates], AsyncFutureResult[Optional[Coordinates]]]: ...
     # fmt: on
     async def pixel_search(
         self,
@@ -3045,7 +3003,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         fast: bool = True,
         rgb: bool = True,
         blocking: bool = True,
-    ) -> Union[Optional[Tuple[int, int]], AsyncFutureResult[Optional[Tuple[int, int]]]]:
+    ) -> Union[Optional[Coordinates], AsyncFutureResult[Optional[Coordinates]]]:
         """
         Analog for `PixelSearch <https://www.autohotkey.com/docs/commands/PixelSearch.htm>`_
         """

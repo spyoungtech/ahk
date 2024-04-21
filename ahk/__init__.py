@@ -4,9 +4,21 @@ from typing import Optional
 from ._async import AsyncAHK
 from ._async import AsyncControl
 from ._async import AsyncWindow
+from ._async.transport import AsyncFutureResult
 from ._sync import AHK
 from ._sync import Control
 from ._sync import Window
+from ._sync.transport import FutureResult
+from ._types import Coordinates
+from ._types import CoordMode
+from ._types import CoordModeRelativeTo
+from ._types import CoordModeTargets
+from ._types import MatchModes
+from ._types import MatchSpeeds
+from ._types import MouseButton
+from ._types import Position
+from ._types import SendMode
+from ._types import TitleMatchMode
 from ._utils import MsgBoxButtons
 from ._utils import MsgBoxDefaultButton
 from ._utils import MsgBoxIcon
@@ -23,6 +35,22 @@ __all__ = [
     'MsgBoxDefaultButton',
     'MsgBoxIcon',
     'MsgBoxModality',
+    'Coordinates',
+    'CoordMode',
+    'CoordModeRelativeTo',
+    'CoordModeTargets',
+    'MatchModes',
+    'MatchSpeeds',
+    'MouseButton',
+    'Position',
+    'SendMode',
+    'TitleMatchMode',
+    'MsgBoxButtons',
+    'MsgBoxDefaultButton',
+    'MsgBoxIcon',
+    'MsgBoxModality',
+    'AsyncFutureResult',
+    'FutureResult',
 ]
 
 _global_instance: Optional[AHK[None]] = None

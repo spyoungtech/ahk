@@ -11,6 +11,8 @@ import threading
 import warnings
 from abc import ABC
 from abc import abstractmethod
+from concurrent.futures import Future
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from typing import Any
 from typing import Callable
@@ -27,6 +29,26 @@ from typing import TYPE_CHECKING
 from typing import TypeVar
 from typing import Union
 
+import jinja2
+
+from ahk._constants import DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE
+from ahk._constants import DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE
+from ahk._hotkey import Hotkey
+from ahk._hotkey import Hotstring
+from ahk._hotkey import ThreadedHotkeyTransport
+from ahk._types import Coordinates
+from ahk._types import FunctionName
+from ahk._types import Position
+from ahk._utils import _version_detection_script
+from ahk.directives import Directive
+from ahk.exceptions import AHKProtocolError
+from ahk.extensions import _resolve_includes
+from ahk.extensions import Extension
+from ahk.message import _message_registry
+from ahk.message import RequestMessage
+from ahk.message import ResponseMessage
+
+
 if TYPE_CHECKING:
     from ahk import AsyncControl
     from ahk import AsyncWindow
@@ -35,24 +57,6 @@ if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias, TypeGuard
 else:
     from typing import TypeAlias, TypeGuard
-
-import jinja2
-
-from ahk.extensions import Extension, _resolve_includes
-from ahk._hotkey import ThreadedHotkeyTransport, Hotkey, Hotstring
-from ahk.message import RequestMessage
-from ahk.message import ResponseMessage
-from ahk.message import Position
-from ahk.message import _message_registry
-from ahk._constants import (
-    DAEMON_SCRIPT_TEMPLATE as _DAEMON_SCRIPT_TEMPLATE,
-    DAEMON_SCRIPT_V2_TEMPLATE as _DAEMON_SCRIPT_V2_TEMPLATE,
-)
-from ahk._utils import _version_detection_script
-from ahk.directives import Directive
-from ahk.exceptions import AHKProtocolError
-
-from concurrent.futures import Future, ThreadPoolExecutor
 
 
 T_AsyncFuture = TypeVar('T_AsyncFuture')  # unasync: remove
@@ -80,115 +84,6 @@ AsyncIOProcess: TypeAlias = asyncio.subprocess.Process  # unasync: remove
 SyncIOProcess: TypeAlias = 'subprocess.Popen[bytes]'
 
 
-FunctionName = Literal[
-    'AHKBlockInput',
-    'AHKClipWait',
-    'AHKControlClick',
-    'AHKControlGetPos',
-    'AHKControlGetText',
-    'AHKControlSend',
-    'AHKFileSelectFile',
-    'AHKFileSelectFolder',
-    'AHKGetClipboard',
-    'AHKGetClipboardAll',
-    'AHKGetCoordMode',
-    'AHKGetSendLevel',
-    'AHKGetSendMode',
-    'AHKGetTitleMatchMode',
-    'AHKGetTitleMatchSpeed',
-    'AHKGetVolume',
-    'AHKGuiNew',
-    'AHKImageSearch',
-    'AHKInputBox',
-    'AHKKeyState',
-    'AHKKeyWait',
-    'AHKMenuTrayIcon',
-    'AHKMenuTrayShow',
-    'AHKMenuTrayHide',
-    'AHKMenuTrayTip',
-    'AHKMsgBox',
-    'AHKMouseClickDrag',
-    'AHKMouseGetPos',
-    'AHKMouseMove',
-    'AHKPixelGetColor',
-    'AHKPixelSearch',
-    'AHKRegRead',
-    'AHKRegWrite',
-    'AHKRegDelete',
-    'AHKSend',
-    'AHKSendEvent',
-    'AHKSendInput',
-    'AHKSendPlay',
-    'AHKSendRaw',
-    'AHKSetClipboard',
-    'AHKSetClipboardAll',
-    'AHKSetCoordMode',
-    'AHKSetDetectHiddenWindows',
-    'AHKSetSendLevel',
-    'AHKSetSendMode',
-    'AHKSetTitleMatchMode',
-    'AHKSetVolume',
-    'AHKShowToolTip',
-    'AHKSoundBeep',
-    'AHKSoundGet',
-    'AHKSoundPlay',
-    'AHKSoundSet',
-    'AHKTrayTip',
-    'AHKWinActivate',
-    'AHKWinClose',
-    'AHKWinExist',
-    'AHKWinFromMouse',
-    'AHKWinGetControlList',
-    'AHKWinGetControlListHwnd',
-    'AHKWinGetCount',
-    'AHKWinGetExStyle',
-    'AHKWinGetID',
-    'AHKWinGetIDLast',
-    'AHKWinGetList',
-    'AHKWinGetMinMax',
-    'AHKWinGetPID',
-    'AHKWinGetPos',
-    'AHKWinGetProcessName',
-    'AHKWinGetProcessPath',
-    'AHKWinGetStyle',
-    'AHKWinGetText',
-    'AHKWinGetTitle',
-    'AHKWinGetTransColor',
-    'AHKWinGetTransparent',
-    'AHKWinHide',
-    'AHKWinIsActive',
-    'AHKWinIsAlwaysOnTop',
-    'AHKWinMove',
-    'AHKWinSetAlwaysOnTop',
-    'AHKWinSetBottom',
-    'AHKWinSetDisable',
-    'AHKWinSetEnable',
-    'AHKWinSetExStyle',
-    'AHKWinSetRedraw',
-    'AHKWinSetRegion',
-    'AHKWinSetStyle',
-    'AHKWinSetTitle',
-    'AHKWinSetTop',
-    'AHKWinSetTransColor',
-    'AHKWinSetTransparent',
-    'AHKWinShow',
-    'AHKWindowList',
-    'AHKWinWait',
-    'AHKWinWaitActive',
-    'AHKWinWaitClose',
-    'AHKWinWaitNotActive',
-    'AHKClick',
-    'AHKSetCapsLockState',
-    'SetKeyDelay',
-    'WinActivateBottom',
-    'AHKWinGetClass',
-    'AHKWinKill',
-    'AHKWinMaximize',
-    'AHKWinMinimize',
-    'AHKWinRestore',
-]
-
-
 @runtime_checkable
 class Killable(Protocol):
     def kill(self) -> None: ...
@@ -204,7 +99,9 @@ def kill(proc: Killable) -> None:
 def async_assert_send_nonblocking_type_correct(
     obj: Any,
 ) -> TypeGuard[
-    Future[Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]]
+    Future[
+        Union[None, Coordinates, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]
+    ]
 ]:
     return True
 
@@ -407,13 +304,13 @@ class AsyncTransport(ABC):
     @overload
     async def function_call(self, function_name: Literal['AHKWinExist'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[bool, AsyncFutureResult[bool]]: ...
     @overload
-    async def function_call(self, function_name: Literal['AHKImageSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[Tuple[int, int], None, AsyncFutureResult[Union[Tuple[int, int], None]]]: ...
+    async def function_call(self, function_name: Literal['AHKImageSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[Coordinates, None, AsyncFutureResult[Union[Coordinates, None]]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKPixelGetColor'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[str, AsyncFutureResult[str]]: ...
     @overload
-    async def function_call(self, function_name: Literal['AHKPixelSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[Optional[Tuple[int, int]], AsyncFutureResult[Optional[Tuple[int, int]]]]: ...
+    async def function_call(self, function_name: Literal['AHKPixelSearch'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[Optional[Coordinates], AsyncFutureResult[Optional[Coordinates]]]: ...
     @overload
-    async def function_call(self, function_name: Literal['AHKMouseGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[Tuple[int, int], AsyncFutureResult[Tuple[int, int]]]: ...
+    async def function_call(self, function_name: Literal['AHKMouseGetPos'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[Coordinates, AsyncFutureResult[Coordinates]]: ...
     @overload
     async def function_call(self, function_name: Literal['AHKKeyState'], args: Optional[List[str]] = None, *, blocking: bool = True, engine: Optional[AsyncAHK[Any]] = None) -> Union[int, float, str, None, AsyncFutureResult[None], AsyncFutureResult[str], AsyncFutureResult[int], AsyncFutureResult[float]]: ...
     @overload

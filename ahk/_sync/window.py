@@ -14,8 +14,8 @@ from typing import TypedDict
 from typing import TypeVar
 from typing import Union
 
+from ahk._types import Position
 from ahk.exceptions import WindowNotFoundException
-from ahk.message import Position
 
 if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias
@@ -30,8 +30,6 @@ else:
 if TYPE_CHECKING:
     from .engine import AHK
     from .transport import FutureResult
-
-
 
 
 SyncPropertyReturnStr: TypeAlias = str
