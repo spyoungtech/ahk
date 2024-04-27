@@ -159,19 +159,17 @@ class WinActivateForce(Directive):
 
 class TrayTip(Directive):
     def __init__(self, text: str, **kwargs: Any):
-        self.text: str = (text or '').replace('\n', ' ')
+        if not isinstance(text, str):
+            raise TypeError('Parameter "text" must be a string.')
+
+        self.text: str = text.replace('"', '').replace('\n', ' ')
 
         super().__init__(**kwargs)
 
     def __str__(self) -> str:
-        if self.text:
-            return f'A_IconTip := "{self.text}"'
-        return ''
+        return f'A_IconTip := "{self.text}"'
 
 
 class ExecutorTrayTip(TrayTip):
     def __init__(self, text: str, **kwargs: Any):
-        self.text: str = (text or '').replace('\n', ' ')
-
-        kwargs['apply_to_hotkeys_process'] = True
-        super().__init__(text=text, **kwargs)
+        super().__init__(text=text, **kwargs, apply_to_hotkeys_process=True)
