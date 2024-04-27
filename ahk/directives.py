@@ -155,3 +155,23 @@ class Warn(Directive):
 
 class WinActivateForce(Directive):
     pass
+
+
+class TrayTip(Directive):
+    def __init__(self, text: str, **kwargs: Any):
+        self.text: str = (text or '').replace('\n', ' ')
+
+        super().__init__(**kwargs)
+
+    def __str__(self) -> str:
+        if self.text:
+            return f'A_IconTip := "{self.text}"'
+        return ''
+
+
+class ExecutorTrayTip(TrayTip):
+    def __init__(self, text: str, **kwargs: Any):
+        self.text: str = (text or '').replace('\n', ' ')
+
+        kwargs['apply_to_hotkeys_process'] = True
+        super().__init__(text=text, **kwargs)
