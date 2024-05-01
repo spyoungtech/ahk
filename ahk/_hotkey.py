@@ -347,6 +347,9 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
                 break
             logging.debug(f'Received {line!r}')
             self._callback_queue.put_nowait(line.decode('UTF-8').strip())
+        # although redundant with the atexit handler, this will prevent
+        # excessive use of disk space in cases where the hotkey process is [re]started many times
+        try_remove(f.name)
 
 
 class Hotkey:
