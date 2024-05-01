@@ -33,35 +33,29 @@ from .._utils import MsgBoxModality
 from .._utils import MsgBoxOtherOptions
 from .._utils import type_escape
 from ..directives import Directive
-
-if sys.version_info < (3, 10):
-    from typing_extensions import TypeAlias
-else:
-    from typing import TypeAlias
-
-from ..extensions import (
-    Extension,
-    _ExtensionMethodRegistry,
-    _extension_registry,
-    _resolve_extensions,
-)
+from ..extensions import _extension_registry
+from ..extensions import _ExtensionMethodRegistry
+from ..extensions import _resolve_extensions
+from ..extensions import Extension
 from ..keys import Key
 from .transport import AsyncDaemonProcessTransport
 from .transport import AsyncFutureResult
 from .transport import AsyncTransport
 from .window import AsyncControl
 from .window import AsyncWindow
+from ahk._types import _BUTTONS
+from ahk._types import Coordinates
+from ahk._types import CoordModeRelativeTo
+from ahk._types import CoordModeTargets
+from ahk._types import MouseButton
+from ahk._types import Position
+from ahk._types import SendMode
+from ahk._types import TitleMatchMode
 
-from ahk._types import (
-    Position,
-    CoordModeTargets,
-    CoordModeRelativeTo,
-    TitleMatchMode,
-    _BUTTONS,
-    MouseButton,
-    SendMode,
-    Coordinates,
-)
+if sys.version_info < (3, 10):
+    from typing_extensions import TypeAlias
+else:
+    from typing import TypeAlias
 
 async_sleep = asyncio.sleep  # unasync: remove
 sleep = time.sleep
