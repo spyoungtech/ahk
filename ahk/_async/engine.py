@@ -92,7 +92,7 @@ def _resolve_button(button: Union[str, int]) -> str:
         resolved_button = _BUTTONS[button]
     elif isinstance(button, int) and button > 3:
         #  for addtional mouse buttons
-        resolved_button = f'X{button-3}'
+        resolved_button = f'X{button - 3}'
     else:
         assert isinstance(button, str)
         resolved_button = button
