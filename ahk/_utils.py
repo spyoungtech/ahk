@@ -1,4 +1,5 @@
 import enum
+import logging
 import os
 import re
 import subprocess
@@ -170,3 +171,10 @@ def _get_executable_major_version(executable_path: str) -> Literal['v1', 'v2']:
         return 'v2'
     else:
         raise ValueError(f'Unexpected version {version!r}')
+
+
+def try_remove(name: str) -> None:
+    try:
+        os.remove(name)
+    except Exception as e:
+        logging.debug(f'Ignoring removal exception {e}')
