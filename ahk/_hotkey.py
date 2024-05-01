@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import atexit
 import functools
-import os
+import logging
 import re
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import warnings
 from abc import ABC
 from abc import abstractmethod
 from base64 import b64encode
+from queue import Queue
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -26,20 +28,17 @@ from typing import Union
 
 import jinja2
 
+from ._constants import HOTKEYS_SCRIPT_TEMPLATE as _HOTKEY_SCRIPT
+from ._constants import HOTKEYS_SCRIPT_V2_TEMPLATE as _HOTKEY_V2_SCRIPT
 from .directives import Directive
+from ahk._utils import hotkey_escape
+from ahk._utils import try_remove
 
 if sys.version_info >= (3, 10):
     from typing import ParamSpec
 else:
     from typing_extensions import ParamSpec
 
-
-import logging
-import tempfile
-from queue import Queue
-
-from ahk._utils import hotkey_escape
-from ._constants import HOTKEYS_SCRIPT_TEMPLATE as _HOTKEY_SCRIPT, HOTKEYS_SCRIPT_V2_TEMPLATE as _HOTKEY_V2_SCRIPT
 
 P_HotkeyCallbackParam = ParamSpec('P_HotkeyCallbackParam')
 T_HotkeyCallbackReturn = TypeVar('T_HotkeyCallbackReturn')
@@ -324,31 +323,33 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
     def listener(self) -> None:
         hotkey_script_contents = self._render_hotkey_template()
         logging.debug('hotkey script contents:\n%s', hotkey_script_contents)
-        with tempfile.TemporaryDirectory(prefix='python-ahk') as tmpdirname:
-            exc_file = os.path.join(tmpdirname, 'executor.ahk')
-            with open(exc_file, 'w') as f:
-                f.write(hotkey_script_contents)
-            self._proc = subprocess.Popen(
-                [self._executable_path, '/CP65001', '/ErrorStdOut', exc_file],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            atexit.register(kill, self._proc)
-            assert self._proc.stdout is not None
-            assert self._proc.stdin is not None
-            while self._running:
-                line = self._proc.stdout.readline()
-                if line.rstrip(b'\n') == _KEEPALIVE_SENTINEL:
-                    logging.debug('keepalive received')
-                    self._proc.stdin.write(b'\xee\x80\x80\n')
-                    self._proc.stdin.flush()
-                    continue
-                if not line.strip():
-                    logging.debug('Listener: Process probably died, exiting')
-                    break
-                logging.debug(f'Received {line!r}')
-                self._callback_queue.put_nowait(line.decode('UTF-8').strip())
+        with tempfile.NamedTemporaryFile(mode='w', prefix='python-ahk-hotkeys-', suffix='.ahk', delete=False) as f:
+            f.write(hotkey_script_contents)
+        atexit.register(try_remove, f.name)
+        self._proc = subprocess.Popen(
+            [self._executable_path, '/CP65001', '/ErrorStdOut', f.name],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        atexit.register(kill, self._proc)
+        assert self._proc.stdout is not None
+        assert self._proc.stdin is not None
+        while self._running:
+            line = self._proc.stdout.readline()
+            if line.rstrip(b'\n') == _KEEPALIVE_SENTINEL:
+                logging.debug('keepalive received')
+                self._proc.stdin.write(b'\xee\x80\x80\n')
+                self._proc.stdin.flush()
+                continue
+            if not line.strip():
+                logging.debug('Listener: Process probably died, exiting')
+                break
+            logging.debug(f'Received {line!r}')
+            self._callback_queue.put_nowait(line.decode('UTF-8').strip())
+        # although redundant with the atexit handler, this will prevent
+        # excessive use of disk space in cases where the hotkey process is [re]started many times
+        try_remove(f.name)
 
 
 class Hotkey:

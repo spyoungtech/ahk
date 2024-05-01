@@ -40,6 +40,7 @@ from ahk._types import Coordinates
 from ahk._types import FunctionName
 from ahk._types import Position
 from ahk._utils import _version_detection_script
+from ahk._utils import try_remove
 from ahk.directives import Directive
 from ahk.exceptions import AHKProtocolError
 from ahk.extensions import _resolve_includes
@@ -668,7 +669,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
                     tempscriptfile.write(script_text)  # XXX: can we make this async?
                 self._temp_script = tempscriptfile.name
                 daemon_script = self._temp_script
-                atexit.register(os.remove, tempscriptfile.name)
+                atexit.register(try_remove, tempscriptfile.name)
             else:
                 daemon_script = self._temp_script
         else:
@@ -676,7 +677,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             with tempfile.NamedTemporaryFile(mode='w', prefix='python-ahk-', suffix='.ahk', delete=False) as tempscript:
                 tempscript.write(script_text)
             daemon_script = tempscript.name
-            atexit.register(os.remove, tempscript.name)
+            atexit.register(try_remove, tempscript.name)
         runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
         proc = AsyncAHKProcess(runargs=runargs)
         await proc.start()
