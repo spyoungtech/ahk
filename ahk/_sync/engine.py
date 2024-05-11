@@ -3846,7 +3846,7 @@ class AHK(Generic[T_AHKVersion]):
     ) -> NoReturn:
         """
         Blocks forever. Utility method to prevent script from exiting. Internally it uses
-        asyncio rather than a time.sleep.  Optionally, hotkeys can be stopped cleanly once the 
+        asyncio rather than a time.sleep.  Optionally, hotkeys can be stopped cleanly once the
         loop is done.
         """
         if loop is None:
