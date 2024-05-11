@@ -3857,6 +3857,7 @@ class AHK(Generic[T_AHKVersion]):
               self.stop_hotkeys()
         finally:
             loop.close()
+        return None
 
     def get_version(self) -> str:
         return self._transport._get_full_version()
