@@ -3854,7 +3854,7 @@ class AHK(Generic[T_AHKVersion]):
         try:
             loop.run_forever()
             if stop_hotkeys:
-              ahk.stop_hotkeys()
+              self.stop_hotkeys()
         finally:
             loop.close()
 
