@@ -3839,25 +3839,12 @@ class AHK(Generic[T_AHKVersion]):
         args = [starting_folder, str(opts), prompt]
         return self._transport.function_call('AHKFileSelectFolder', args, blocking=blocking)
 
-    def block_forever(
-        self,
-        loop : Optional[asyncio.AbstractEventLoop] = None,
-        stop_hotkeys: bool = False
-    ) -> None:
+    def block_forever(self) -> NoReturn:
         """
-        Blocks forever. Utility method to prevent script from exiting. Internally it uses
-        asyncio rather than a time.sleep.  Optionally, hotkeys can be stopped cleanly once the
-        loop is done.
+        Blocks (sleeps) forever. Utility method to prevent script from exiting.
         """
-        if loop is None:
-          loop = asyncio.get_event_loop()
-        try:
-            loop.run_forever()
-            if stop_hotkeys:
-              self.stop_hotkeys()
-        finally:
-            loop.close()
-        return None
+        while True:
+            sleep(1)
 
     def get_version(self) -> str:
         return self._transport._get_full_version()
