@@ -9,6 +9,11 @@ GIT_EXECUTABLE = shutil.which('git')
 
 changes = 0
 
+if hasattr(black, 'ASTSafetyError'):
+    exceptions = (AssertionError, black.ASTSafetyError)
+else:
+    exceptions = (AssertionError,)
+
 
 def _copyfunc(src, dst, *, follow_symlinks=True):
     global changes
@@ -22,7 +27,7 @@ def _copyfunc(src, dst, *, follow_symlinks=True):
                 src=contents,
                 dst=dst_contents,
             )
-        except AssertionError:
+        except exceptions:
             changes += 1
             print('MODIFIED', dst)
             shutil.copy2(src, dst, follow_symlinks=follow_symlinks)
