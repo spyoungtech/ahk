@@ -3841,7 +3841,7 @@ class AHK(Generic[T_AHKVersion]):
 
     def block_forever(
         self,
-        loop : asyncio.AbstractEventLoop = None,
+        loop : Optional[asyncio.AbstractEventLoop] = None,
         stop_hotkeys: bool = False
     ) -> NoReturn:
         """
