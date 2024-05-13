@@ -417,7 +417,7 @@ GUI
 
 GUI methods are largely unimplmented, except ``ToolTip`` and ``TrayTip``.
 We recommend using one of the many `Python GUI libraries <https://wiki.python.org/moin/GuiProgramming>`_, such as ``tkinter`` from the standard library or a third
-party package such as `pyqt <https://wiki.python.org/moin/PyQt>`_ , `pysimplegui <https://www.pysimplegui.org/en/latest/>`_ or similar.
+party package such as `pyqt <https://wiki.python.org/moin/PyQt>`_ , `FreeSimpleGUI <https://github.com/spyoungtech/FreeSimpleGUI>`_ or similar.
 
 .. list-table::
    :header-rows: 1
