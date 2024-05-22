@@ -2157,6 +2157,32 @@ AHKSetCapsLockState(args*) {
     {% endblock AHKSetCapsLockState %}
 }
 
+
+AHKSetNumLockState(args*) {
+    {% block AHKSetNumLockState %}
+    state := args[1]
+    if (state = "") {
+        SetNumLockState(!GetKeyState("NumLock", "T"))
+    } else {
+        SetNumLockState(state)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSetNumLockState %}
+}
+
+
+AHKSetScrollLockState(args*) {
+    {% block AHKSetScrollLockState %}
+    state := args[1]
+    if (state = "") {
+        SetScrollLockState(!GetKeyState("ScrollLock", "T"))
+    } else {
+        SetScrollLockState(state)
+    }
+    return FormatNoValueResponse()
+    {% endblock AHKSetScrollLockState %}
+}
+
 HideTrayTip(args*) {
     {% block HideTrayTip %}
     TrayTip ; Attempt to hide it the normal way.

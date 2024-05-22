@@ -97,11 +97,11 @@ Mouse and Keyboard
      - Not Implemented
      - Delays between mouse movements can be controlled in Python code between calls to ``mouse_move``
    * - `SetNumLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
-     - Not Implemented
-     -
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.AHK.set_numlock_state`
    * - `SetScrollLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
-     - Not Implemented
-     -
+     - Implemented
+     - :py:meth:`~ahk._sync.engine.AHK.set_scroll_lock_state`
    * - `SetStoreCapsLockMode <https://www.autohotkey.com/docs/commands/SetStoreCapslockMode.htm>`_
      - Not Implemented
      -

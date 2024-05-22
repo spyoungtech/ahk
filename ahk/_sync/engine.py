@@ -1273,16 +1273,19 @@ class AHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
     @overload
-    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
     @overload
-    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
     @overload
-    def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
     # fmt: on
     def set_capslock_state(
-        self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True
+        self,
+        state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None,
+        *,
+        blocking: bool = True,
     ) -> Union[None, FutureResult[None]]:
         """
         Analog for `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
@@ -1293,9 +1296,90 @@ class AHK(Generic[T_AHKVersion]):
                 raise ValueError(
                     f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
                 )
+            if state is True:
+                state = 'On'
+            elif state is False:
+                state = 'Off'
+
             args.append(str(state))
+        else:
+            args.append('')
 
         resp = self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    @overload
+    def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def set_numlock_state(
+        self,
+        state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
+        """
+        args: List[str] = []
+        if state is not None:
+            if str(state).lower() not in ('1', '0', 'on', 'off', 'alwayson', 'alwaysoff'):
+                raise ValueError(
+                    f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
+                )
+            if state is True:
+                state = 'On'
+            elif state is False:
+                state = 'Off'
+
+            args.append(str(state))
+        else:
+            args.append('')
+
+        resp = self._transport.function_call('AHKSetNumLockState', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    @overload
+    def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> FutureResult[None]: ...
+    @overload
+    def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, FutureResult[None]]: ...
+    # fmt: on
+    def set_scroll_lock_state(
+        self,
+        state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, FutureResult[None]]:
+        """
+        Analog for `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
+        """
+        args: List[str] = []
+        if state is not None:
+            if str(state).lower() not in ('1', '0', 'on', 'off', 'alwayson', 'alwaysoff'):
+                raise ValueError(
+                    f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
+                )
+            if state is True:
+                state = 'On'
+            elif state is False:
+                state = 'Off'
+
+            args.append(str(state))
+        else:
+            args.append('')
+
+        resp = self._transport.function_call('AHKSetScrollLockState', args, blocking=blocking)
         return resp
 
     # fmt: off

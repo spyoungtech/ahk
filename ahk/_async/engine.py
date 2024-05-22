@@ -1285,16 +1285,19 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    async def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
     @overload
-    async def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    async def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
     @overload
-    async def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    async def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
     @overload
-    async def set_capslock_state(self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    async def set_capslock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def set_capslock_state(
-        self, state: Optional[Literal[0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True
+        self,
+        state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None,
+        *,
+        blocking: bool = True,
     ) -> Union[None, AsyncFutureResult[None]]:
         """
         Analog for `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
@@ -1305,9 +1308,90 @@ class AsyncAHK(Generic[T_AHKVersion]):
                 raise ValueError(
                     f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
                 )
+            if state is True:
+                state = 'On'
+            elif state is False:
+                state = 'Off'
+
             args.append(str(state))
+        else:
+            args.append('')
 
         resp = await self._transport.function_call('AHKSetCapsLockState', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    @overload
+    async def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def set_numlock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def set_numlock_state(
+        self,
+        state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        """
+        Analog for `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
+        """
+        args: List[str] = []
+        if state is not None:
+            if str(state).lower() not in ('1', '0', 'on', 'off', 'alwayson', 'alwaysoff'):
+                raise ValueError(
+                    f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
+                )
+            if state is True:
+                state = 'On'
+            elif state is False:
+                state = 'Off'
+
+            args.append(str(state))
+        else:
+            args.append('')
+
+        resp = await self._transport.function_call('AHKSetNumLockState', args, blocking=blocking)
+        return resp
+
+    # fmt: off
+    @overload
+    async def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None) -> None: ...
+    @overload
+    async def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[True]) -> None: ...
+    @overload
+    async def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: Literal[False]) -> AsyncFutureResult[None]: ...
+    @overload
+    async def set_scroll_lock_state(self, state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None, *, blocking: bool = True) -> Union[None, AsyncFutureResult[None]]: ...
+    # fmt: on
+    async def set_scroll_lock_state(
+        self,
+        state: Optional[Literal[True, False, 0, 1, 'On', 'Off', 'AlwaysOn', 'AlwaysOff']] = None,
+        *,
+        blocking: bool = True,
+    ) -> Union[None, AsyncFutureResult[None]]:
+        """
+        Analog for `SetCapsLockState <https://www.autohotkey.com/docs/commands/SetNumScrollCapsLockState.htm>`_
+        """
+        args: List[str] = []
+        if state is not None:
+            if str(state).lower() not in ('1', '0', 'on', 'off', 'alwayson', 'alwaysoff'):
+                raise ValueError(
+                    f'Invalid value for state. Must be one of On, Off, AlwaysOn, AlwaysOff or None. Got {state!r}'
+                )
+            if state is True:
+                state = 'On'
+            elif state is False:
+                state = 'Off'
+
+            args.append(str(state))
+        else:
+            args.append('')
+
+        resp = await self._transport.function_call('AHKSetScrollLockState', args, blocking=blocking)
         return resp
 
     # fmt: off

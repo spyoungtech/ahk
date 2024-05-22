@@ -173,6 +173,8 @@ FunctionName = Literal[
     'AHKWinWaitNotActive',
     'AHKClick',
     'AHKSetCapsLockState',
+    'AHKSetNumLockState',
+    'AHKSetScrollLockState',
     'SetKeyDelay',
     'WinActivateBottom',
     'AHKWinGetClass',
