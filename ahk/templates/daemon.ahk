@@ -1693,10 +1693,8 @@ AHKKeyState(args*) {
     if state is float
         return FormatResponse("ahk.message.FloatResponseMessage", state)
 
-    if state is alnum
-        return FormatResponse("ahk.message.StringResponseMessage", state)
+    return FormatResponse("ahk.message.StringResponseMessage", state)
 
-    return FormatResponse("ahk.message.ExceptionResponseMessage", state)
     {% endblock AHKKeyState %}
 }
 

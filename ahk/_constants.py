@@ -1696,10 +1696,8 @@ AHKKeyState(args*) {
     if state is float
         return FormatResponse("ahk.message.FloatResponseMessage", state)
 
-    if state is alnum
-        return FormatResponse("ahk.message.StringResponseMessage", state)
+    return FormatResponse("ahk.message.StringResponseMessage", state)
 
-    return FormatResponse("ahk.message.ExceptionResponseMessage", state)
     {% endblock AHKKeyState %}
 }
 
@@ -4810,11 +4808,8 @@ AHKKeyState(args*) {
     if IsFloat(state)
         return FormatResponse("ahk.message.FloatResponseMessage", state)
 
-    if IsAlnum(state)
-        return FormatResponse("ahk.message.StringResponseMessage", state)
+    return FormatResponse("ahk.message.StringResponseMessage", state)
 
-    msg := Format("Unexpected key state {}", state)
-    return FormatResponse("ahk.message.ExceptionResponseMessage", msg)
     {% endblock AHKKeyState %}
 }
 
