@@ -2041,7 +2041,13 @@ AHKSend(args*) {
     }
 
     if (key_delay != "" or key_press_duration != "") {
-        SetKeyDelay(key_delay, key_press_duration)
+        if (key_delay != "" and key_press_duration != "") {
+            SetKeyDelay(key_delay, key_press_duration)
+        } else if (key_delay != "" and key_press_duration = "") {
+            SetKeyDelay(key_delay)
+        } else if (key_delay = "" and key_press_duration != "") {
+            SetKeyDelay(current_delay, key_press_duration)
+        }
     }
 
 
@@ -2067,7 +2073,13 @@ AHKSendRaw(args*) {
     current_key_duration := Format("{}", A_KeyDuration)
 
     if (key_delay != "" or key_press_duration != "") {
-        SetKeyDelay(key_delay, key_press_duration)
+        if (key_delay != "" and key_press_duration != "") {
+            SetKeyDelay(key_delay, key_press_duration)
+        } else if (key_delay != "" and key_press_duration = "") {
+            SetKeyDelay(key_delay)
+        } else if (key_delay = "" and key_press_duration != "") {
+            SetKeyDelay(current_delay, key_press_duration)
+        }
     }
 
     Send("{Raw}" str)
@@ -2088,7 +2100,13 @@ AHKSendInput(args*) {
     current_key_duration := Format("{}", A_KeyDuration)
 
     if (key_delay != "" or key_press_duration != "") {
-        SetKeyDelay(key_delay, key_press_duration)
+        if (key_delay != "" and key_press_duration != "") {
+            SetKeyDelay(key_delay, key_press_duration)
+        } else if (key_delay != "" and key_press_duration = "") {
+            SetKeyDelay(key_delay)
+        } else if (key_delay = "" and key_press_duration != "") {
+            SetKeyDelay(current_delay, key_press_duration)
+        }
     }
 
     SendInput(str)
@@ -2109,7 +2127,13 @@ AHKSendEvent(args*) {
     current_key_duration := Format("{}", A_KeyDuration)
 
     if (key_delay != "" or key_press_duration != "") {
-        SetKeyDelay(key_delay, key_press_duration)
+        if (key_delay != "" and key_press_duration != "") {
+            SetKeyDelay(key_delay, key_press_duration)
+        } else if (key_delay != "" and key_press_duration = "") {
+            SetKeyDelay(key_delay)
+        } else if (key_delay = "" and key_press_duration != "") {
+            SetKeyDelay(current_delay, key_press_duration)
+        }
     }
 
     SendEvent(str)
@@ -2130,7 +2154,13 @@ AHKSendPlay(args*) {
     current_key_duration := Format("{}", A_KeyDurationPlay)
 
     if (key_delay != "" or key_press_duration != "") {
-        SetKeyDelay(key_delay, key_press_duration, "Play")
+        if (key_delay != "" and key_press_duration != "") {
+            SetKeyDelay(key_delay, key_press_duration)
+        } else if (key_delay != "" and key_press_duration = "") {
+            SetKeyDelay(key_delay)
+        } else if (key_delay = "" and key_press_duration != "") {
+            SetKeyDelay(current_delay, key_press_duration)
+        }
     }
 
     SendPlay(str)
