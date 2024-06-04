@@ -500,7 +500,7 @@ class Transport(ABC):
         blocking: bool = True,
         engine: Optional[AHK[Any]] = None,
     ) -> Any:
-        if not self._started:
+        if not self._started and blocking:
             with warnings.catch_warnings(record=True) as caught_warnings:
                 self.init()
             if caught_warnings:

@@ -22,27 +22,13 @@ from typing import Type
 from typing import TypeVar
 from typing import Union
 
-from .._hotkey import Hotkey
-from .._hotkey import Hotstring
-from .._utils import _get_executable_major_version
-from .._utils import _resolve_executable_path
-from .._utils import MsgBoxButtons
-from .._utils import MsgBoxDefaultButton
-from .._utils import MsgBoxIcon
-from .._utils import MsgBoxModality
-from .._utils import MsgBoxOtherOptions
-from .._utils import type_escape
-from ..directives import Directive
-from ..extensions import _extension_registry
-from ..extensions import _ExtensionMethodRegistry
-from ..extensions import _resolve_extensions
-from ..extensions import Extension
-from ..keys import Key
 from .transport import AsyncDaemonProcessTransport
 from .transport import AsyncFutureResult
 from .transport import AsyncTransport
 from .window import AsyncControl
 from .window import AsyncWindow
+from ahk._hotkey import Hotkey
+from ahk._hotkey import Hotstring
 from ahk._types import _BUTTONS
 from ahk._types import Coordinates
 from ahk._types import CoordModeRelativeTo
@@ -51,6 +37,20 @@ from ahk._types import MouseButton
 from ahk._types import Position
 from ahk._types import SendMode
 from ahk._types import TitleMatchMode
+from ahk._utils import _get_executable_major_version
+from ahk._utils import _resolve_executable_path
+from ahk._utils import MsgBoxButtons
+from ahk._utils import MsgBoxDefaultButton
+from ahk._utils import MsgBoxIcon
+from ahk._utils import MsgBoxModality
+from ahk._utils import MsgBoxOtherOptions
+from ahk._utils import type_escape
+from ahk.directives import Directive
+from ahk.extensions import _extension_registry
+from ahk.extensions import _ExtensionMethodRegistry
+from ahk.extensions import _resolve_extensions
+from ahk.extensions import Extension
+from ahk.keys import Key
 
 if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias
