@@ -330,8 +330,8 @@ Featured extension packages
 Since this feature is in early development, not many extensions exist yet. However, I've authored two small extensions
 which can be used as references or examples of how to create and distribute an extension:
 
-- [ahk-wmutil](https://github.com/spyoungtech/ahk-wmutil) an extension providing utility support for working with multiple monitors. Includes examples of window extensions.
-- [ahk-json](https://github.com/spyoungtech/ahk-json) an extension providing custom a JSON message type that can be used by other extensions.
+- `ahk-wmutil <https://github.com/spyoungtech/ahk-wmutil>`_ an extension providing utility support for working with multiple monitors. Includes examples of window extensions.
+- `ahk-json <https://github.com/spyoungtech/ahk-json>`_ an extension providing custom a JSON message type that can be used by other extensions.
 
 If you have created an extension you'd like to share, consider opening an issue, PR, or discussion and it may be added to this list.
 
