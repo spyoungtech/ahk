@@ -103,7 +103,7 @@ containing the AutoHotkey code we just wrote above.
     '''
     simple_math_extension = Extension(script_text=script_text)
 
-    @simple_meth_extension.register  # register the method for the extension
+    @simple_math_extension.register  # register the method for the extension
     def simple_math(ahk: AHK, lhs: int, rhs: int, operator: Literal['+', '*']) -> int:
         assert isinstance(lhs, int)
         assert isinstance(rhs, int)
@@ -141,6 +141,13 @@ If you use this example code, it should output something like this: ::
     An exception was raised. Exception message was: Invalid operator: %
 
 
+Extending ``Window`` methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Just as you can add methods that are accessible from ``AHK`` (and ``AsyncAHK``) instances, you can also add methods
+that are accessible from the ``Window`` and ``AsyncWindow`` classes as well. This is identical to the process
+described above, except you use the ``register_window_method`` decorator instead of the ``register`` decorator. The
+first argument of such decorated functions should accept a ``Window`` object (or ``AsyncWindow`` object for async functions).
 
 
 Includes
@@ -315,6 +322,18 @@ For example, suppose you want your method to return a datetime object, you might
 
 In AHK code, you can reference custom response messages by the their fully qualified name, including the namespace.
 (if you're not sure what this means, you can see this value by calling the ``fqn()`` method, e.g. ``DateTimeResponseMessage.fqn()``)
+
+
+Featured extension packages
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Since this feature is in early development, not many extensions exist yet. However, I've authored two small extensions
+which can be used as references or examples of how to create and distribute an extension:
+
+- [ahk-wmutil](https://github.com/spyoungtech/ahk-wmutil) an extension providing utility support for working with multiple monitors. Includes examples of window extensions.
+- [ahk-json](https://github.com/spyoungtech/ahk-json) an extension providing custom a JSON message type that can be used by other extensions.
+
+If you have created an extension you'd like to share, consider opening an issue, PR, or discussion and it may be added to this list.
 
 Notes
 ^^^^^
