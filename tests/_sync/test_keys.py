@@ -49,6 +49,16 @@ class TestKeysAsync(unittest.TestCase):
 
         assert 'by the way' in self.win.get_text()
 
+    def test_hotstring_cyrillic(self):
+        self.ahk.add_hotstring('тест', 'hello world')
+        self.ahk.start_hotkeys()
+        self.ahk.set_send_level(1)
+        self.win.activate()
+        self.ahk.send('тест ')
+        time.sleep(2)
+
+        assert 'hello world' in self.win.get_text()
+
     def test_remove_hotstring(self):
         self.ahk.add_hotstring('btw', 'by the way')
         self.ahk.start_hotkeys()

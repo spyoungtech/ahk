@@ -323,7 +323,9 @@ class ThreadedHotkeyTransport(HotkeyTransportBase):
     def listener(self) -> None:
         hotkey_script_contents = self._render_hotkey_template()
         logging.debug('hotkey script contents:\n%s', hotkey_script_contents)
-        with tempfile.NamedTemporaryFile(mode='w', prefix='python-ahk-hotkeys-', suffix='.ahk', delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode='w', prefix='python-ahk-hotkeys-', suffix='.ahk', delete=False, encoding='utf-8'
+        ) as f:
             f.write(hotkey_script_contents)
         atexit.register(try_remove, f.name)
         self._proc = subprocess.Popen(
