@@ -148,7 +148,9 @@ class AsyncAHK(Generic[T_AHKVersion]):
                     raise ValueError(
                         f'Incompatible extension detected. Extension requires AutoHotkey {ext._requires} but current version is {version}'
                     )
-        self._method_registry = _ExtensionMethodRegistry(sync_methods={}, async_methods={})
+        self._method_registry = _ExtensionMethodRegistry(
+            sync_methods={}, async_methods={}, async_window_methods={}, sync_window_methods={}
+        )
         for ext in self._extensions:
             self._method_registry.merge(ext._extension_method_registry)
         if TransportClass is None:
@@ -175,6 +177,19 @@ class AsyncAHK(Generic[T_AHKVersion]):
                 return partial(method, self)
 
         raise AttributeError(f'{self.__class__.__name__!r} object has no attribute {name!r}')
+
+    def _get_window_extension_method(self, name: str) -> Callable[..., Any] | None:
+        is_async = False
+        is_async = True  # unasync: remove
+        if is_async:
+            if name in self._method_registry.async_window_methods:
+                method = self._method_registry.async_window_methods[name]
+                return method
+        else:
+            if name in self._method_registry.sync_window_methods:
+                method = self._method_registry.sync_window_methods[name]
+                return method
+        return None
 
     def add_hotkey(
         self, keyname: str, callback: Callable[[], Any], ex_handler: Optional[Callable[[str, Exception], Any]] = None

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import sys
 import warnings
+from functools import partial
 from typing import Any
+from typing import Callable
 from typing import Coroutine
 from typing import Literal
 from typing import Optional
@@ -65,6 +67,13 @@ class Window:
 
     def __hash__(self) -> int:
         return hash(self._ahk_id)
+
+    def __getattr__(self, name: str) -> Callable[..., Any]:
+        method = self._engine._get_window_extension_method(name)
+        if method is None:
+            raise AttributeError(f'{self.__class__.__name__!r} object has no attribute {name!r}')
+        else:
+            return partial(method, self)
 
     def close(self) -> None:
         self._engine.win_close(

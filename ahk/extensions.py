@@ -32,15 +32,18 @@ P = ParamSpec('P')
 
 
 if typing.TYPE_CHECKING:
-    from ahk import AHK, AsyncAHK
+    from ahk import AHK, AsyncAHK, Window, AsyncWindow
 
     TAHK = TypeVar('TAHK', bound=typing.Union[AHK[Any], AsyncAHK[Any]])
+    TWindow = TypeVar('TWindow', bound=typing.Union[Window, AsyncWindow])
 
 
 @dataclass
 class _ExtensionMethodRegistry:
     sync_methods: dict[str, Callable[..., Any]]
     async_methods: dict[str, Callable[..., Any]]
+    sync_window_methods: dict[str, Callable[..., Any]]
+    async_window_methods: dict[str, Callable[..., Any]]
 
     def register(self, f: Callable[Concatenate[TAHK, P], T]) -> Callable[Concatenate[TAHK, P], T]:
         if asyncio.iscoroutinefunction(f):
@@ -63,13 +66,40 @@ class _ExtensionMethodRegistry:
             self.sync_methods[f.__name__] = f
         return f
 
+    def register_window_method(self, f: Callable[Concatenate[TWindow, P], T]) -> Callable[Concatenate[TWindow, P], T]:
+        if asyncio.iscoroutinefunction(f):
+            if f.__name__ in self.async_window_methods:
+                warnings.warn(
+                    f'Method of name {f.__name__!r} has already been registered. '
+                    f'Previously registered method {self.async_window_methods[f.__name__]!r} '
+                    f'will be overridden by {f!r}',
+                    stacklevel=2,
+                )
+            self.async_window_methods[f.__name__] = f
+        else:
+            if f.__name__ in self.sync_window_methods:
+                warnings.warn(
+                    f'Method of name {f.__name__!r} has already been registered. '
+                    f'Previously registered method {self.sync_window_methods[f.__name__]!r} '
+                    f'will be overridden by {f!r}',
+                    stacklevel=2,
+                )
+            self.sync_window_methods[f.__name__] = f
+        return f
+
     def merge(self, other: _ExtensionMethodRegistry) -> None:
         for name, method in other.methods:
             self.register(method)
+        for name, method in other.window_methods:
+            self.register_window_method(method)
 
     @property
     def methods(self) -> list[tuple[str, Callable[..., Any]]]:
         return list(itertools.chain(self.async_methods.items(), self.sync_methods.items()))
+
+    @property
+    def window_methods(self) -> list[tuple[str, Callable[..., Any]]]:
+        return list(itertools.chain(self.async_window_methods.items(), self.sync_window_methods.items()))
 
 
 _extension_registry: dict[Extension, _ExtensionMethodRegistry] = {}
@@ -88,7 +118,7 @@ class Extension:
         self._includes: list[str] = includes or []
         self.dependencies: list[Extension] = dependencies or []
         self._extension_method_registry: _ExtensionMethodRegistry = _ExtensionMethodRegistry(
-            sync_methods={}, async_methods={}
+            sync_methods={}, async_methods={}, sync_window_methods={}, async_window_methods={}
         )
         _extension_registry[self] = self._extension_method_registry
 
@@ -106,6 +136,12 @@ class Extension:
 
     def register(self, f: Callable[Concatenate[TAHK, P], T]) -> Callable[Concatenate[TAHK, P], T]:
         self._extension_method_registry.register(f)
+        return f
+
+    register_method = register
+
+    def register_window_method(self, f: Callable[Concatenate[TWindow, P], T]) -> Callable[Concatenate[TWindow, P], T]:
+        self._extension_method_registry.register_window_method(f)
         return f
 
     def __hash__(self) -> int:
