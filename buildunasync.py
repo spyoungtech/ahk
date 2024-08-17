@@ -19,6 +19,7 @@ build_py = unasync.cmdclass_build_py(
                 'AsyncFutureResult': 'FutureResult',
                 '_async_run_nonblocking': '_sync_run_nonblocking',
                 'acommunicate': 'communicate',
+                'astart': 'start',
                 # "__aenter__": "__aenter__",
             },
         ),
