@@ -59,6 +59,10 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias, TypeGuard
 
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
 
 T_AsyncFuture = TypeVar('T_AsyncFuture')  # unasync: remove
 T_SyncFuture = TypeVar('T_SyncFuture')
@@ -110,6 +114,9 @@ def async_assert_send_nonblocking_type_correct(
 class Communicable(Protocol):
     runargs: List[str]
 
+    async def start(self, atexit_cleanup: bool = True) -> None: ...
+    def astart(self, *args: Any, **kwargs: Any) -> None: ...  # unasync: remove
+
     def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]: ...
 
     async def acommunicate(  # unasync: remove
@@ -118,6 +125,8 @@ class Communicable(Protocol):
 
     @property
     def returncode(self) -> Optional[int]: ...
+
+    def kill(self) -> None: ...
 
 
 class AsyncAHKProcess:
@@ -130,9 +139,12 @@ class AsyncAHKProcess:
         assert self._proc is not None
         return self._proc.returncode
 
-    async def start(self) -> None:
+    def astart(self, *args: Any, **kwargs: Any) -> None: ...  # unasync: remove
+
+    async def start(self, atexit_cleanup: bool = True) -> None:
         self._proc = await async_create_process(self.runargs)
-        atexit.register(kill, self._proc)
+        if atexit_cleanup:
+            atexit.register(kill, self._proc)
         return None
 
     async def adrain_stdin(self) -> None:  # unasync: remove
@@ -182,6 +194,17 @@ class AsyncAHKProcess:
         assert self._proc is not None
         assert isinstance(self._proc, subprocess.Popen)
         return self._proc.communicate(input=input_bytes, timeout=timeout)
+
+    async def __aenter__(self) -> Self:
+        await self.start(atexit_cleanup=False)
+        return self
+
+    async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> Literal[False]:
+        try:
+            self.kill()
+        except Exception:
+            pass
+        return False
 
 
 async def async_create_process(runargs: List[str]) -> asyncio.subprocess.Process:  # unasync: remove
@@ -635,7 +658,8 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         assert self._proc is None, 'cannot start a process twice'
         with warnings.catch_warnings(record=True) as caught_warnings:
             async with self.lock:
-                self._proc = await self._create_process()
+                self._proc = self._create_process()
+                await self._proc.start()
         if caught_warnings:
             for warning in caught_warnings:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
@@ -659,9 +683,7 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         return self._a_execution_lock  # unasync: remove
         return self._execution_lock
 
-    async def _create_process(
-        self, template: Optional[jinja2.Template] = None, **template_kwargs: Any
-    ) -> AsyncAHKProcess:
+    def _create_process(self, template: Optional[jinja2.Template] = None, **template_kwargs: Any) -> AsyncAHKProcess:
         if template is None:
             if template_kwargs:
                 raise ValueError('template kwargs were specified, but no template was provided')
@@ -684,15 +706,13 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             atexit.register(try_remove, tempscript.name)
         runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
         proc = AsyncAHKProcess(runargs=runargs)
-        await proc.start()
         return proc
 
     async def _send_nonblocking(
         self, request: RequestMessage, engine: Optional[AsyncAHK[Any]] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]:
         msg = request.format()
-        proc = await self._create_process()
-        try:
+        async with self._create_process() as proc:
             proc.write(msg)
             await proc.adrain_stdin()
             tom = await proc.readline()
@@ -715,11 +735,6 @@ class AsyncDaemonProcessTransport(AsyncTransport):
                 part = await proc.readline()
                 content_buffer.write(part)
             content = content_buffer.getvalue()[:-1]
-        finally:
-            try:
-                proc.kill()
-            except:  # noqa
-                pass
         response = ResponseMessage.from_bytes(content, engine=engine)
         return response.unpack()  # type: ignore
 
@@ -781,11 +796,17 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         loop = asyncio.get_running_loop()
 
         async def f() -> str:
-            stdout, stderr = await proc.acommunicate(script_bytes, timeout)
+            try:
+                await proc.start(atexit_cleanup=False)
+                stdout, stderr = await proc.acommunicate(script_bytes, timeout)
+            finally:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
             if proc.returncode != 0:
                 assert proc.returncode is not None
                 raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
-
             return stdout.decode('utf-8')
 
         task = loop.create_task(f())
@@ -797,15 +818,23 @@ class AsyncDaemonProcessTransport(AsyncTransport):
         script_bytes: Optional[bytes],
         timeout: Optional[int] = None,
     ) -> FutureResult[str]:
-        pool = ThreadPoolExecutor(max_workers=1)
+        raise RuntimeError('This method can only be called from the sync API')  # unasync: remove
 
         def f() -> str:
-            stdout, stderr = proc.communicate(script_bytes, timeout)
+            try:
+                proc.astart(atexit_cleanup=False)
+                stdout, stderr = proc.communicate(script_bytes, timeout)
+            finally:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
             if proc.returncode != 0:
                 assert proc.returncode is not None
                 raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
             return stdout.decode('utf-8')
 
+        pool = ThreadPoolExecutor(max_workers=1)
         fut = pool.submit(f)
         pool.shutdown(wait=False)
         return FutureResult(fut)
@@ -830,13 +859,13 @@ class AsyncDaemonProcessTransport(AsyncTransport):
             script_bytes = bytes(script_text_or_path, 'utf-8')
             runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', '*']
         proc = AsyncAHKProcess(runargs)
-        await proc.start()
         if blocking:
-            stdout, stderr = await proc.acommunicate(script_bytes, timeout=timeout)
-            if proc.returncode != 0:
-                assert proc.returncode is not None
-                raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
-            return stdout.decode('utf-8')
+            async with proc:
+                stdout, stderr = await proc.acommunicate(script_bytes, timeout=timeout)
+                if proc.returncode != 0:
+                    assert proc.returncode is not None
+                    raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
+                return stdout.decode('utf-8')
         else:
             return await self._async_run_nonblocking(proc, script_bytes, timeout=timeout)
 

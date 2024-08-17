@@ -59,6 +59,10 @@ if sys.version_info < (3, 10):
 else:
     from typing import TypeAlias, TypeGuard
 
+if sys.version_info < (3, 11):
+    from typing_extensions import Self
+else:
+    from typing import Self
 
 T_SyncFuture = TypeVar('T_SyncFuture')
 
@@ -102,11 +106,15 @@ def async_assert_send_nonblocking_type_correct(
 class Communicable(Protocol):
     runargs: List[str]
 
+    def start(self, atexit_cleanup: bool = True) -> None: ...
+
     def communicate(self, input_bytes: Optional[bytes], timeout: Optional[int] = None) -> Tuple[bytes, bytes]: ...
 
 
     @property
     def returncode(self) -> Optional[int]: ...
+
+    def kill(self) -> None: ...
 
 
 class SyncAHKProcess:
@@ -119,9 +127,11 @@ class SyncAHKProcess:
         assert self._proc is not None
         return self._proc.returncode
 
-    def start(self) -> None:
+
+    def start(self, atexit_cleanup: bool = True) -> None:
         self._proc = sync_create_process(self.runargs)
-        atexit.register(kill, self._proc)
+        if atexit_cleanup:
+            atexit.register(kill, self._proc)
         return None
 
 
@@ -159,6 +169,17 @@ class SyncAHKProcess:
         assert self._proc is not None
         assert isinstance(self._proc, subprocess.Popen)
         return self._proc.communicate(input=input_bytes, timeout=timeout)
+
+    def __enter__(self) -> Self:
+        self.start(atexit_cleanup=False)
+        return self
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> Literal[False]:
+        try:
+            self.kill()
+        except Exception:
+            pass
+        return False
 
 
 
@@ -601,6 +622,7 @@ class DaemonProcessTransport(Transport):
         with warnings.catch_warnings(record=True) as caught_warnings:
             with self.lock:
                 self._proc = self._create_process()
+                self._proc.start()
         if caught_warnings:
             for warning in caught_warnings:
                 warnings.warn(warning.message, warning.category, stacklevel=2)
@@ -623,9 +645,7 @@ class DaemonProcessTransport(Transport):
     def lock(self) -> Any:
         return self._execution_lock
 
-    def _create_process(
-        self, template: Optional[jinja2.Template] = None, **template_kwargs: Any
-    ) -> SyncAHKProcess:
+    def _create_process(self, template: Optional[jinja2.Template] = None, **template_kwargs: Any) -> SyncAHKProcess:
         if template is None:
             if template_kwargs:
                 raise ValueError('template kwargs were specified, but no template was provided')
@@ -648,15 +668,13 @@ class DaemonProcessTransport(Transport):
             atexit.register(try_remove, tempscript.name)
         runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', daemon_script]
         proc = SyncAHKProcess(runargs=runargs)
-        proc.start()
         return proc
 
     def _send_nonblocking(
         self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
         msg = request.format()
-        proc = self._create_process()
-        try:
+        with self._create_process() as proc:
             proc.write(msg)
             proc.drain_stdin()
             tom = proc.readline()
@@ -679,11 +697,6 @@ class DaemonProcessTransport(Transport):
                 part = proc.readline()
                 content_buffer.write(part)
             content = content_buffer.getvalue()[:-1]
-        finally:
-            try:
-                proc.kill()
-            except:  # noqa
-                pass
         response = ResponseMessage.from_bytes(content, engine=engine)
         return response.unpack()  # type: ignore
 
@@ -738,15 +751,22 @@ class DaemonProcessTransport(Transport):
         script_bytes: Optional[bytes],
         timeout: Optional[int] = None,
     ) -> FutureResult[str]:
-        pool = ThreadPoolExecutor(max_workers=1)
 
         def f() -> str:
-            stdout, stderr = proc.communicate(script_bytes, timeout)
+            try:
+                proc.start(atexit_cleanup=False)
+                stdout, stderr = proc.communicate(script_bytes, timeout)
+            finally:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
             if proc.returncode != 0:
                 assert proc.returncode is not None
                 raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
             return stdout.decode('utf-8')
 
+        pool = ThreadPoolExecutor(max_workers=1)
         fut = pool.submit(f)
         pool.shutdown(wait=False)
         return FutureResult(fut)
@@ -771,13 +791,13 @@ class DaemonProcessTransport(Transport):
             script_bytes = bytes(script_text_or_path, 'utf-8')
             runargs = [self._executable_path, '/CP65001', '/ErrorStdOut', '*']
         proc = SyncAHKProcess(runargs)
-        proc.start()
         if blocking:
-            stdout, stderr = proc.communicate(script_bytes, timeout=timeout)
-            if proc.returncode != 0:
-                assert proc.returncode is not None
-                raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
-            return stdout.decode('utf-8')
+            with proc:
+                stdout, stderr = proc.communicate(script_bytes, timeout=timeout)
+                if proc.returncode != 0:
+                    assert proc.returncode is not None
+                    raise subprocess.CalledProcessError(proc.returncode, proc.runargs, stdout, stderr)
+                return stdout.decode('utf-8')
         else:
             return self._sync_run_nonblocking(proc, script_bytes, timeout=timeout)
 
