@@ -11,28 +11,28 @@ from typing import Optional
 from ahk.exceptions import AhkExecutableNotFoundError
 
 HOTKEY_ESCAPE_SEQUENCE_MAP = {
-    '\n': '`n',
-    '\t': '`t',
-    '\r': '`r',
-    '\a': '`a',
-    '\b': '`b',
-    '\f': '`f',
-    '\v': '`v',
-    ',': '`,',
-    '%': '`%',
-    '`': '``',
-    ';': '`;',
-    ':': '`:',
+    "\n": "`n",
+    "\t": "`t",
+    "\r": "`r",
+    "\a": "`a",
+    "\b": "`b",
+    "\f": "`f",
+    "\v": "`v",
+    ",": "`,",
+    "%": "`%",
+    "`": "``",
+    ";": "`;",
+    ":": "`:",
 }
 
 ESCAPE_SEQUENCE_MAP = {
-    '!': '{!}',
-    '^': '{^}',
-    '+': '{+}',
-    '{': '{{}',
-    '}': '{}}',
-    '#': '{#}',
-    '=': '{=}',
+    "!": "{!}",
+    "^": "{^}",
+    "+": "{+}",
+    "{": "{{}",
+    "}": "{}}",
+    "#": "{#}",
+    "=": "{=}",
 }
 
 _TRANSLATION_TABLE = str.maketrans(ESCAPE_SEQUENCE_MAP)
@@ -83,36 +83,47 @@ class MsgBoxOtherOptions(enum.IntEnum):
     RIGHT_TO_LEFT_READING_ORDER = 1048576
 
 
-DEFAULT_INSTALL_PATH = r'C:\Program Files\AutoHotkey'
-EXECUTABLES = ['AutoHotkey.exe', 'AutoHotkey64.exe', 'AutoHotkey32.exe', 'AutoHotkeyU64.exe', 'AutoHotkeyU32.exe', 'AutoHotkeyA32.exe']
+DEFAULT_INSTALL_PATH = r"C:\Program Files\AutoHotkey"
+EXECUTABLES = [
+    "AutoHotkey.exe",
+    "AutoHotkey64.exe",
+    "AutoHotkey32.exe",
+    "AutoHotkeyU64.exe",
+    "AutoHotkeyU32.exe",
+    "AutoHotkeyA32.exe",
+]
 
 
-def _resolve_executable_path(executable_path: str = '', version: Optional[Literal['v1', 'v2']] = None) -> str:
+def _resolve_executable_path(
+    executable_path: str = "", version: Optional[Literal["v1", "v2"]] = None
+) -> str:
     if not executable_path:
         executable_path = (
-            os.environ.get('AHK_PATH', '')
-            or (which('AutoHotkeyV2.exe') if version == 'v2' else '')
-            or (which('AutoHotkey32.exe') if version == 'v2' else '')
-            or (which('AutoHotkey64.exe') if version == 'v2' else '')
-            or which('AutoHotkey.exe')
-            or (which('AutoHotkeyU64.exe') if version != 'v2' else '')
-            or (which('AutoHotkeyU32.exe') if version != 'v2' else '')
-            or (which('AutoHotkeyA32.exe') if version != 'v2' else '')
-            or ''
+            os.environ.get("AHK_PATH", "")
+            or (which("AutoHotkeyV2.exe") if version == "v2" else "")
+            or (which("AutoHotkey32.exe") if version == "v2" else "")
+            or (which("AutoHotkey64.exe") if version == "v2" else "")
+            or which("AutoHotkey.exe")
+            or (which("AutoHotkeyU64.exe") if version != "v2" else "")
+            or (which("AutoHotkeyU32.exe") if version != "v2" else "")
+            or (which("AutoHotkeyA32.exe") if version != "v2" else "")
+            or ""
         )
 
     if not executable_path and version:
         if os.path.exists(DEFAULT_INSTALL_PATH):
-            if version == 'v1':
+            if version == "v1":
                 for exe in EXECUTABLES:
                     path = os.path.join(DEFAULT_INSTALL_PATH, exe)
                     if os.path.exists(path):
                         executable_path = path
                         break
-            
+
             if not executable_path:
-                for direc in os.listdir(DEFAULT_INSTALL_PATH):           
-                    if not os.path.isdir(os.path.join(DEFAULT_INSTALL_PATH, direc)) or not direc.startswith(version):
+                for direc in os.listdir(DEFAULT_INSTALL_PATH):
+                    if not os.path.isdir(
+                        os.path.join(DEFAULT_INSTALL_PATH, direc)
+                    ) or not direc.startswith(version):
                         continue
 
                     dir_path = os.path.join(DEFAULT_INSTALL_PATH, direc)
@@ -121,36 +132,38 @@ def _resolve_executable_path(executable_path: str = '', version: Optional[Litera
                         if os.path.exists(path):
                             executable_path = path
                             break
-                    
+
                     if executable_path:
                         break
 
     if not executable_path:
         raise AhkExecutableNotFoundError(
-            'Could not find AutoHotkey.exe on PATH. '
-            'Provide the absolute path with the `executable_path` keyword argument '
-            'or in the AHK_PATH environment variable. '
+            "Could not find AutoHotkey.exe on PATH. "
+            "Provide the absolute path with the `executable_path` keyword argument "
+            "or in the AHK_PATH environment variable. "
             'You can likely resolve this error simply by installing the binary extra with the following command:\n\tpip install "ahk[binary]"'
         )
 
     if not os.path.exists(executable_path):
-        raise AhkExecutableNotFoundError(f"executable_path does not seems to exist: '{executable_path}' not found")
+        raise AhkExecutableNotFoundError(
+            f"executable_path does not seems to exist: '{executable_path}' not found"
+        )
 
     if os.path.isdir(executable_path):
         raise AhkExecutableNotFoundError(
-            f'The path {executable_path} appears to be a directory, but should be a file.'
-            ' Please specify the *full path* to the autohotkey.exe executable file'
+            f"The path {executable_path} appears to be a directory, but should be a file."
+            " Please specify the *full path* to the autohotkey.exe executable file"
         )
     executable_path = str(executable_path)
-    if not executable_path.endswith('.exe'):
+    if not executable_path.endswith(".exe"):
         warnings.warn(
-            'executable_path does not appear to have a .exe extension. This may be the result of a misconfiguration.'
+            "executable_path does not appear to have a .exe extension. This may be the result of a misconfiguration."
         )
 
     return executable_path
 
 
-_version_detection_script = '''\
+_version_detection_script = """\
 #NoTrayIcon
 version := Format("{}", A_AhkVersion)
 filename := "*"
@@ -159,38 +172,38 @@ mode := "w"
 stdout := FileOpen(filename, mode, encoding)
 stdout.Write(version)
 stdout.Read(0)
-'''
+"""
 
 
 def _get_executable_version(executable_path: str) -> str:
     process = subprocess.Popen(
-        [executable_path, '/ErrorStdout', '/CP65001', '*'],
+        [executable_path, "/ErrorStdout", "/CP65001", "*"],
         stdout=subprocess.PIPE,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
     )
     stdout, stderr = process.communicate(_version_detection_script, timeout=2)
-    assert re.match(r'^\d+\.', stdout)
+    assert re.match(r"^\d+\.", stdout)
     return stdout.strip()
 
 
-def _get_executable_major_version(executable_path: str) -> Literal['v1', 'v2']:
+def _get_executable_major_version(executable_path: str) -> Literal["v1", "v2"]:
     version = _get_executable_version(executable_path)
-    match = re.match(r'^(\d+)\.', version)
+    match = re.match(r"^(\d+)\.", version)
     if not match:
-        raise ValueError(f'Unexpected version {version!r}')
+        raise ValueError(f"Unexpected version {version!r}")
     major_version = match.group(1)
-    if major_version == '1':
-        return 'v1'
-    elif major_version == '2':
-        return 'v2'
+    if major_version == "1":
+        return "v1"
+    elif major_version == "2":
+        return "v2"
     else:
-        raise ValueError(f'Unexpected version {version!r}')
+        raise ValueError(f"Unexpected version {version!r}")
 
 
 def try_remove(name: str) -> None:
     try:
         os.remove(name)
     except Exception as e:
-        logging.debug(f'Ignoring removal exception {e}')
+        logging.debug(f"Ignoring removal exception {e}")
