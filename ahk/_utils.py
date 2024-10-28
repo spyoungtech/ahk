@@ -83,8 +83,8 @@ class MsgBoxOtherOptions(enum.IntEnum):
     RIGHT_TO_LEFT_READING_ORDER = 1048576
 
 
-DEFAULT_EXECUTABLE_PATH = r'C:\Program Files\AutoHotkey\AutoHotkey.exe'
-DEFAULT_EXECUTABLE_PATH_V2 = r'C:\Program Files\AutoHotkey\v2\AutoHotkey64.exe'
+DEFAULT_INSTALL_PATH = r'C:\Program Files\AutoHotkey'
+EXECUTABLES = ['AutoHotkey.exe', 'AutoHotkey64.exe', 'AutoHotkey32.exe', 'AutoHotkeyU64.exe', 'AutoHotkeyU32.exe', 'AutoHotkeyA32.exe']
 
 
 def _resolve_executable_path(executable_path: str = '', version: Optional[Literal['v1', 'v2']] = None) -> str:
@@ -101,13 +101,28 @@ def _resolve_executable_path(executable_path: str = '', version: Optional[Litera
             or ''
         )
 
-    if not executable_path:
-        if version == 'v2':
-            if os.path.exists(DEFAULT_EXECUTABLE_PATH_V2):
-                executable_path = DEFAULT_EXECUTABLE_PATH_V2
-        else:
-            if os.path.exists(DEFAULT_EXECUTABLE_PATH):
-                executable_path = DEFAULT_EXECUTABLE_PATH
+    if not executable_path and version:
+        if os.path.exists(DEFAULT_INSTALL_PATH):
+            for exe in EXECUTABLES:
+                path = os.path.join(DEFAULT_INSTALL_PATH, exe)
+                if os.path.exists(path):
+                    executable_path = path
+                    break
+
+            if not executable_path:
+                for direc in os.listdir(DEFAULT_INSTALL_PATH):               
+                    if not os.path.isdir(os.path.join(DEFAULT_INSTALL_PATH, direc)) or not direc.startswith(version):
+                        continue
+
+                    dir_path = os.path.join(DEFAULT_INSTALL_PATH, direc)
+                    for exe in EXECUTABLES:
+                        path = os.path.join(dir_path, exe)
+                        if os.path.exists(path):
+                            executable_path = path
+                            break
+                    
+                    if executable_path:
+                        break
 
     if not executable_path:
         raise AhkExecutableNotFoundError(
