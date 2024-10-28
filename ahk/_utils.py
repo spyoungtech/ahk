@@ -103,14 +103,15 @@ def _resolve_executable_path(executable_path: str = '', version: Optional[Litera
 
     if not executable_path and version:
         if os.path.exists(DEFAULT_INSTALL_PATH):
-            for exe in EXECUTABLES:
-                path = os.path.join(DEFAULT_INSTALL_PATH, exe)
-                if os.path.exists(path):
-                    executable_path = path
-                    break
-
+            if version == 'v1':
+                for exe in EXECUTABLES:
+                    path = os.path.join(DEFAULT_INSTALL_PATH, exe)
+                    if os.path.exists(path):
+                        executable_path = path
+                        break
+            
             if not executable_path:
-                for direc in os.listdir(DEFAULT_INSTALL_PATH):               
+                for direc in os.listdir(DEFAULT_INSTALL_PATH):           
                     if not os.path.isdir(os.path.join(DEFAULT_INSTALL_PATH, direc)) or not direc.startswith(version):
                         continue
 
