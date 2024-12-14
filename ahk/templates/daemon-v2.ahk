@@ -2341,7 +2341,7 @@ AHKWindowList(args*) {
 AHKControlClick(args*) {
     {% block AHKControlClick %}
 
-    ctrl := args[1]
+    ctrl := IsNumber(args[1]) ? Number(args[1]) : args[1]
     title := args[2]
     text := args[3]
     button := args[4]
@@ -2368,7 +2368,7 @@ AHKControlClick(args*) {
     }
 
     try {
-        ControlClick(ctrl, title, text, button, click_count, options, exclude_title, exclude_text)
+        ControlClick(ctrl || unset, title, text, button, click_count, options, exclude_title, exclude_text)
     }
     finally {
         DetectHiddenWindows(current_detect_hw)
@@ -2383,7 +2383,7 @@ AHKControlClick(args*) {
 AHKControlGetText(args*) {
     {% block AHKControlGetText %}
 
-    ctrl := args[1]
+    ctrl := IsNumber(args[1]) ? Number(args[1]) : args[1]
     title := args[2]
     text := args[3]
     extitle := args[4]
@@ -2423,7 +2423,7 @@ AHKControlGetText(args*) {
 AHKControlGetPos(args*) {
     {% block AHKControlGetPos %}
 
-    ctrl := args[1]
+    ctrl := IsNumber(args[1]) ? Number(args[1]) : args[1]
     title := args[2]
     text := args[3]
     extitle := args[4]
@@ -2462,7 +2462,7 @@ AHKControlGetPos(args*) {
 
 AHKControlSend(args*) {
     {% block AHKControlSend %}
-    ctrl := args[1]
+    ctrl := IsNumber(args[1]) ? Number(args[1]) : args[1]
     keys := args[2]
     title := args[3]
     text := args[4]
@@ -2487,11 +2487,7 @@ AHKControlSend(args*) {
     }
 
     try {
-        if (ctrl != "") {
-            ControlSend(keys, ctrl, title, text, extitle, extext)
-        } else {
-            ControlSend(keys,, title, text, extitle, extext)
-        }
+        ControlSend(keys, ctrl || unset, title, text, extitle, extext)
     }
     finally {
         DetectHiddenWindows(current_detect_hw)
