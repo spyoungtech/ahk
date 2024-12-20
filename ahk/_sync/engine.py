@@ -3304,7 +3304,7 @@ class AHK(Generic[T_AHKVersion]):
         """
         if not title and not text and not exclude_title and not exclude_text:
             raise ValueError(
-                "Expected non-blank value for at least one of the following: title, text, exclude_title, exclude_text"
+                'Expected non-blank value for at least one of the following: title, text, exclude_title, exclude_text'
             )
         args = self._format_win_args(
             title=title,
