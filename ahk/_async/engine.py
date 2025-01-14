@@ -1605,6 +1605,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
             args.append(str(y))
         else:
             args.append('')
+        args.append(str(which))
         await self._transport.function_call('AHKShowToolTip', args)
 
     async def hide_tooltip(self, which: int = 1) -> None:
