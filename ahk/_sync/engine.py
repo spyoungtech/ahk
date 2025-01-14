@@ -1592,6 +1592,7 @@ class AHK(Generic[T_AHKVersion]):
             args.append(str(y))
         else:
             args.append('')
+        args.append(str(which))
         self._transport.function_call('AHKShowToolTip', args)
 
     def hide_tooltip(self, which: int = 1) -> None:
