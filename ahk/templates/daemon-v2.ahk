@@ -2691,7 +2691,13 @@ AHKShowToolTip(args*) {
     x := args[2]
     y := args[3]
     which := args[4]
-    ToolTip(text, x, y, which)
+
+    ToolTip(text, IsNumber(x) ? Number(x) : unset, IsNumber(y) ? Number(y) : unset, which || unset)
+    ; In AHK v2, doubling the call to ToolTip seems necessary to ensure synchronous creation of the window
+    ; This seems to be more reliable than sleeping to wait for the tooltip callback
+    ; Without this doubled up call (or a sleep) we return the the blocking loop (awaiting next command from Python)
+    ;  before the tooltip window is created, meaning the tooltip will not show until if/when processing the next command
+    ToolTip(text, IsNumber(x) ? Number(x) : unset, IsNumber(y) ? Number(y) : unset, which || unset)
     return FormatNoValueResponse()
     {% endblock AHKShowToolTip %}
 }
