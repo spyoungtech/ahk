@@ -293,7 +293,7 @@ class Transport(ABC):
     def run_script(
         self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
     ) -> Union[str, FutureResult[str]]:
-        return NotImplemented
+        ...
 
     # fmt: off
     @overload
@@ -537,14 +537,14 @@ class Transport(ABC):
     def send(
         self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]:
-        return NotImplemented
+        ...
 
 
     @abstractmethod
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AHK[Any]] = None
     ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, Window, List[Window], List[Control]]]:
-        return NotImplemented
+        ...
 
 
 class DaemonProcessTransport(Transport):
