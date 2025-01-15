@@ -321,8 +321,7 @@ class AsyncTransport(ABC):
     @abstractmethod
     async def run_script(
         self, script_text_or_path: str, /, *, blocking: bool = True, timeout: Optional[int] = None
-    ) -> Union[str, AsyncFutureResult[str]]:
-        return NotImplemented
+    ) -> Union[str, AsyncFutureResult[str]]: ...
 
     # fmt: off
     @overload
@@ -565,22 +564,21 @@ class AsyncTransport(ABC):
     @abstractmethod
     async def send(
         self, request: RequestMessage, engine: Optional[AsyncAHK[Any]] = None
-    ) -> Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]:
-        return NotImplemented
+    ) -> Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]: ...
 
     @abstractmethod  # unasync: remove
     async def a_send_nonblocking(  # unasync: remove
         self, request: RequestMessage, engine: Optional[AsyncAHK[Any]] = None
     ) -> AsyncFutureResult[
         Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]
-    ]:
-        return NotImplemented
+    ]: ...
 
     @abstractmethod
     def send_nonblocking(
         self, request: RequestMessage, engine: Optional[AsyncAHK[Any]] = None
-    ) -> FutureResult[Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]]:
-        return NotImplemented
+    ) -> FutureResult[
+        Union[None, Tuple[int, int], int, str, bool, AsyncWindow, List[AsyncWindow], List[AsyncControl]]
+    ]: ...
 
 
 class AsyncDaemonProcessTransport(AsyncTransport):

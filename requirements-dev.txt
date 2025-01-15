@@ -4,7 +4,7 @@ unasync
 black
 tokenize-rt
 coverage
-mypy==1.13.0
+mypy
 typing_extensions
 jinja2
 pytest-rerunfailures
