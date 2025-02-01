@@ -656,6 +656,14 @@ class AsyncWindow:
             blocking=blocking,
         )
 
+    # fmt: off
+    @overload
+    @classmethod
+    async def from_pid(cls, engine: AsyncAHK[Literal['v2']], pid: int) -> AsyncWindow: ...
+    @overload
+    @classmethod
+    async def from_pid(cls, engine: Union[AsyncAHK[Literal['v1']], AsyncAHK[None]], pid: int) -> Optional[AsyncWindow]: ...
+    # fmt: on
     @classmethod
     async def from_pid(cls, engine: AsyncAHK[Any], pid: int) -> Optional[AsyncWindow]:
         return await engine.win_get(title=f'ahk_pid {pid}')

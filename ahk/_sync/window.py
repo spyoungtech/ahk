@@ -635,6 +635,14 @@ class Window:
             blocking=blocking,
         )
 
+    # fmt: off
+    @overload
+    @classmethod
+    def from_pid(cls, engine: AHK[Literal['v2']], pid: int) -> Window: ...
+    @overload
+    @classmethod
+    def from_pid(cls, engine: Union[AHK[Literal['v1']], AHK[None]], pid: int) -> Optional[Window]: ...
+    # fmt: on
     @classmethod
     def from_pid(cls, engine: AHK[Any], pid: int) -> Optional[Window]:
         return engine.win_get(title=f'ahk_pid {pid}')
