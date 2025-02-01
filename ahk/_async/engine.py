@@ -821,6 +821,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
             title='A', detect_hidden_windows=False, title_match_mode=(1, 'Fast'), blocking=blocking
         )
 
+    # Ideally, this would be type-hinted for the AHK version. But we cant: https://github.com/python/mypy/issues/9937
     @property
     def active_window(self) -> AsyncPropertyReturnOptionalAsyncWindow:
         """
