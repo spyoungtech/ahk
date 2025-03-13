@@ -5,7 +5,25 @@ This guide is a work in progress, but aims to help a new contributor make a succ
 If you have questions about contributing not answered here, always feel free to [open an issue](https://github.com/spyoungtech/ahk/issues)
 or [discussion](https://github.com/spyoungtech/ahk/discussions) and I will help you the best that I am able.
 
-## Before contributing
+<!-- TOC -->
+* [Contribution Guide](#contribution-guide)
+* [Before contributing](#before-contributing)
+* [Initial development setup](#initial-development-setup)
+  * [Code formatting, linting, etc.](#code-formatting-linting-etc)
+* [Unasync Code Generation](#unasync-code-generation)
+* [Pre-commit hooks](#pre-commit-hooks)
+* [Running tests](#running-tests)
+* [How this project works, briefly](#how-this-project-works-briefly)
+  * [Hotkeys](#hotkeys)
+* [Example: Implementing a new method](#example-implementing-a-new-method)
+  * [Writing the AutoHotkey code](#writing-the-autohotkey-code)
+  * [Writing the Python code](#writing-the-python-code)
+  * [Testing and code generation](#testing-and-code-generation)
+* [About your contributions :balance_scale:](#about-your-contributions-balance_scale)
+<!-- TOC -->
+
+
+# Before contributing
 
 Generally, all contributions should be associated with an [open issue](https://github.com/spyoungtech/ahk/issues).
 Contributors are strongly encouraged to comment on an existing issue or create a new issue before working on a PR,
@@ -14,14 +32,17 @@ improvements. When in doubt, create an issue.
 
 
 
-## Initial development setup
+# Initial development setup
+
+Some prerequisite steps are needed to get ready for development on this project:
 
 - Activated virtualenv with Python version 3.9 or later (`py -m venv venv` and `venv\Scripts\activate`)
 - Installed the dev requirements (`pip install -r requirements-dev.txt`) (this includes a binary redistribution of AutoHotkey)
 - Installed pre-commit hooks (`pre-commit install`)
 
+That's it!
 
-### Code formatting, linting, etc.
+## Code formatting, linting, etc.
 
 All matters of code style, linting, etc. are all handled by pre-commit hooks. All the proper parameters for formatting
 and correct order of operations are provided there. If you try to run `black` or similar formatters directly on the
@@ -30,7 +51,29 @@ project, it will likely produce a lot of unintended changes that will not be acc
 For these reasons and more, it is critical that you use the `pre-commit` hooks in order to make a successful contribution.
 
 
-## Running tests
+# Unasync Code Generation
+
+This project leverages a [fork](https://github.com/spyoungtech/unasync/tree/unasync-remove) of [`unasync`](https://github.com/python-trio/unasync)
+to automatically generate synchronous code (output to the `ahk/_sync` directory) from async code in the `ahk/_async` directory.
+
+To be clear: **you will _never_ need to write code directly in the `ahk/_sync` directory**. This is all auto-generated code.
+
+Code generation runs as part of the pre-commit hooks.
+
+
+# Pre-commit hooks
+
+Pre-commit hooks are an essential part of development for this project. They will ensure your code is properly formatted
+and linted. It is also essential for performing code generation, as discussed in the previous section.
+
+To run the pre-commit hooks:
+
+```bash
+pre-commit run --all-files
+```
+
+
+# Running tests
 
 The test suite is managed by [`tox`](https://tox.wiki/en/latest/) (installed as part of `requirements-dev`)
 
@@ -43,7 +86,7 @@ tox -e py
 Tox runs tests in an isolated environment.
 
 Although `tox` is the recommended way of testing, with all dev requirements installed,
-you can run the tests directly with `pytest`:
+you can run the tests directly with `pytest` (but be sure to run code generation first!):
 
 ```bash
 pytest tests
@@ -58,28 +101,12 @@ Notes:
 - Some tests are flaky -- the tox configuration adds appropriate reruns to pytest to compensate for this, but reruns are not always 100% effective
 - You can also simply rely on the GitHub Actions workflows for running tests
 
-## Unasync Code Generation
 
-This project leverages a [fork](https://github.com/spyoungtech/unasync/tree/unasync-remove) of [`unasync`](https://github.com/python-trio/unasync)
-to automatically generate synchronous code (output to the `ahk/_sync` directory) from async code in the `ahk/_async` directory.
+# How this project works, briefly
 
-To be clear: **you will _never_ need to write code directly in the `ahk/_sync` directory**. This is all auto-generated code.
-
-Code generation runs as part of the pre-commit hooks.
-
-
-## Pre-commit hooks
-
-Pre-commit hooks are an essential part of development for this project. They will ensure your code is properly formatted
-and linted. It is also essential for performing code generation, as discussed in the previous section.
-
-To run the pre-commit hooks:
-
-```bash
-pre-commit run --all-files
-```
-
-## How this project works, generally
+Understanding how this project works under the hood is an important part to contributing. Here, we'll graze over the
+most important implementation details, but contributors are encouraged to dive into the source code to learn more
+and always feel free to open an issue or discussion to ask questions.
 
 This project is a wrapper around AutoHotkey. That is: it does not directly implement the underlying functionality, but
 instead relies directly on AutoHotkey itself to function; specifically, AutoHotkey is invoked as a subprocess.
@@ -103,16 +130,16 @@ alternate transports can be used, such as in the [ahk-client](https://github.com
 AHK function calls over HTTP (to a server running [ahk-server](https://github.com/spyoungtech/ahk-server)).
 
 
-### Hotkeys
+## Hotkeys
 
 Hotkeys work slightly different from typical functions. Hotkeys are powered by a separate subprocess, which is started
 with the `start_hotkeys` method. This subprocess runs the hotkeys script (e.g. `ahk/templates/hotkeys-v2.ahk`). This works
 like a normal AutoHotkey script and when hotkeys are triggered, they write to `stdout`. A Python thread reads
 from `stdout` and triggers the registered hotkey function. Unlike normal functions found in `ahk/_async`, the implementation of hotkeys
-(found in `ahk/hotkeys.py`) is not implemented async-first -- it is all synchronous Python.
+(found in `ahk/hotkeys.py`) is not implemented async-first -- it is all synchronous/threaded Python.
 
 
-## Implementing a new method
+# Example: Implementing a new method
 
 This section will guide you through the steps of implementing a basic new feature. This is very closely related to the
 documented process of [writing an extension](https://ahk.readthedocs.io/en/latest/extending.html), except that you are
@@ -138,7 +165,7 @@ git checkout -b gh-12345
 ```
 
 
-### Writing the AutoHotkey code
+## Writing the AutoHotkey code
 
 For example, in `ahk/templates/daemon-v2.ahk`, you may add a new function as so:
 
@@ -161,7 +188,7 @@ Note that functions must always return a response (e.g. as provided by `FormatRe
 for more information about available message formats and implementing new message formats.
 
 
-### Writing the Python code
+## Writing the Python code
 
 
 For example, in `ahk/_async/engine.py` you might add the following method to the `AsyncAHK` class:
@@ -190,7 +217,7 @@ The most important part of this code is that the last part of the function retur
 should be implemented in the message type instead.
 
 
-### Testing and code generation
+## Testing and code generation
 
 In `tests/_async` create a new testcase in a new file like `tests/_async/test_math.py` with some basic test cases
 that cover a range of possible inputs and expected exceptional cases:
@@ -239,7 +266,7 @@ tox -e py
 
 When all tests are passing, you are ready to open a pull request to get your contributions reviewed and merged.
 
-## About your contributions :balance_scale:
+# About your contributions :balance_scale:
 
 When you submit contributions to this project, you should understand that your contributions will be licensed under
 the license terms of the project (found in `LICENSE`).
