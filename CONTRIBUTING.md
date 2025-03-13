@@ -236,3 +236,20 @@ And then run the tests:
 ```bash
 tox -e py
 ```
+
+When all tests are passing, you are ready to open a pull request to get your contributions reviewed and merged.
+
+## About your contributions :balance_scale:
+
+When you submit contributions to this project, you should understand that your contributions will be licensed under
+the license terms of the project (found in `LICENSE`).
+
+Moreover, by submitting a pull request to this project, you are representing that the code you are contributing is your own and is
+unencumbered by any other licensing requirements.
+
+Do not submit unoriginal code that is either unlicensed or licensed under any other terms without stating its source and
+ensuring the contribution is fully compliant with any such licensing terms (which usually requires, at a minimum,
+including the license itself). Even when contributing work under implied, creative commons, or licenses that do not
+require attribution or notices (e.g. [_unlicence_](https://unlicense.org/) or similar), you are expected to explicitly
+state the source of any material you submit that is not your own work. This includes, for example, code snippets found
+on StackOverflow, the AutoHotkey forums, or any other source other than your own brain.
