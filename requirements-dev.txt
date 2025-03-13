@@ -1,6 +1,6 @@
 pytest
 pillow
-unasync
+unasync@https://github.com/spyoungtech/unasync/archive/refs/heads/unasync-remove.zip
 black
 tokenize-rt
 coverage
@@ -9,3 +9,6 @@ typing_extensions
 jinja2
 pytest-rerunfailures
 ahk-json
+ahk-binary
+pre-commit
+tox
