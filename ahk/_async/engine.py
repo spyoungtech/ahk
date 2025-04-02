@@ -750,13 +750,13 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
     # fmt: off
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None) -> None: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[True], speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None) -> None: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[True], speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> None: ...
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[False], speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None) -> AsyncFutureResult[None]: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, blocking: Literal[False], speed: Optional[int] = None, relative: bool = False, send_mode: Optional[SendMode] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> AsyncFutureResult[None]: ...
     @overload
-    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False, blocking: bool = True, send_mode: Optional[SendMode] = None) -> Union[None, AsyncFutureResult[None]]: ...
+    async def mouse_move(self, x: Optional[Union[str, int]] = None, y: Optional[Union[str, int]] = None, *, speed: Optional[int] = None, relative: bool = False, blocking: bool = True, send_mode: Optional[SendMode] = None, coord_mode: Optional[CoordModeRelativeTo] = None) -> Union[None, AsyncFutureResult[None]]: ...
     # fmt: on
     async def mouse_move(
         self,
@@ -767,6 +767,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
         relative: bool = False,
         send_mode: Optional[SendMode] = None,
         blocking: bool = True,
+        coord_mode: Optional[CoordModeRelativeTo] = None,
     ) -> Union[None, AsyncFutureResult[None]]:
         """
         Analog for `MouseMove <https://www.autohotkey.com/docs/commands/MouseMove.htm>`_
@@ -788,6 +789,11 @@ class AsyncAHK(Generic[T_AHKVersion]):
             args.append('')
         if send_mode:
             args.append(send_mode)
+        else:
+            args.append('')
+
+        if coord_mode:
+            args.append(coord_mode)
         else:
             args.append('')
 
