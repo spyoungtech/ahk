@@ -1707,11 +1707,34 @@ AHKMouseMove(args*) {
     y := args[2]
     speed := args[3]
     relative := args[4]
+    send_mode := args[5]
+    coord_mode := args[6]
+
+    current_send_mode := Format("{}", A_SendMode)
+    current_coord_mode := Format("{}", A_CoordModeMouse)
+
+    if (send_mode != "") {
+        SendMode, %send_mode%
+    }
+
+    if (coord_mode != "") {
+        CoordMode, Mouse, %coord_mode%
+    }
+
     if (relative != "") {
     MouseMove, %x%, %y%, %speed%, R
     } else {
     MouseMove, %x%, %y%, %speed%
     }
+
+    if (send_mode != "") {
+        SendMode, %current_send_mode%
+    }
+
+    if (coord_mode != "") {
+        CoordMode, Mouse, %current_coord_mode%
+    }
+
     resp := FormatNoValueResponse()
     return resp
     {% endblock AHKMouseMove %}
@@ -4820,7 +4843,15 @@ AHKMouseMove(args*) {
     speed := args[3]
     relative := args[4]
     send_mode := args[5]
+    coord_mode := args[6]
     current_send_mode := Format("{}", A_SendMode)
+
+    current_coord_mode := Format("{}", A_CoordModeMouse)
+    if (coord_mode != "") {
+        CoordMode("Mouse", coord_mode)
+    }
+
+
 
     if (send_mode != "") {
         SendMode send_mode
@@ -4834,6 +4865,10 @@ AHKMouseMove(args*) {
 
     if (send_mode != "") {
         SendMode current_send_mode
+    }
+
+    if (coord_mode != "") {
+        CoordMode("Mouse", current_coord_mode)
     }
 
     resp := FormatNoValueResponse()
