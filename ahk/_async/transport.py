@@ -49,7 +49,6 @@ from ahk.message import _message_registry
 from ahk.message import RequestMessage
 from ahk.message import ResponseMessage
 
-
 if TYPE_CHECKING:
     from ahk import AsyncControl
     from ahk import AsyncWindow

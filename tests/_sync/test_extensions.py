@@ -12,7 +12,6 @@ import pytest
 from ahk import AHK
 from ahk.extensions import Extension
 
-
 sleep = time.sleep
 
 function_name = 'AHKDoSomething'

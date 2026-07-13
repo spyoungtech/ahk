@@ -6,7 +6,6 @@ import pytest
 
 from ahk import AHK
 
-
 sleep = time.sleep
 
 
