@@ -10,7 +10,6 @@ import pytest
 from ahk import AHK
 from ahk import Window
 
-
 sleep = time.sleep
 
 

@@ -289,7 +289,7 @@ class AsyncAHK(Generic[T_AHKVersion]):
 
         args = []
         if isinstance(title_match_mode, tuple):
-            (match_mode, match_speed) = title_match_mode
+            match_mode, match_speed = title_match_mode
         elif title_match_mode in (1, 2, 3, 'RegEx'):
             match_mode = title_match_mode
             match_speed = ''

@@ -8,7 +8,6 @@ from unittest import TestCase
 from ahk import AsyncAHK
 from ahk import AsyncWindow
 
-
 async_sleep = asyncio.sleep  # unasync: remove
 
 sleep = time.sleep
