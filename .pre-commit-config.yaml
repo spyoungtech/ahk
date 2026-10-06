@@ -31,7 +31,7 @@ repos:
     -   id: trailing-whitespace
     -   id: double-quote-string-fixer
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: '26.5.1'
+    rev: '26.10.0'
     hooks:
     -   id: black
         args:
@@ -45,7 +45,7 @@ repos:
     -   id: reorder-python-imports
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v2.3.1'
+    rev: 'v2.4.0'
     hooks:
     -   id: mypy
         args:
