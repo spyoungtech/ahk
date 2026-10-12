@@ -31,7 +31,7 @@ repos:
     -   id: trailing-whitespace
     -   id: double-quote-string-fixer
 -   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: '26.10.0'
+    rev: '26.10.1'
     hooks:
     -   id: black
         args:
@@ -40,7 +40,7 @@ repos:
             - "120"
         exclude: ^(ahk/_sync/.*\.py)
 -   repo: https://github.com/asottile/reorder-python-imports
-    rev: v3.17.0
+    rev: v3.18.0
     hooks:
     -   id: reorder-python-imports
 
